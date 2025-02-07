@@ -11,6 +11,7 @@ using System.Linq.Expressions;
 using System.Media;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Security.Permissions;
 using System.Text;
@@ -46,12 +47,16 @@ namespace Pacman_Projection
         // Create a list for all food boxes
         List<Box> food = new List<Box>();
 
-        // Create pacman globally as to have access to his position
+        // Create pacman globally as to have access to his position constantly
         PictureBox pacman = new PictureBox();
 
         // Declare scores to get when eating different types of food
         const int foodScore = 10;
         const int foodScoreBig = 50;
+
+        // Score and scoreLabel
+        internal int score;
+        internal System.Windows.Forms.Label labelScore = new System.Windows.Forms.Label();
 
         // Create all Soundplayer objects
         SoundPlayer pacman_beginning = 
@@ -70,13 +75,17 @@ namespace Pacman_Projection
             InitializeComponent();
         }
 
+        private int _myProperty;
+
         private void Form1_Load(object sender, EventArgs e)
         {
             // Set size of client to be the size of the boxes and to
             // match the transparent background of pacman and ghosts 
             ClientSize = new Size(boxesHorizontally * boxSize, boxesVertically * boxSize + boxSize);
             this.BackColor = Color.Black;
+
             // Set the location of the client to match the wall painting
+            // !!DO NOT CHANGE!!
             this.Location = new Point(380, 47);
 
             // Create the boxes
@@ -114,9 +123,7 @@ namespace Pacman_Projection
             pacman.BringToFront();
             pacman.Hide();
 
-            // Create the score label
-            System.Windows.Forms.Label labelScore = new System.Windows.Forms.Label();
-            // Label properties
+            // labelScore properties
             labelScore.Location = new Point(2, 2);
             labelScore.Size = new Size(100, 20);
             labelScore.FlatStyle = FlatStyle.Popup;
@@ -548,6 +555,27 @@ namespace Pacman_Projection
             food[0].pictureBox.Image = Resources.Food;
             Controls.Add(food[0].pictureBox);
             food[0].pictureBox.BringToFront();
+
+            food.Add(new Box(new PictureBox(), false, false, true));
+            food[1].pictureBox.Size = new Size(boxSize, boxSize);
+            food[1].pictureBox.Location = new Point(boxSize * 5 + boxSize / 2, boxSize * 37 + boxSize / 2);
+            food[1].pictureBox.Image = Resources.Food;
+            Controls.Add(food[1].pictureBox);
+            food[1].pictureBox.BringToFront();
+
+            food.Add(new Box(new PictureBox(), false, false, true));
+            food[2].pictureBox.Size = new Size(boxSize, boxSize);
+            food[2].pictureBox.Location = new Point(boxSize * 7 + boxSize / 2, boxSize * 37 + boxSize / 2);
+            food[2].pictureBox.Image = Resources.Food;
+            Controls.Add(food[2].pictureBox);
+            food[2].pictureBox.BringToFront();
+
+            food.Add(new Box(new PictureBox(), false, false, true));
+            food[3].pictureBox.Size = new Size(boxSize, boxSize);
+            food[3].pictureBox.Location = new Point(boxSize * 9 + boxSize / 2, boxSize * 37 + boxSize / 2);
+            food[3].pictureBox.Image = Resources.Food;
+            Controls.Add(food[3].pictureBox);
+            food[3].pictureBox.BringToFront();
         }
 
         // Each time pacman has moved, check if he intersects with food
@@ -583,6 +611,8 @@ namespace Pacman_Projection
             labelReady.Hide();
             pacTickTimer.Start();
             pacImageTimer.Start();
+
+            Controls.Add(boxFood);
         }
 
         string currentKey = "";
@@ -604,9 +634,20 @@ namespace Pacman_Projection
             }
         }
 
+        private void Chomp(bool bigFood) 
+        {
+            if (!bigFood)
+            {
+                Task.Run(() => pacman_chomp.PlaySync());
+                score += foodScore;
+                labelScore.Text = "Score: " + score;
+            }
+        }
+
         bool teleportedLastTick;
         bool teleporting;
         int blocksIntoTeleporter;
+        PictureBox boxFood = new PictureBox();
 
         private void pacTickTimer_Tick(object sender, EventArgs e)
         {
@@ -638,9 +679,6 @@ namespace Pacman_Projection
                     int box2X = box1X;
                     int box2Y = box1Y - 1;
 
-                    double boxFoodX = box1X - 0.5;
-                    double boxFoodY = box1Y - 0.5; 
-
                     if (!CheckForWallInDirection(box1X, box1Y, box2X, box2Y))
                     {
                         latestKey = currentKey;
@@ -660,9 +698,6 @@ namespace Pacman_Projection
 
                     int box4X = box1X + 1;
                     int box4Y = box1Y;
-
-                    double boxFoodX = box1X + 0.5;
-                    double boxFoodY = box1Y - 0.5;
 
                     if (!CheckForWallInDirection(box3X, box3Y, box4X, box4Y))
                     {
@@ -684,9 +719,6 @@ namespace Pacman_Projection
                     int box3X = box1X + 1;
                     int box3Y = box1Y - 1;
 
-                    double boxFoodX = box1X + 0.5;
-                    double boxFoodY = box1Y + 0.5;
-
                     if (!CheckForWallInDirection(box2X, box2Y, box3X, box3Y))
                     {
                         latestKey = currentKey;
@@ -703,9 +735,6 @@ namespace Pacman_Projection
 
                     int box4X = box1X + 1;
                     int box4Y = box1Y;
-
-                    double boxFoodX = box1X + 0.5;
-                    double boxFoodY = box1Y;
 
                     if (!CheckForWallInDirection(box1X, box1Y, box4X, box4Y))
                     {
@@ -730,11 +759,15 @@ namespace Pacman_Projection
                 int box2X = box1X;
                 int box2Y = box1Y - 1;
 
-                double boxFoodX = box1X - 0.5;
-                double boxFoodY = box1Y - 0.5;
+                // Get coordinates for boxFood to always be placed in the middle of Pacman
+                double boxFoodX = box1X;
+                double boxFoodY = box1Y;
+                boxFood.Location = new Point((int)boxFoodX*boxSize - boxSize/2, (int)boxFoodY*boxSize + boxSize/2);
+                boxFood.Size = new Size(boxSize, boxSize);
+                boxFood.BringToFront();
 
                 // Check if pacman is inside teleporter box 
-                if (checkForTeleporter(box1X, box1Y, box2X, box2Y) && teleportedLastTick == false || teleporting == true)
+                if (CheckForTeleporter(box1X, box1Y, box2X, box2Y) && teleportedLastTick == false || teleporting == true)
                 {
                     teleporting = true;
                     pacman.Left -= step;
@@ -754,6 +787,11 @@ namespace Pacman_Projection
                     {
                         teleportedLastTick = false;
                     }
+
+                    if (CheckForFood(boxFood))
+                    {
+                        Chomp(false);
+                    }
                 }
                 else
                 {
@@ -771,10 +809,13 @@ namespace Pacman_Projection
                 int box4X = box1X + 1;
                 int box4Y = box1Y;
 
-                double boxFoodX = box1X + 0.5;
-                double boxFoodY = box1Y - 0.5;
+                double boxFoodX = box1X;
+                double boxFoodY = box1Y;
+                boxFood.Location = new Point((int)boxFoodX * boxSize - boxSize/2, (int)boxFoodY * boxSize + boxSize/2);
+                boxFood.Size = new Size(boxSize, boxSize);
+                boxFood.BringToFront();
 
-                if (checkForTeleporter(box3X, box3Y, box4X, box4Y) && teleportedLastTick == false || teleporting == true)
+                if (CheckForTeleporter(box3X, box3Y, box4X, box4Y) && teleportedLastTick == false || teleporting == true)
                 {
                     teleporting = true;
                     pacman.Left += step;
@@ -794,6 +835,11 @@ namespace Pacman_Projection
                     {
                         teleportedLastTick = false;
                     }
+
+                    if (CheckForFood(boxFood))
+                    {
+                        Chomp(false);
+                    }
                 }
                 else
                 {
@@ -811,12 +857,20 @@ namespace Pacman_Projection
                 int box3X = box1X + 1;
                 int box3Y = box1Y - 1;
 
-                double boxFoodX = box1X + 0.5;
-                double boxFoodY = box1Y + 0.5;
+                double boxFoodX = box1X;
+                double boxFoodY = box1Y;
+                boxFood.Location = new Point((int)boxFoodX * boxSize - boxSize/2, (int)boxFoodY * boxSize + boxSize/2);
+                boxFood.Size = new Size(boxSize, boxSize);
+                boxFood.BringToFront();
 
                 if (!CheckForWallInDirection(box2X, box2Y, box3X, box3Y))
                 {
                     pacman.Top -= step;
+
+                    if (CheckForFood(boxFood))
+                    {
+                        Chomp(false);
+                    }
                 }
                 else
                 {
@@ -831,12 +885,20 @@ namespace Pacman_Projection
                 int box4X = box1X + 1;
                 int box4Y = box1Y;
 
-                double boxFoodX = box1X + 0.5;
+                double boxFoodX = box1X;
                 double boxFoodY = box1Y;
+                boxFood.Location = new Point((int)boxFoodX * boxSize - boxSize/2, (int)boxFoodY * boxSize + boxSize/2);
+                boxFood.Size = new Size(boxSize, boxSize);
+                boxFood.BringToFront();
 
                 if (!CheckForWallInDirection(box1X, box1Y, box4X, box4Y))
                 {
                     pacman.Top += step;
+
+                    if (CheckForFood(boxFood))
+                    {
+                        Chomp(false);
+                    }
                 }
                 else
                 {
@@ -872,7 +934,7 @@ namespace Pacman_Projection
             }
         }
 
-        private bool checkForTeleporter(int box1X, int box1Y, int box2X, int box2Y)
+        private bool CheckForTeleporter(int box1X, int box1Y, int box2X, int box2Y)
         {
             // True == teleporter
             // False == no teleporter
@@ -893,11 +955,28 @@ namespace Pacman_Projection
             }
         }
 
-        private bool checkForFood(int box1X, int box1Y, int box2X, int box2Y) 
+        private bool CheckForFood(PictureBox pictureBox) 
         {
             // True == food
             // False == no food
-            return false;
+            try
+            {
+                for (int index = 0; index < food.Count; index++)
+                {
+                    // Check if any food intersects with pacmans boxFood
+                    if (food[index].pictureBox.Bounds.IntersectsWith(pictureBox.Bounds))
+                    {
+                        Controls.Remove(food[index].pictureBox);
+                        food.RemoveAt(index);
+                        return true;
+                    }
+                }
+                return false;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
         
 
