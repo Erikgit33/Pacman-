@@ -27,7 +27,7 @@ namespace Pacman_Projection
     {
         // --FRUKTER--
         // BANAN
-        // KÖRKBÄR
+        // KÖRSBÄR
         // ÄPPLE
         // JORDGUBBE
         // DRAKFRUKT
@@ -545,8 +545,6 @@ namespace Pacman_Projection
 
             boxes[28, 32].isWall = true;
             boxes[28, 32].pictureBox.BackColor = Color.Blue;
-
-            //Kul med filmlördag!
 
             List <int> foodindexesToBeRemoved = new List<int>();
 
