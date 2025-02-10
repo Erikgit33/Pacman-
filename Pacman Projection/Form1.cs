@@ -92,7 +92,7 @@ namespace Pacman_Projection
                 for (int verticalIndex = 0; verticalIndex < boxesVertically; verticalIndex++)
                 {
                     // Create the box
-                    Box box = new Box(new PictureBox(), false, false, false, false);
+                    Box box = new Box(new PictureBox(), false, false, true, false, false);
                     // Box properties
                     box.pictureBox.Size = new Size(boxSize, boxSize);
                     box.pictureBox.Location = new Point(horizontalIndex * boxSize, verticalIndex * boxSize + verticalOffset);
@@ -546,64 +546,60 @@ namespace Pacman_Projection
             boxes[28, 32].isWall = true;
             boxes[28, 32].pictureBox.BackColor = Color.Blue;
 
-            List <int> foodindexesToBeRemoved = new List<int>();
+            //
+            // Set all boxes not to contain food's bool "toContainFood" to false
+            //
 
-            int rows = 0;
-            int foodsPerRow = 19;
+            // Walls
+            for (int horizontalIndex = 0; horizontalIndex < boxesHorizontally; horizontalIndex++)
+            {
+                for (int verticalIndex = 0; verticalIndex < boxesVertically; verticalIndex++)
+                {
+                    if (boxes[horizontalIndex, verticalIndex].isWall == true)
+                    {
+                        boxes[horizontalIndex, verticalIndex].toContainFood = false;
+                    }
+                }
+            }
+
+            // Others
+            boxes[5, 4].toContainFood = false;
+            boxes[7, 4].toContainFood = false;
+
             int horizontalFoodOffset = boxSize + boxSize / 2;
-            int verticalFoodOffset = boxSize + boxSize / 2;
+            int verticalFoodOffset = boxSize*3 + boxSize / 2;
 
-            int foodsRemoved = 0;
+            int horizontalBetweenFoods = boxSize;
+            int verticalBetweenFoods = boxSize;
 
             // For loop which fills the food list and places it on the map while
             // checking if it collides with any walls, if so, they are removed
-            for (int foodNumber = 0; foodNumber < 455 - foodsRemoved; foodNumber++)
+            for (int foodNumber = 0; foodNumber < 456; foodNumber++)
             {
-                foodNumber -= foodsRemoved;
-                if (foodNumber < 0) { foodNumber = 0; }
                 // Food properties
-                food.Add(new Box(new PictureBox(), false, false, true, false));
+                food.Add(new Box(new PictureBox(), false, false, true, true, false));
                 food[foodNumber].pictureBox.Size = new Size(boxSize, boxSize);
                 food[foodNumber].pictureBox.Image = Resources.Food;
-                Controls.Add(food[foodNumber].pictureBox);
-                food[foodNumber].pictureBox.BringToFront();
 
                 // Every row contains 19 foods
                 // foodNumber != 0 because 0 % 19 == 0, which we don't want
-                if (foodNumber % foodsPerRow == 0 && foodNumber != 0)
-                {
-                    rows++;
-                }
+                // if () { new row }
 
                 // Place all foods in a grid-pattern over the map
                 // If a food collides with a wall, it will be removed
                 // The same applies to foods that are placed beside others foods, creating areas
                 // of dense foods, as well as foods placed outside the map or generally where 
                 // they are not supposed to be
-                food[foodNumber].pictureBox.Location = new Point(foodNumber * horizontalFoodOffset + horizontalFoodOffset - rows * horizontalFoodOffset * foodsPerRow, boxSize * 2 + verticalFoodOffset + verticalFoodOffset * rows);
+                food[foodNumber].pictureBox.Location = new Point();
 
                 // The unwanted foods are placed into a list to then be removed from the food list
-                if (CheckForFoodWallCollide(foodNumber) || foodNumber == 0 || foodNumber == 19 || foodNumber == 32 || foodNumber == 40 || foodNumber == 41 ||foodNumber == 42 || foodNumber == 49 || foodNumber == 51 
-                || foodNumber == 77 || foodNumber == 119 || foodNumber == 120 || foodNumber == 125 || foodNumber == 126 || foodNumber == 144 || foodNumber == 152 || foodNumber == 153
-                || foodNumber == 168 || foodNumber == 169 || foodNumber == 170 || foodNumber == 171 || foodNumber == 172 || foodNumber == 177 || foodNumber == 178 || foodNumber == 179 
-                || foodNumber == 180 || foodNumber == 181 || foodNumber == 182 || foodNumber == 187 || foodNumber == 188 || foodNumber == 189 || foodNumber == 198 || foodNumber == 199 
-                || foodNumber == 209 || foodNumber == 210 || foodNumber == 211 || foodNumber == 213 || foodNumber == 216 || foodNumber == 217 || foodNumber == 218 || foodNumber == 219
-                || foodNumber == 222 || foodNumber == 224 || foodNumber == 225 || foodNumber == 226 || foodNumber == 227 || foodNumber == 228 || foodNumber == 229 || foodNumber == 230
-                || foodNumber == 235 || foodNumber == 236 || foodNumber == 237 || foodNumber == 238 || foodNumber == 243 || foodNumber == 244 || foodNumber == 245 || foodNumber == 246
-                || foodNumber == 254 || foodNumber == 255 || foodNumber == 256 || foodNumber == 257 || foodNumber == 266 || foodNumber == 267 || foodNumber == 282 || foodNumber == 283 
-                || foodNumber == 284 || foodNumber == 285 || foodNumber == 286 || foodNumber == 301 || foodNumber == 302 || foodNumber == 303 || foodNumber == 377 ||foodNumber == 396
-                || foodNumber == 404 || foodNumber == 409 || foodNumber == 428)
-                {
-                    food.RemoveAt(foodNumber);
-                    foodsRemoved++;
+                if (!CheckForFoodWallCollide(foodNumber))
+                { 
+                    Controls.Add(food[foodNumber].pictureBox);
+                    food[foodNumber].pictureBox.BringToFront();
                 }
             }
 
-
-            for (int index = 0; index < foodindexesToBeRemoved.Count; index++)
-            {
-                
-            }
         }
 
         // Each time pacman has moved, check if he intersects with food
