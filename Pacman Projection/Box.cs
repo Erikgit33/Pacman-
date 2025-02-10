@@ -13,12 +13,14 @@ namespace Pacman_Projection
         internal bool isWall;
         internal bool isTeleporter;
         internal bool isFood;
-        public Box(PictureBox pictureBox, bool isWall, bool isTeleporter, bool isFood)
+        internal bool isBigFood;
+        public Box(PictureBox pictureBox, bool isWall, bool isTeleporter, bool isFood, bool isBigFood)
         {
             this.pictureBox = pictureBox;
             this.isWall = isWall;
             this.isTeleporter = isTeleporter;
             this.isFood = isFood;
+            this.isBigFood = isBigFood;
         }
     }
 }

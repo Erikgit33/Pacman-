@@ -75,8 +75,6 @@ namespace Pacman_Projection
             InitializeComponent();
         }
 
-        private int _myProperty;
-
         private void Form1_Load(object sender, EventArgs e)
         {
             // Set size of client to be the size of the boxes and to
@@ -94,7 +92,7 @@ namespace Pacman_Projection
                 for (int verticalIndex = 0; verticalIndex < boxesVertically; verticalIndex++)
                 {
                     // Create the box
-                    Box box = new Box(new PictureBox(), false, false, false);
+                    Box box = new Box(new PictureBox(), false, false, false, false);
                     // Box properties
                     box.pictureBox.Size = new Size(boxSize, boxSize);
                     box.pictureBox.Location = new Point(horizontalIndex * boxSize, verticalIndex * boxSize + verticalOffset);
@@ -548,34 +546,66 @@ namespace Pacman_Projection
             boxes[28, 32].isWall = true;
             boxes[28, 32].pictureBox.BackColor = Color.Blue;
 
-            // Fill the food list with foods at intended locations
-            food.Add(new Box(new PictureBox(), false, false, true));
-            food[0].pictureBox.Size = new Size(boxSize, boxSize);
-            food[0].pictureBox.Location = new Point(boxSize*3 + boxSize/2, boxSize*37 + boxSize/2);
-            food[0].pictureBox.Image = Resources.Food;
-            Controls.Add(food[0].pictureBox);
-            food[0].pictureBox.BringToFront();
 
-            food.Add(new Box(new PictureBox(), false, false, true));
-            food[1].pictureBox.Size = new Size(boxSize, boxSize);
-            food[1].pictureBox.Location = new Point(boxSize * 5 + boxSize / 2, boxSize * 37 + boxSize / 2);
-            food[1].pictureBox.Image = Resources.Food;
-            Controls.Add(food[1].pictureBox);
-            food[1].pictureBox.BringToFront();
 
-            food.Add(new Box(new PictureBox(), false, false, true));
-            food[2].pictureBox.Size = new Size(boxSize, boxSize);
-            food[2].pictureBox.Location = new Point(boxSize * 7 + boxSize / 2, boxSize * 37 + boxSize / 2);
-            food[2].pictureBox.Image = Resources.Food;
-            Controls.Add(food[2].pictureBox);
-            food[2].pictureBox.BringToFront();
+            List <int> foodindexesToBeRemoved = new List<int>();
 
-            food.Add(new Box(new PictureBox(), false, false, true));
-            food[3].pictureBox.Size = new Size(boxSize, boxSize);
-            food[3].pictureBox.Location = new Point(boxSize * 9 + boxSize / 2, boxSize * 37 + boxSize / 2);
-            food[3].pictureBox.Image = Resources.Food;
-            Controls.Add(food[3].pictureBox);
-            food[3].pictureBox.BringToFront();
+            int rows = 0;
+            int foodsPerRow = 19;
+            int horizontalFoodOffset = boxSize + boxSize / 2;
+            int verticalFoodOffset = boxSize + boxSize / 2;
+
+            int foodsRemoved = 0;
+
+            // For loop which fills the food list and places it on the map while
+            // checking if it collides with any walls, if so, they are removed
+            for (int foodNumber = 0; foodNumber < 455 - foodsRemoved; foodNumber++)
+            {
+                foodNumber -= foodsRemoved;
+                if (foodNumber < 0) { foodNumber = 0; }
+                // Food properties
+                food.Add(new Box(new PictureBox(), false, false, true, false));
+                food[foodNumber].pictureBox.Size = new Size(boxSize, boxSize);
+                food[foodNumber].pictureBox.Image = Resources.Food;
+                Controls.Add(food[foodNumber].pictureBox);
+                food[foodNumber].pictureBox.BringToFront();
+
+                // Every row contains 19 foods
+                // foodNumber != 0 because 0 % 19 == 0, which we don't want
+                if (foodNumber % foodsPerRow == 0 && foodNumber != 0)
+                {
+                    rows++;
+                }
+
+                // Place all foods in a grid-pattern over the map
+                // If a food collides with a wall, it will be removed
+                // The same applies to foods that are placed beside others foods, creating areas
+                // of dense foods, as well as foods placed outside the map or generally where 
+                // they are not supposed to be
+                food[foodNumber].pictureBox.Location = new Point(foodNumber * horizontalFoodOffset + horizontalFoodOffset - rows * horizontalFoodOffset * foodsPerRow, boxSize * 2 + verticalFoodOffset + verticalFoodOffset * rows);
+
+                // The unwanted foods are placed into a list to then be removed from the food list
+                if (CheckForFoodWallCollide(foodNumber) || foodNumber == 0 || foodNumber == 19 || foodNumber == 32 || foodNumber == 40 || foodNumber == 41 ||foodNumber == 42 || foodNumber == 49 || foodNumber == 51 
+                || foodNumber == 77 || foodNumber == 119 || foodNumber == 120 || foodNumber == 125 || foodNumber == 126 || foodNumber == 144 || foodNumber == 152 || foodNumber == 153
+                || foodNumber == 168 || foodNumber == 169 || foodNumber == 170 || foodNumber == 171 || foodNumber == 172 || foodNumber == 177 || foodNumber == 178 || foodNumber == 179 
+                || foodNumber == 180 || foodNumber == 181 || foodNumber == 182 || foodNumber == 187 || foodNumber == 188 || foodNumber == 189 || foodNumber == 198 || foodNumber == 199 
+                || foodNumber == 209 || foodNumber == 210 || foodNumber == 211 || foodNumber == 213 || foodNumber == 216 || foodNumber == 217 || foodNumber == 218 || foodNumber == 219
+                || foodNumber == 222 || foodNumber == 224 || foodNumber == 225 || foodNumber == 226 || foodNumber == 227 || foodNumber == 228 || foodNumber == 229 || foodNumber == 230
+                || foodNumber == 235 || foodNumber == 236 || foodNumber == 237 || foodNumber == 238 || foodNumber == 243 || foodNumber == 244 || foodNumber == 245 || foodNumber == 246
+                || foodNumber == 254 || foodNumber == 255 || foodNumber == 256 || foodNumber == 257 || foodNumber == 266 || foodNumber == 267 || foodNumber == 282 || foodNumber == 283 
+                || foodNumber == 284 || foodNumber == 285 || foodNumber == 286 || foodNumber == 301 || foodNumber == 302 || foodNumber == 303 || foodNumber == 377 ||foodNumber == 396
+                || foodNumber == 404 || foodNumber == 409 || foodNumber == 428)
+                {
+                    food.RemoveAt(foodNumber);
+                    foodsRemoved++;
+                }
+            }
+
+
+            for (int index = 0; index < foodindexesToBeRemoved.Count; index++)
+            {
+                
+            }
         }
 
         // Each time pacman has moved, check if he intersects with food
@@ -642,6 +672,11 @@ namespace Pacman_Projection
                 score += foodScore;
                 labelScore.Text = "Score: " + score;
             }
+            else
+            {
+                score += foodScoreBig;
+                labelScore.Text = "Score: " + score;
+            }
         }
 
         bool teleportedLastTick;
@@ -679,7 +714,7 @@ namespace Pacman_Projection
                     int box2X = box1X;
                     int box2Y = box1Y - 1;
 
-                    if (!CheckForWallInDirection(box1X, box1Y, box2X, box2Y))
+                    if (!CheckForWall(box1X, box1Y, box2X, box2Y))
                     {
                         latestKey = currentKey;
                     }
@@ -699,7 +734,7 @@ namespace Pacman_Projection
                     int box4X = box1X + 1;
                     int box4Y = box1Y;
 
-                    if (!CheckForWallInDirection(box3X, box3Y, box4X, box4Y))
+                    if (!CheckForWall(box3X, box3Y, box4X, box4Y))
                     {
                         latestKey = currentKey;
                     }
@@ -719,7 +754,7 @@ namespace Pacman_Projection
                     int box3X = box1X + 1;
                     int box3Y = box1Y - 1;
 
-                    if (!CheckForWallInDirection(box2X, box2Y, box3X, box3Y))
+                    if (!CheckForWall(box2X, box2Y, box3X, box3Y))
                     {
                         latestKey = currentKey;
                     }
@@ -736,7 +771,7 @@ namespace Pacman_Projection
                     int box4X = box1X + 1;
                     int box4Y = box1Y;
 
-                    if (!CheckForWallInDirection(box1X, box1Y, box4X, box4Y))
+                    if (!CheckForWall(box1X, box1Y, box4X, box4Y))
                     {
                         latestKey = currentKey;
                     }
@@ -762,9 +797,6 @@ namespace Pacman_Projection
                 // Get coordinates for boxFood to always be placed in the middle of Pacman
                 double boxFoodX = box1X;
                 double boxFoodY = box1Y;
-                boxFood.Location = new Point((int)boxFoodX*boxSize - boxSize/2, (int)boxFoodY*boxSize + boxSize/2);
-                boxFood.Size = new Size(boxSize, boxSize);
-                boxFood.BringToFront();
 
                 // Check if pacman is inside teleporter box 
                 if (CheckForTeleporter(box1X, box1Y, box2X, box2Y) && teleportedLastTick == false || teleporting == true)
@@ -780,7 +812,7 @@ namespace Pacman_Projection
                         blocksIntoTeleporter = 0;
                     }
                 }
-                else if (!CheckForWallInDirection(box1X, box1Y, box2X, box2Y) && teleporting == false)
+                else if (!CheckForWall(box1X, box1Y, box2X, box2Y) && teleporting == false)
                 {
                     pacman.Left -= step;
                     if (teleportedLastTick == true)
@@ -788,6 +820,13 @@ namespace Pacman_Projection
                         teleportedLastTick = false;
                     }
 
+                    // boxFood properties
+                    boxFood.Location = new Point((int)boxFoodX * boxSize + boxSize / 2, (int)boxFoodY * boxSize + 3*(boxSize / 2));
+                    boxFood.Size = new Size(boxSize, boxSize);
+                    boxFood.BackColor = Color.White;
+                    boxFood.BringToFront();
+
+                    // Check if boxFood is intersecting with food
                     if (CheckForFood(boxFood))
                     {
                         Chomp(false);
@@ -811,10 +850,7 @@ namespace Pacman_Projection
 
                 double boxFoodX = box1X;
                 double boxFoodY = box1Y;
-                boxFood.Location = new Point((int)boxFoodX * boxSize - boxSize/2, (int)boxFoodY * boxSize + boxSize/2);
-                boxFood.Size = new Size(boxSize, boxSize);
-                boxFood.BringToFront();
-
+              
                 if (CheckForTeleporter(box3X, box3Y, box4X, box4Y) && teleportedLastTick == false || teleporting == true)
                 {
                     teleporting = true;
@@ -828,13 +864,18 @@ namespace Pacman_Projection
                         blocksIntoTeleporter = 0;
                     }
                 }
-                else if (!CheckForWallInDirection(box3X, box3Y, box4X, box4Y) && teleporting == false)
+                else if (!CheckForWall(box3X, box3Y, box4X, box4Y) && teleporting == false)
                 {
                     pacman.Left += step;
                     if (teleportedLastTick == true)
                     {
                         teleportedLastTick = false;
                     }
+
+                    boxFood.Location = new Point((int)boxFoodX * boxSize + boxSize / 2, (int)boxFoodY * boxSize + 3*(boxSize / 2));
+                    boxFood.Size = new Size(boxSize, boxSize);
+                    boxFood.BackColor = Color.White;
+                    boxFood.BringToFront();
 
                     if (CheckForFood(boxFood))
                     {
@@ -859,13 +900,15 @@ namespace Pacman_Projection
 
                 double boxFoodX = box1X;
                 double boxFoodY = box1Y;
-                boxFood.Location = new Point((int)boxFoodX * boxSize - boxSize/2, (int)boxFoodY * boxSize + boxSize/2);
-                boxFood.Size = new Size(boxSize, boxSize);
-                boxFood.BringToFront();
 
-                if (!CheckForWallInDirection(box2X, box2Y, box3X, box3Y))
+                if (!CheckForWall(box2X, box2Y, box3X, box3Y))
                 {
                     pacman.Top -= step;
+
+                    boxFood.Location = new Point((int)boxFoodX * boxSize + boxSize / 2, (int)boxFoodY * boxSize + 3*(boxSize / 2));
+                    boxFood.Size = new Size(boxSize, boxSize);
+                    boxFood.BackColor = Color.White;
+                    boxFood.BringToFront();
 
                     if (CheckForFood(boxFood))
                     {
@@ -887,13 +930,15 @@ namespace Pacman_Projection
 
                 double boxFoodX = box1X;
                 double boxFoodY = box1Y;
-                boxFood.Location = new Point((int)boxFoodX * boxSize - boxSize/2, (int)boxFoodY * boxSize + boxSize/2);
-                boxFood.Size = new Size(boxSize, boxSize);
-                boxFood.BringToFront();
 
-                if (!CheckForWallInDirection(box1X, box1Y, box4X, box4Y))
+                if (!CheckForWall(box1X, box1Y, box4X, box4Y))
                 {
                     pacman.Top += step;
+
+                    boxFood.Location = new Point((int)boxFoodX * boxSize + boxSize / 2, (int)boxFoodY * boxSize + 3*(boxSize / 2));
+                    boxFood.Size = new Size(boxSize, boxSize);
+                    boxFood.BackColor = Color.White;
+                    boxFood.BringToFront();
 
                     if (CheckForFood(boxFood))
                     {
@@ -912,7 +957,7 @@ namespace Pacman_Projection
             }
         }
 
-        private bool CheckForWallInDirection(int box1X, int box1Y, int box2X, int box2Y)
+        private bool CheckForWall(int box1X, int box1Y, int box2X, int box2Y)
         {
             // True == wall
             // False == no wall
@@ -932,6 +977,25 @@ namespace Pacman_Projection
             {
                 return true;
             }
+        }
+
+        private bool CheckForFoodWallCollide(int foodNumber)
+        {
+            // True == wall
+            // False == no wall
+
+            for (int indexX = 0; indexX < boxesHorizontally; indexX++)
+            {
+                for (int indexY = 0; indexY < boxesVertically; indexY++)
+                {
+                    if (boxes[indexX, indexY].pictureBox.Bounds.IntersectsWith(food[foodNumber].pictureBox.Bounds) 
+                     && boxes[indexX, indexY].isWall)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         private bool CheckForTeleporter(int box1X, int box1Y, int box2X, int box2Y)
