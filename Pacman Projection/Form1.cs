@@ -547,7 +547,7 @@ namespace Pacman_Projection
             boxes[28, 32].pictureBox.BackColor = Color.Blue;
 
             //
-            // Set all boxes not to contain food's bool "toContainFood" to false
+            // Set all walls not to contain food's bool "toContainFood" to false
             //
 
             // Walls
@@ -563,8 +563,93 @@ namespace Pacman_Projection
             }
 
             // Others
+            boxes[1, 3].toContainFood = false;
+            boxes[2, 3].toContainFood = false;
             boxes[5, 4].toContainFood = false;
             boxes[7, 4].toContainFood = false;
+            boxes[4, 8].toContainFood = false;
+            boxes[3, 8].toContainFood = false;
+            boxes[8, 7].toContainFood = false;
+            boxes[9, 11].toContainFood = false;
+            boxes[13, 9].toContainFood = false;
+            boxes[13, 11].toContainFood = false;
+            boxes[13, 13].toContainFood = false;
+            boxes[14, 13].toContainFood = false;
+            boxes[15, 13].toContainFood = false;
+            boxes[16, 13].toContainFood = false;
+            boxes[16, 11].toContainFood = false;
+            boxes[16, 9].toContainFood = false;
+            boxes[20, 11].toContainFood = false;
+            boxes[19, 4].toContainFood = false;
+            boxes[18, 4].toContainFood = false;
+            boxes[0, 13].toContainFood = false;
+            boxes[0, 14].toContainFood = false;
+            boxes[0, 16].toContainFood = false;
+            boxes[2, 13].toContainFood = false;
+            boxes[2, 14].toContainFood = false;
+            boxes[2, 16].toContainFood = false;
+            boxes[4, 13].toContainFood = false;
+            boxes[4, 14].toContainFood = false;
+            boxes[4, 16].toContainFood = false;
+            boxes[0, 18].toContainFood = false;
+            boxes[0, 20].toContainFood = false;
+            boxes[2, 18].toContainFood = false;
+            boxes[2, 20].toContainFood = false;
+            boxes[3, 18].toContainFood = false;
+            boxes[3, 20].toContainFood = false;
+            boxes[5, 18].toContainFood = false;
+            boxes[5, 20].toContainFood = false;
+            boxes[0, 22].toContainFood = false;
+            boxes[0, 23].toContainFood = false;
+            boxes[0, 25].toContainFood = false;
+            boxes[2, 22].toContainFood = false;
+            boxes[2, 23].toContainFood = false;
+            boxes[2, 25].toContainFood = false;
+            boxes[4, 22].toContainFood = false;
+            boxes[4, 23].toContainFood = false;
+            boxes[4, 25].toContainFood = false;
+            boxes[8, 18].toContainFood = false;
+
+            boxes[12, 17].toContainFood = false;
+            boxes[14, 17].toContainFood = false;
+            boxes[16, 17].toContainFood = false;
+            boxes[12, 19].toContainFood = false;
+            boxes[14, 19].toContainFood = false;
+            boxes[16, 19].toContainFood = false;
+            boxes[12, 21].toContainFood = false;
+            boxes[14, 21].toContainFood = false;
+            boxes[16, 21].toContainFood = false;
+
+            boxes[25, 13].toContainFood = false;
+            boxes[25, 14].toContainFood = false;
+            boxes[25, 16].toContainFood = false;
+            boxes[27 ,13].toContainFood = false;
+            boxes[27, 14].toContainFood = false;
+            boxes[27, 16].toContainFood = false;
+            boxes[29, 13].toContainFood = false;
+            boxes[29, 14].toContainFood = false;
+            boxes[29, 16].toContainFood = false;
+            boxes[24, 18].toContainFood = false;
+            boxes[24, 20].toContainFood = false;
+            boxes[26, 18].toContainFood = false;
+            boxes[26, 20].toContainFood = false;
+            boxes[27, 18].toContainFood = false;
+            boxes[27, 20].toContainFood = false;
+            boxes[29, 18].toContainFood = false;
+            boxes[29, 20].toContainFood = false;
+            boxes[25, 22].toContainFood = false;
+            boxes[25, 23].toContainFood = false;
+            boxes[25, 25].toContainFood = false;
+            boxes[27, 22].toContainFood = false;
+            boxes[27 ,23].toContainFood = false;
+            boxes[27, 25].toContainFood = false;
+            boxes[29, 22].toContainFood = false;
+            boxes[29, 23].toContainFood = false;
+            boxes[29, 25].toContainFood = false;
+            boxes[25, 30].toContainFood = false;
+            boxes[25, 31].toContainFood = false;
+            boxes[28, 33].toContainFood = false;
+            boxes[28, 34].toContainFood = false;
 
             int horizontalFoodOffset = boxSize + boxSize / 2;
             int verticalFoodOffset = boxSize*3 + boxSize / 2;
@@ -572,28 +657,36 @@ namespace Pacman_Projection
             int horizontalBetweenFoods = boxSize;
             int verticalBetweenFoods = boxSize;
 
+            int rows = 0;
+            int foodsPerRow = 29;
+            int foodsPerColumn = 37;
+            int foods = foodsPerRow * foodsPerColumn;
+
             // For loop which fills the food list and places it on the map while
             // checking if it collides with any walls, if so, they are removed
-            for (int foodNumber = 0; foodNumber < 456; foodNumber++)
+            for (int foodNumber = 0; foodNumber < foodsPerRow*foodsPerColumn; foodNumber++)
             {
                 // Food properties
                 food.Add(new Box(new PictureBox(), false, false, true, true, false));
                 food[foodNumber].pictureBox.Size = new Size(boxSize, boxSize);
                 food[foodNumber].pictureBox.Image = Resources.Food;
 
-                // Every row contains 19 foods
-                // foodNumber != 0 because 0 % 19 == 0, which we don't want
-                // if () { new row }
+                // Every row contains 29 foods
+                if (foodNumber != 0 && foodNumber % foodsPerRow == 0) 
+                { 
+                    rows++; 
+                }
 
                 // Place all foods in a grid-pattern over the map
                 // If a food collides with a wall, it will be removed
                 // The same applies to foods that are placed beside others foods, creating areas
                 // of dense foods, as well as foods placed outside the map or generally where 
                 // they are not supposed to be
-                food[foodNumber].pictureBox.Location = new Point();
+                food[foodNumber].pictureBox.Location = new Point(foodNumber * horizontalBetweenFoods + horizontalFoodOffset - rows * foodsPerRow * verticalBetweenFoods, 
+                                                                 rows * verticalBetweenFoods + verticalFoodOffset);
 
-                // The unwanted foods are placed into a list to then be removed from the food list
-                if (!CheckForFoodWallCollide(foodNumber))
+              
+                if (AbleToPlaceFood(foodNumber))
                 { 
                     Controls.Add(food[foodNumber].pictureBox);
                     food[foodNumber].pictureBox.BringToFront();
@@ -973,23 +1066,25 @@ namespace Pacman_Projection
             }
         }
 
-        private bool CheckForFoodWallCollide(int foodNumber)
+        private bool AbleToPlaceFood(int foodNumber)
         {
-            // True == wall
-            // False == no wall
+            // True == To contain food
+            // False == Not to contain food
 
             for (int indexX = 0; indexX < boxesHorizontally; indexX++)
             {
                 for (int indexY = 0; indexY < boxesVertically; indexY++)
                 {
-                    if (boxes[indexX, indexY].pictureBox.Bounds.IntersectsWith(food[foodNumber].pictureBox.Bounds) 
-                     && boxes[indexX, indexY].isWall)
+                    if (boxes[indexX, indexY].pictureBox.Bounds.IntersectsWith(food[foodNumber].pictureBox.Bounds))
                     {
-                        return true;
+                        if (boxes[indexX, indexY].isWall || boxes[indexX, indexY].toContainFood == false) 
+                        {
+                            return false;
+                        }
                     }
                 }
             }
-            return false;
+            return true;
         }
 
         private bool CheckForTeleporter(int box1X, int box1Y, int box2X, int box2Y)
