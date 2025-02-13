@@ -44,8 +44,11 @@ namespace Pacman_Projection
 
         // Create the main array containing all boxes
         Box[,] boxes = new Box[boxesHorizontally, boxesVertically];
+        // Food variables
+        const int foodsPerRow = 29;
+        const int foodsPerColumn = 37;
         // Create a list for all food boxes
-        List<Box> food = new List<Box>();
+        Box[,] food = new Box[foodsPerRow, foodsPerColumn];
 
         // Create pacman globally as to have access to his position constantly
         PictureBox pacman = new PictureBox();
@@ -92,7 +95,7 @@ namespace Pacman_Projection
                 for (int verticalIndex = 0; verticalIndex < boxesVertically; verticalIndex++)
                 {
                     // Create the box
-                    Box box = new Box(new PictureBox(), false, false, true, false, false);
+                    Box box = new Box(new PictureBox(), false, false, true, false);
                     // Box properties
                     box.pictureBox.Size = new Size(boxSize, boxSize);
                     box.pictureBox.Location = new Point(horizontalIndex * boxSize, verticalIndex * boxSize + verticalOffset);
@@ -567,10 +570,17 @@ namespace Pacman_Projection
             boxes[2, 3].toContainFood = false;
             boxes[5, 4].toContainFood = false;
             boxes[7, 4].toContainFood = false;
+            boxes[11, 4].toContainFood = false;
+            boxes[21, 4].toContainFood = false;
+            boxes[21, 7].toContainFood = false;
+            boxes[21, 3].toContainFood = false;
             boxes[4, 8].toContainFood = false;
             boxes[3, 8].toContainFood = false;
             boxes[8, 7].toContainFood = false;
             boxes[9, 11].toContainFood = false;
+            boxes[10, 11].toContainFood = false;
+            boxes[9, 13].toContainFood = false;
+            boxes[10, 13].toContainFood = false;
             boxes[13, 9].toContainFood = false;
             boxes[13, 11].toContainFood = false;
             boxes[13, 13].toContainFood = false;
@@ -579,7 +589,10 @@ namespace Pacman_Projection
             boxes[16, 13].toContainFood = false;
             boxes[16, 11].toContainFood = false;
             boxes[16, 9].toContainFood = false;
+            boxes[19, 11].toContainFood = false;
             boxes[20, 11].toContainFood = false;
+            boxes[19, 13].toContainFood = false;
+            boxes[20, 13].toContainFood = false;
             boxes[19, 4].toContainFood = false;
             boxes[18, 4].toContainFood = false;
             boxes[0, 13].toContainFood = false;
@@ -612,6 +625,9 @@ namespace Pacman_Projection
 
             boxes[12, 17].toContainFood = false;
             boxes[14, 17].toContainFood = false;
+            boxes[14, 16].toContainFood = false;
+            boxes[16, 16].toContainFood = false;
+            boxes[7, 4].toContainFood = false;
             boxes[16, 17].toContainFood = false;
             boxes[12, 19].toContainFood = false;
             boxes[14, 19].toContainFood = false;
@@ -620,6 +636,7 @@ namespace Pacman_Projection
             boxes[14, 21].toContainFood = false;
             boxes[16, 21].toContainFood = false;
 
+            boxes[21, 18].toContainFood = false;
             boxes[25, 13].toContainFood = false;
             boxes[25, 14].toContainFood = false;
             boxes[25, 16].toContainFood = false;
@@ -650,6 +667,10 @@ namespace Pacman_Projection
             boxes[25, 31].toContainFood = false;
             boxes[28, 33].toContainFood = false;
             boxes[28, 34].toContainFood = false;
+            boxes[16, 33].toContainFood = false;
+            boxes[17, 34].toContainFood = false;
+
+
 
             int horizontalFoodOffset = boxSize + boxSize / 2;
             int verticalFoodOffset = boxSize*3 + boxSize / 2;
@@ -658,41 +679,44 @@ namespace Pacman_Projection
             int verticalBetweenFoods = boxSize;
 
             int rows = 0;
-            int foodsPerRow = 29;
-            int foodsPerColumn = 37;
-            int foods = foodsPerRow * foodsPerColumn;
 
             // For loop which fills the food list and places it on the map while
             // checking if it collides with any walls, if so, they are removed
-            for (int foodNumber = 0; foodNumber < foodsPerRow*foodsPerColumn; foodNumber++)
+            for (int indexY = 0; indexY < foodsPerColumn; indexY++)
             {
-                // Food properties
-                food.Add(new Box(new PictureBox(), false, false, true, true, false));
-                food[foodNumber].pictureBox.Size = new Size(boxSize, boxSize);
-                food[foodNumber].pictureBox.Image = Resources.Food;
+                for (int indexX = 0; indexX < foodsPerRow; indexX++)
+                {
+                    food[indexX, indexY] = new Box(new PictureBox(), false, false, true, false);
 
-                // Every row contains 29 foods
-                if (foodNumber != 0 && foodNumber % foodsPerRow == 0) 
-                { 
-                    rows++; 
-                }
+                    // Food properties
+                    food[indexX, indexY].pictureBox.Size = new Size(boxSize, boxSize);
+                    food[indexX, indexY].pictureBox.Image = Resources.Food;
 
-                // Place all foods in a grid-pattern over the map
-                // If a food collides with a wall, it will be removed
-                // The same applies to foods that are placed beside others foods, creating areas
-                // of dense foods, as well as foods placed outside the map or generally where 
-                // they are not supposed to be
-                food[foodNumber].pictureBox.Location = new Point(foodNumber * horizontalBetweenFoods + horizontalFoodOffset - rows * foodsPerRow * verticalBetweenFoods, 
-                                                                 rows * verticalBetweenFoods + verticalFoodOffset);
+                    // Every row contains 29 foods
+                    if (indexX != 0 && indexX % foodsPerRow == 0)
+                    {
+                        rows++;
+                    }
 
-              
-                if (AbleToPlaceFood(foodNumber))
-                { 
-                    Controls.Add(food[foodNumber].pictureBox);
-                    food[foodNumber].pictureBox.BringToFront();
+                    // Place all foods in a grid-pattern over the map
+                    // If a food collides with a wall, it will be removed
+                    // The same applies to foods that are placed beside others foods, creating areas
+                    // of dense foods, as well as foods placed outside the map or generally where 
+                    // they are not supposed to be
+                    food[indexX, indexY].pictureBox.Location = new Point(indexX * horizontalBetweenFoods + horizontalFoodOffset - rows * foodsPerRow * verticalBetweenFoods,
+                                                                     rows * verticalBetweenFoods + verticalFoodOffset);
+
+                    if (AbleToPlaceFood(indexX, indexY))
+                    {
+                        Controls.Add(food[indexX, indexY].pictureBox);
+                        food[indexX, indexY].pictureBox.BringToFront();
+                    }
+                    else
+                    {
+                        food[indexX, indexY] = null;
+                    }
                 }
             }
-
         }
 
         // Each time pacman has moved, check if he intersects with food
@@ -716,8 +740,9 @@ namespace Pacman_Projection
             Controls.Add(labelReady);
             labelReady.BringToFront();
 
-            // Show pacman
+            // Show pacman and bring him to the front
             pacman.Show();
+            pacman.BringToFront();
             // Remove playButton from controls, making it invisible
             Controls.Remove((Control)sender);
 
@@ -751,11 +776,24 @@ namespace Pacman_Projection
             }
         }
 
+        bool chompIsPlaying;
+
         private void Chomp(bool bigFood) 
         {
             if (!bigFood)
             {
-                Task.Run(() => pacman_chomp.PlaySync());
+                if (!chompIsPlaying)
+                {
+                    // set chompIsPlaying to true
+                    // This is so chomp cannot be queued and played multiple times
+                    chompIsPlaying = true;
+                    Task.Run(() => 
+                    {
+                        // After chomp has finished playing, chompIsPlaying is set to false 
+                        pacman_chomp.PlaySync();
+                        chompIsPlaying = false;
+                    });
+                }
                 score += foodScore;
                 labelScore.Text = "Score: " + score;
             }
@@ -910,8 +948,6 @@ namespace Pacman_Projection
                     // boxFood properties
                     boxFood.Location = new Point((int)boxFoodX * boxSize + boxSize / 2, (int)boxFoodY * boxSize + 3*(boxSize / 2));
                     boxFood.Size = new Size(boxSize, boxSize);
-                    boxFood.BackColor = Color.White;
-                    boxFood.BringToFront();
 
                     // Check if boxFood is intersecting with food
                     if (CheckForFood(boxFood))
@@ -961,8 +997,6 @@ namespace Pacman_Projection
 
                     boxFood.Location = new Point((int)boxFoodX * boxSize + boxSize / 2, (int)boxFoodY * boxSize + 3*(boxSize / 2));
                     boxFood.Size = new Size(boxSize, boxSize);
-                    boxFood.BackColor = Color.White;
-                    boxFood.BringToFront();
 
                     if (CheckForFood(boxFood))
                     {
@@ -994,8 +1028,6 @@ namespace Pacman_Projection
 
                     boxFood.Location = new Point((int)boxFoodX * boxSize + boxSize / 2, (int)boxFoodY * boxSize + 3*(boxSize / 2));
                     boxFood.Size = new Size(boxSize, boxSize);
-                    boxFood.BackColor = Color.White;
-                    boxFood.BringToFront();
 
                     if (CheckForFood(boxFood))
                     {
@@ -1024,8 +1056,6 @@ namespace Pacman_Projection
 
                     boxFood.Location = new Point((int)boxFoodX * boxSize + boxSize / 2, (int)boxFoodY * boxSize + 3*(boxSize / 2));
                     boxFood.Size = new Size(boxSize, boxSize);
-                    boxFood.BackColor = Color.White;
-                    boxFood.BringToFront();
 
                     if (CheckForFood(boxFood))
                     {
@@ -1066,7 +1096,7 @@ namespace Pacman_Projection
             }
         }
 
-        private bool AbleToPlaceFood(int foodNumber)
+        private bool AbleToPlaceFood(int indexXfood, int indexYfood)
         {
             // True == To contain food
             // False == Not to contain food
@@ -1075,7 +1105,7 @@ namespace Pacman_Projection
             {
                 for (int indexY = 0; indexY < boxesVertically; indexY++)
                 {
-                    if (boxes[indexX, indexY].pictureBox.Bounds.IntersectsWith(food[foodNumber].pictureBox.Bounds))
+                    if (food[indexXfood, indexYfood].pictureBox.Bounds.IntersectsWith(boxes[indexX, indexY].pictureBox.Bounds))
                     {
                         if (boxes[indexX, indexY].isWall || boxes[indexX, indexY].toContainFood == false) 
                         {
@@ -1114,14 +1144,15 @@ namespace Pacman_Projection
             // False == no food
             try
             {
-                for (int index = 0; index < food.Count; index++)
+                for (int indexX = 0; indexX < foodsPerRow; indexX++)
                 {
-                    // Check if any food intersects with pacmans boxFood
-                    if (food[index].pictureBox.Bounds.IntersectsWith(pictureBox.Bounds))
+                    for (int indexY = 0; indexY < foodsPerColumn; indexY++)
                     {
-                        Controls.Remove(food[index].pictureBox);
-                        food.RemoveAt(index);
-                        return true;
+                        if (food[indexX, indexY].pictureBox.Bounds.IntersectsWith(pictureBox.Bounds))
+                        {
+                            Controls.Remove(pictureBox);
+                            return true;
+                        }
                     }
                 }
                 return false;
