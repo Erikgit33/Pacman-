@@ -12,6 +12,7 @@ using System.Media;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Security.Cryptography;
 using System.Security.Permissions;
 using System.Text;
@@ -45,10 +46,10 @@ namespace Pacman_Projection
         // Create the main array containing all boxes
         Box[,] boxes = new Box[boxesHorizontally, boxesVertically];
         // Food variables
-        const int foodsPerRow = 29;
-        const int foodsPerColumn = 37;
+        const int foodsHorizontally = 29;
+        const int foodsVertically = 37;
         // Create a list for all food boxes
-        Box[,] food = new Box[foodsPerRow, foodsPerColumn];
+        Box[,] food = new Box[foodsHorizontally, foodsVertically];
 
         // Create pacman globally as to have access to his position constantly
         PictureBox pacman = new PictureBox();
@@ -670,21 +671,18 @@ namespace Pacman_Projection
             boxes[16, 33].toContainFood = false;
             boxes[17, 34].toContainFood = false;
 
-
+            //
+            // Food
+            //
 
             int horizontalFoodOffset = boxSize + boxSize / 2;
             int verticalFoodOffset = boxSize*3 + boxSize / 2;
 
-            int horizontalBetweenFoods = boxSize;
-            int verticalBetweenFoods = boxSize;
-
-            int rows = 0;
-
             // For loop which fills the food list and places it on the map while
             // checking if it collides with any walls, if so, they are removed
-            for (int indexY = 0; indexY < foodsPerColumn; indexY++)
+            for (int indexY = 0; indexY < foodsVertically; indexY++)
             {
-                for (int indexX = 0; indexX < foodsPerRow; indexX++)
+                for (int indexX = 0; indexX < foodsHorizontally; indexX++)
                 {
                     food[indexX, indexY] = new Box(new PictureBox(), false, false, true, false);
 
@@ -692,19 +690,11 @@ namespace Pacman_Projection
                     food[indexX, indexY].pictureBox.Size = new Size(boxSize, boxSize);
                     food[indexX, indexY].pictureBox.Image = Resources.Food;
 
-                    // Every row contains 29 foods
-                    if (indexX != 0 && indexX % foodsPerRow == 0)
-                    {
-                        rows++;
-                    }
-
                     // Place all foods in a grid-pattern over the map
                     // If a food collides with a wall, it will be removed
-                    // The same applies to foods that are placed beside others foods, creating areas
-                    // of dense foods, as well as foods placed outside the map or generally where 
-                    // they are not supposed to be
-                    food[indexX, indexY].pictureBox.Location = new Point(indexX * horizontalBetweenFoods + horizontalFoodOffset - rows * foodsPerRow * verticalBetweenFoods,
-                                                                     rows * verticalBetweenFoods + verticalFoodOffset);
+                    // The same applies to foods that are placed beside others foods,
+                    // creating areas of dense foods, as well as foods placed outside the map or generally where they are not supposed to be
+                    food[indexX, indexY].pictureBox.Location = new Point(indexX * boxSize + horizontalFoodOffset, indexY * boxSize + verticalFoodOffset);
 
                     if (AbleToPlaceFood(indexX, indexY))
                     {
@@ -719,8 +709,7 @@ namespace Pacman_Projection
             }
         }
 
-        // Each time pacman has moved, check if he intersects with food
-        // If he does, the food dissapears, score increases and pacman_chomp plays
+        // Each time pacma is moved he needs to be moved to the front
         private void Pacman_LocationChanged(object sender, EventArgs e)
         {
             pacman.BringToFront();
@@ -777,12 +766,14 @@ namespace Pacman_Projection
         }
 
         bool chompIsPlaying;
+        bool intermissionIsPlaying;
 
-        private void Chomp(bool bigFood) 
+        private void FoodEaten(bool bigFood) 
         {
             if (!bigFood)
             {
-                if (!chompIsPlaying)
+                // Don't play chomp if intermission is playing
+                if (!chompIsPlaying && !intermissionIsPlaying)
                 {
                     // set chompIsPlaying to true
                     // This is so chomp cannot be queued and played multiple times
@@ -794,11 +785,19 @@ namespace Pacman_Projection
                         chompIsPlaying = false;
                     });
                 }
-                score += foodScore;
+
+                score += foodScoreBig;
                 labelScore.Text = "Score: " + score;
             }
             else
             {
+                intermissionIsPlaying = true;
+                Task.Run(() =>
+                {
+                    pacman_intermission.PlaySync();
+                    intermissionIsPlaying = false;
+                });
+
                 score += foodScoreBig;
                 labelScore.Text = "Score: " + score;
             }
@@ -908,6 +907,7 @@ namespace Pacman_Projection
             }
 
 
+
             // If the boxes in front of pacman, based on his direction, are not walls, move pacman
             // The directions "Left" and "Right" also check for teleporter boxes to the left and right of the map
             // Also check if boxFood is intersecting with a box with food, if so, change the aforementioned box's picture and increase score by foodScore
@@ -948,12 +948,6 @@ namespace Pacman_Projection
                     // boxFood properties
                     boxFood.Location = new Point((int)boxFoodX * boxSize + boxSize / 2, (int)boxFoodY * boxSize + 3*(boxSize / 2));
                     boxFood.Size = new Size(boxSize, boxSize);
-
-                    // Check if boxFood is intersecting with food
-                    if (CheckForFood(boxFood))
-                    {
-                        Chomp(false);
-                    }
                 }
                 else
                 {
@@ -997,11 +991,6 @@ namespace Pacman_Projection
 
                     boxFood.Location = new Point((int)boxFoodX * boxSize + boxSize / 2, (int)boxFoodY * boxSize + 3*(boxSize / 2));
                     boxFood.Size = new Size(boxSize, boxSize);
-
-                    if (CheckForFood(boxFood))
-                    {
-                        Chomp(false);
-                    }
                 }
                 else
                 {
@@ -1028,11 +1017,6 @@ namespace Pacman_Projection
 
                     boxFood.Location = new Point((int)boxFoodX * boxSize + boxSize / 2, (int)boxFoodY * boxSize + 3*(boxSize / 2));
                     boxFood.Size = new Size(boxSize, boxSize);
-
-                    if (CheckForFood(boxFood))
-                    {
-                        Chomp(false);
-                    }
                 }
                 else
                 {
@@ -1056,11 +1040,6 @@ namespace Pacman_Projection
 
                     boxFood.Location = new Point((int)boxFoodX * boxSize + boxSize / 2, (int)boxFoodY * boxSize + 3*(boxSize / 2));
                     boxFood.Size = new Size(boxSize, boxSize);
-
-                    if (CheckForFood(boxFood))
-                    {
-                        Chomp(false);
-                    }
                 }
                 else
                 {
@@ -1068,6 +1047,23 @@ namespace Pacman_Projection
                 }
             }
 
+            // Check if boxFood (Pacman) is intersecting with food
+            // FoodEaten(false) == food
+            // FoodEaten(true) == big food
+            if (latestKey != "")
+            {
+                if (CheckForFood(boxFood) == (true, false))
+                {
+                    FoodEaten(false);
+                }
+                else if (CheckForFood(boxFood) == (true, true))
+                {
+                    FoodEaten(true);
+                }
+            }
+
+
+            // If pacman can change direction, latestKey is updated
             if (canChangeDirection == true)
             {
                 latestKey = currentKey;
@@ -1138,33 +1134,44 @@ namespace Pacman_Projection
             }
         }
 
-        private bool CheckForFood(PictureBox pictureBox) 
+        private (bool, bool) CheckForFood(PictureBox foodBox) 
         {
-            // True == food
-            // False == no food
+            // false, false == no food
+            // true, false == food
+            // true, true == bigFood
             try
             {
-                for (int indexX = 0; indexX < foodsPerRow; indexX++)
+                for (int indexX = 0; indexX < foodsHorizontally; indexX++)
                 {
-                    for (int indexY = 0; indexY < foodsPerColumn; indexY++)
+                    for (int indexY = 0; indexY < foodsVertically; indexY++)
                     {
-                        if (food[indexX, indexY].pictureBox.Bounds.IntersectsWith(pictureBox.Bounds))
+                        if (food[indexX, indexY] == null)
                         {
-                            Controls.Remove(pictureBox);
-                            return true;
+                            return (false, false);
+                        }
+
+                        if (food[indexX, indexY].pictureBox.Bounds.IntersectsWith(foodBox.Bounds))
+                        {
+                            Controls.Remove(food[indexX, indexY].pictureBox);
+                            return (true, false);
+                        }
+                        else if (food[indexX, indexY].pictureBox.Bounds.IntersectsWith(foodBox.Bounds) && food[indexX, indexY].isBigFood == true)
+                        {
+                            Controls.Remove(food[indexX, indexY].pictureBox);
+                            return (true, true);
                         }
                     }
                 }
-                return false;
+                return (false, false);
             }
-            catch (Exception)
+            catch (Exception) 
             {
-                return false;
+                return (false, false);
             }
         }
         
 
-        bool isOpenPicture;
+        internal bool isOpenPicture;
         private void pacImageTimer_Tick(object sender, EventArgs e)
         {
             isOpenPicture = !isOpenPicture;
