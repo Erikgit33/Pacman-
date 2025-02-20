@@ -12,6 +12,8 @@
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -33,8 +35,38 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Win32.Registry, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Win32.Registry.5.0.0\lib\net461\Microsoft.Win32.Registry.dll</HintPath>
+    </Reference>
+    <Reference Include="NAudio, Version=2.2.1.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL">
+      <HintPath>..\packages\NAudio.2.2.1\lib\net472\NAudio.dll</HintPath>
+    </Reference>
+    <Reference Include="NAudio.Asio, Version=2.2.1.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL">
+      <HintPath>..\packages\NAudio.Asio.2.2.1\lib\netstandard2.0\NAudio.Asio.dll</HintPath>
+    </Reference>
+    <Reference Include="NAudio.Core, Version=2.2.1.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL">
+      <HintPath>..\packages\NAudio.Core.2.2.1\lib\netstandard2.0\NAudio.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="NAudio.Midi, Version=2.2.1.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL">
+      <HintPath>..\packages\NAudio.Midi.2.2.1\lib\netstandard2.0\NAudio.Midi.dll</HintPath>
+    </Reference>
+    <Reference Include="NAudio.Wasapi, Version=2.2.1.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL">
+      <HintPath>..\packages\NAudio.Wasapi.2.2.1\lib\netstandard2.0\NAudio.Wasapi.dll</HintPath>
+    </Reference>
+    <Reference Include="NAudio.WinForms, Version=2.2.1.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL">
+      <HintPath>..\packages\NAudio.WinForms.2.2.1\lib\net472\NAudio.WinForms.dll</HintPath>
+    </Reference>
+    <Reference Include="NAudio.WinMM, Version=2.2.1.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL">
+      <HintPath>..\packages\NAudio.WinMM.2.2.1\lib\netstandard2.0\NAudio.WinMM.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Security.AccessControl, Version=6.0.0.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.AccessControl.6.0.1\lib\net461\System.Security.AccessControl.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Principal.Windows, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Principal.Windows.5.0.0\lib\net461\System.Security.Principal.Windows.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -53,6 +85,7 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Ghost.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">
@@ -68,6 +101,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -118,9 +152,6 @@
     <None Include="Resources\pacman_eatghost.wav" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\pacman_chomp.wav" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\pacman_death.wav" />
   </ItemGroup>
   <ItemGroup>
@@ -128,6 +159,132 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\FoodBig.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pacman_eatfruit.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pacman_chomp.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Blinky down ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Blinky down.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Blinky left ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Blinky left.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Blinky right ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Blinky right.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Blinky up ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Blinky up.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Clyde down ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Clyde down.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Clyde left ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Clyde left.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Clyde right ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Clyde right.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Clyde up ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Clyde up.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Ghost Eyes down.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Ghost Eyes left.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Ghost Eyes right.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Ghost Eyes up.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Ghost Scared Blue ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Ghost Scared Blue.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Ghost Scared White ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Ghost Scared White.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Inky down ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Inky down.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Inky left ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Inky left.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Inky right ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Inky right.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Inky up ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Inky up.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Pinky down ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Pinky down.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Pinky left ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Pinky left.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Pinky right ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Pinky right.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Pinky up ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Pinky up.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

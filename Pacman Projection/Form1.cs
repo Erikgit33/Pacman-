@@ -1,4 +1,7 @@
 ﻿using Pacman_Projection.Properties;
+using NAudio.Wave;
+using System.IO;
+using System.Resources;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -34,7 +37,7 @@ namespace Pacman_Projection
         // JORDGUBBE
         // DRAKFRUKT
 
-        const int step = 14; // Pixels per step
+        const int step = 14; // Pixels per step and size of blocks (one block per step)
 
         const int boxesHorizontally = 30; 
         const int boxesVertically = 39;
@@ -45,15 +48,18 @@ namespace Pacman_Projection
         const int verticalOffset = boxSize * 2;
 
         // Create the main array containing all boxes
-        Box[,] boxes = new Box[boxesHorizontally, boxesVertically];
+        internal Box[,] boxes = new Box[boxesHorizontally, boxesVertically];
         // Food variables
         const int foodsHorizontally = 29;
         const int foodsVertically = 37;
         // Create a list for all food boxes
-        Box[,] food = new Box[foodsHorizontally, foodsVertically];
+        internal Box[,] food = new Box[foodsHorizontally, foodsVertically];
 
-        // Create pacman globally as to have access to his position constantly
-        PictureBox pacman = new PictureBox();
+        // Create pacman globally as to have access to his position globally
+        internal PictureBox pacman = new PictureBox();
+
+        const int horizontalFoodOffset = boxSize + boxSize / 2;
+        const int verticalFoodOffset = boxSize * 3 + boxSize / 2;
 
         // Declare scores to get when eating different types of food
         const int foodScore = 10;
@@ -63,7 +69,6 @@ namespace Pacman_Projection
         internal int score;
         internal System.Windows.Forms.Label labelScore = new System.Windows.Forms.Label();
 
-        // Create all Soundplayer objects
         SoundPlayer pacman_beginning = 
             new SoundPlayer(Resources.pacman_beginning);
         SoundPlayer pacman_chomp =
@@ -88,10 +93,12 @@ namespace Pacman_Projection
             this.BackColor = Color.Black;
 
             // Set the location of the client to match the wall painting
-            // !!DO NOT CHANGE!!
             this.Location = new Point(380, 47);
+            
+            //
+            // Create all boxes, the map
+            //
 
-            // Create the boxes
             for (int horizontalIndex = 0; horizontalIndex < boxesHorizontally; horizontalIndex++)
             {
                 for (int verticalIndex = 0; verticalIndex < boxesVertically; verticalIndex++)
@@ -116,12 +123,15 @@ namespace Pacman_Projection
                 }
             }
 
-            // Pacman properties
+            // Pacman properties (+ foodBox)
             pacman.Location = new Point(boxSize * 14, boxSize * 25);
             pacman.Size = new Size(entitySize, entitySize);
+            boxFood.Size = new Size(boxSize, boxSize);
             pacman.Image = Resources.Pacman_right;
             pacman.SizeMode = PictureBoxSizeMode.StretchImage;
             Controls.Add(pacman);
+            Controls.Add(boxFood);
+            boxFood.Hide();
             pacman.LocationChanged += Pacman_LocationChanged;
             pacman.BringToFront();
             pacman.Hide();
@@ -676,17 +686,17 @@ namespace Pacman_Projection
             // Food
             //
 
-            int horizontalFoodOffset = boxSize + boxSize / 2;
-            int verticalFoodOffset = boxSize*3 + boxSize / 2;
-
             // For loop which fills the food list and places it on the map while
             // checking if it collides with any walls, if so, they are removed
             for (int indexY = 0; indexY < foodsVertically; indexY++)
             {
                 for (int indexX = 0; indexX < foodsHorizontally; indexX++)
                 {
+                    // PUT MORE BIG FOOD HERE 
                     if (indexX == 0 && indexY == 0
                      || indexX == 26 && indexY == 0
+                     || indexX == 0 && indexY == 34
+                     || indexX == 26 && indexY == 34
                      )
                     {
                         food[indexX, indexY] = new Box(new PictureBox(), false, false, true, true);
@@ -753,8 +763,6 @@ namespace Pacman_Projection
             labelReady.Hide();
             pacTickTimer.Start();
             pacImageTimer.Start();
-
-            Controls.Add(boxFood);
         }
 
         string currentKey = "";
@@ -782,7 +790,7 @@ namespace Pacman_Projection
         private void FoodEaten(int indexX, int indexY, bool bigFood) 
         {
             // Don't play chomp if intermission is playing
-            if (!bigFood && !intermissionIsPlaying)
+            if (!bigFood)
             { 
                 if (!chompIsPlaying)
                 {
@@ -797,6 +805,10 @@ namespace Pacman_Projection
                     });
                 }
 
+                // Remove the eaten food and increase score by the relevant value
+                Controls.Remove(food[indexX, indexY].pictureBox);
+                food[indexX, indexY] = null;
+
                 score += foodScore;
                 labelScore.Text = "Score: " + score;
             }
@@ -808,6 +820,9 @@ namespace Pacman_Projection
                     pacman_intermission.PlaySync();
                     intermissionIsPlaying = false;
                 });
+
+                Controls.Remove(food[indexX, indexY].pictureBox);
+                food[indexX, indexY] = null;
 
                 score += foodScoreBig;
                 labelScore.Text = "Score: " + score;
@@ -822,7 +837,7 @@ namespace Pacman_Projection
         private void pacTickTimer_Tick(object sender, EventArgs e)
         {
             bool canChangeDirection = false;
-            
+
             //////////////////
             //2     //     3//        
             //  //////////  //             
@@ -839,6 +854,7 @@ namespace Pacman_Projection
             // If currentKey is different from latestKey, check if pacman can change direction
             // If pacman is, for instance, going through a corridor with walls below and above, he
             // cannot change direction to up or down because there are walls there
+            
             if (currentKey != latestKey)
             {
                 if (currentKey == "Left")
@@ -950,10 +966,6 @@ namespace Pacman_Projection
                     {
                         teleportedLastTick = false;
                     }
-
-                    // boxFood properties
-                    boxFood.Location = new Point(pacman.Left + boxSize / 2, pacman.Top + boxSize / 2);
-                    boxFood.Size = new Size(boxSize, boxSize);
                 }
                 else
                 {
@@ -991,9 +1003,6 @@ namespace Pacman_Projection
                     {
                         teleportedLastTick = false;
                     }
-
-                    boxFood.Location = new Point(pacman.Left + boxSize / 2, pacman.Top + boxSize / 2);
-                    boxFood.Size = new Size(boxSize, boxSize);
                 }
                 else
                 {
@@ -1014,9 +1023,6 @@ namespace Pacman_Projection
                 if (!CheckForWall(box2X, box2Y, box3X, box3Y))
                 {
                     pacman.Top -= step;
-
-                    boxFood.Location = new Point(pacman.Left + boxSize / 2, pacman.Top + boxSize / 2);
-                    boxFood.Size = new Size(boxSize, boxSize);
                 }
                 else
                 {
@@ -1034,9 +1040,6 @@ namespace Pacman_Projection
                 if (!CheckForWall(box1X, box1Y, box4X, box4Y))
                 {
                     pacman.Top += step;
-
-                    boxFood.Location = new Point(pacman.Left + boxSize / 2, pacman.Top + boxSize / 2);
-                    boxFood.Size = new Size(boxSize, boxSize);
                 }
                 else
                 {
@@ -1044,18 +1047,25 @@ namespace Pacman_Projection
                 }
             }
 
+            // Move boxFood to the appropriate location before checking foodCollide
+            boxFood.Location = new Point(pacman.Left + boxSize / 2, pacman.Top + boxSize / 2);
+
             // Check if boxFood (Pacman) is intersecting with food
             // FoodEaten(false) == food
             // FoodEaten(true) == big food
             if (latestKey != "")
             {
+                // Send the index of the food that boxFood is colliding
+                // with (the food that is eaten) to FoodEaten to be removed accordingly 
                 if (CheckForFoodCollide(boxFood) == (true, false))
                 {
-                    FoodEaten(false);
+                    FoodEaten((pacman.Left + boxSize / 2) / boxSize - horizontalFoodOffset / boxSize, 
+                             (pacman.Top + boxSize / 2) / boxSize - verticalFoodOffset / boxSize, false);
                 }
                 else if (CheckForFoodCollide(boxFood) == (true, true))
                 {
-                    FoodEaten(true);
+                    FoodEaten((pacman.Left + boxSize / 2) / boxSize - horizontalFoodOffset / boxSize, 
+                             (pacman.Top + boxSize / 2) / boxSize - verticalFoodOffset / boxSize, true);
                 }
             }
 
@@ -1146,14 +1156,10 @@ namespace Pacman_Projection
                             {
                                 if (food[indexX, indexY].isBigFood == false)
                                 {
-                                    Controls.Remove(food[indexX, indexY].pictureBox);
-                                    food[indexX, indexY] = null;
                                     return (true, false);
                                 }
                                 else
-                                {
-                                    Controls.Remove(food[indexX, indexY].pictureBox);
-                                    food[indexX, indexY] = null;
+                                { 
                                     return (true, true);
                                 }
                             }
