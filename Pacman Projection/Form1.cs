@@ -52,12 +52,21 @@ namespace Pacman_Projection
         // Food variables
         const int foodsHorizontally = 29;
         const int foodsVertically = 37;
-        // Create a list for all food boxes
+        // Food array
         internal Box[,] food = new Box[foodsHorizontally, foodsVertically];
+        // Ghost array
+        internal Ghost[] ghosts = new Ghost[4];
 
-        // Create pacman globally as to have access to his position globally
+        // Create pacman internally as to have access to his position globally
         internal PictureBox pacman = new PictureBox();
 
+        // Create ghosts internally for the same reason
+        internal Ghost Blinky;
+        internal Ghost Pinky;
+        internal Ghost Inky;
+        internal Ghost Clyde;
+
+        // Declare food offset
         const int horizontalFoodOffset = boxSize + boxSize / 2;
         const int verticalFoodOffset = boxSize * 3 + boxSize / 2;
 
@@ -75,8 +84,8 @@ namespace Pacman_Projection
             new SoundPlayer(Resources.pacman_chomp);
         SoundPlayer pacman_death =
             new SoundPlayer(Resources.pacman_death);
-        SoundPlayer pacman_intermission =
-            new SoundPlayer(Resources.pacman_intermission);
+        SoundPlayer ghost_scared =
+            new SoundPlayer(Resources.ghost_scared);
         SoundPlayer pacman_eatghost =
             new SoundPlayer(Resources.pacman_eatghost);
 
@@ -95,9 +104,11 @@ namespace Pacman_Projection
             // Set the location of the client to match the wall painting
             this.Location = new Point(380, 47);
             
+
             //
             // Create all boxes, the map
             //
+
 
             for (int horizontalIndex = 0; horizontalIndex < boxesHorizontally; horizontalIndex++)
             {
@@ -127,14 +138,55 @@ namespace Pacman_Projection
             pacman.Location = new Point(boxSize * 14, boxSize * 25);
             pacman.Size = new Size(entitySize, entitySize);
             boxFood.Size = new Size(boxSize, boxSize);
-            pacman.Image = Resources.Pacman_right;
+            pacman.Image = Resources.Pacman_start;
             pacman.SizeMode = PictureBoxSizeMode.StretchImage;
             Controls.Add(pacman);
             Controls.Add(boxFood);
             boxFood.Hide();
-            pacman.LocationChanged += Pacman_LocationChanged;
             pacman.BringToFront();
             pacman.Hide();
+
+            // Ghosts properties
+
+            // Blinky
+            Blinky = new Ghost(new PictureBox(), false, false, false);
+            Blinky.pictureBox.Size = new Size(entitySize, entitySize);
+            Blinky.pictureBox.Image = Resources.Blinky_up;
+            Blinky.pictureBox.Location = new Point(boxSize * 14, boxSize * 19);
+            Controls.Add(Blinky.pictureBox);
+            Blinky.pictureBox.BringToFront();
+            Blinky.pictureBox.Hide();
+            ghosts[0] = Blinky;
+
+            // Pinky
+            Pinky = new Ghost(new PictureBox(), false, false, false);
+            Pinky.pictureBox.Size = new Size(entitySize, entitySize);
+            Pinky.pictureBox.Image = Resources.Pinky_down;
+            Pinky.pictureBox.Location = new Point(boxSize * 14, boxSize * 21);
+            Controls.Add(Pinky.pictureBox);
+            Pinky.pictureBox.BringToFront();
+            Pinky.pictureBox.Hide();
+            ghosts[1] = Pinky;
+
+            // Inky
+            Inky = new Ghost(new PictureBox(), false, false, false);
+            Inky.pictureBox.Size = new Size(entitySize, entitySize);
+            Inky.pictureBox.Image = Resources.Inky_up;
+            Inky.pictureBox.Location = new Point(boxSize * 12, boxSize * 21);
+            Controls.Add(Inky.pictureBox);
+            Inky.pictureBox.BringToFront();
+            Inky.pictureBox.Hide();
+            ghosts[2] = Inky;
+
+            // Clyde
+            Clyde = new Ghost(new PictureBox(), false, false, false);
+            Clyde.pictureBox.Size = new Size(entitySize, entitySize);
+            Clyde.pictureBox.Image = Resources.Clyde_up;
+            Clyde.pictureBox.Location = new Point(boxSize * 16, boxSize * 21);
+            Controls.Add(Clyde.pictureBox);
+            Clyde.pictureBox.BringToFront();
+            Clyde.pictureBox.Hide();
+            ghosts[3] = Clyde;
 
             // labelScore properties
             labelScore.Location = new Point(2, 2);
@@ -692,12 +744,10 @@ namespace Pacman_Projection
             {
                 for (int indexX = 0; indexX < foodsHorizontally; indexX++)
                 {
-                    // PUT MORE BIG FOOD HERE 
                     if (indexX == 0 && indexY == 0
                      || indexX == 26 && indexY == 0
                      || indexX == 0 && indexY == 34
-                     || indexX == 26 && indexY == 34
-                     )
+                     || indexX == 26 && indexY == 34)
                     {
                         food[indexX, indexY] = new Box(new PictureBox(), false, false, true, true);
                         food[indexX, indexY].pictureBox.Image = Resources.FoodBig;
@@ -730,11 +780,7 @@ namespace Pacman_Projection
             }
         }
 
-        // Each time pacman is moved he needs to be moved to the front
-        private void Pacman_LocationChanged(object sender, EventArgs e)
-        {
-            pacman.BringToFront();
-        }
+
 
         private async void playButton_Click(object sender, EventArgs e)
         {
@@ -753,6 +799,11 @@ namespace Pacman_Projection
             // Show pacman and bring him to the front
             pacman.Show();
             pacman.BringToFront();
+            // Do the same with áll ghosts
+            Blinky.pictureBox.Show();
+            Pinky.pictureBox.Show();
+            Inky.pictureBox.Show();
+            Clyde.pictureBox.Show();
             // Remove playButton from controls, making it invisible
             Controls.Remove((Control)sender);
 
@@ -763,6 +814,65 @@ namespace Pacman_Projection
             labelReady.Hide();
             pacTickTimer.Start();
             pacImageTimer.Start();
+            ghostTickTimer.Start();
+            ghostImageTimer.Start();
+        }
+
+
+        //
+        // Pacman & movement related methods
+        //
+
+        internal bool isOpenPicture;
+        private void pacImageTimer_Tick(object sender, EventArgs e)
+        {
+            isOpenPicture = !isOpenPicture;
+
+            if (latestKey == "Left")
+            {
+                if (isOpenPicture)
+                {
+                    pacman.Image = Resources.Pacman_left;
+                }
+                else
+                {
+                    pacman.Image = Resources.Pacman_left_closed;
+                }
+            }
+            else if (latestKey == "Right")
+            {
+                if (isOpenPicture)
+                {
+                    pacman.Image = Resources.Pacman_right;
+                }
+                else
+                {
+                    pacman.Image = Resources.Pacman_right_closed;
+                }
+            }
+            else if (latestKey == "Up")
+            {
+                if (isOpenPicture)
+                {
+                    pacman.Image = Resources.Pacman_up;
+                }
+                else
+                {
+                    pacman.Image = Resources.Pacman_up_closed;
+                }
+            }
+            else if (latestKey == "Down")
+            {
+
+                if (isOpenPicture)
+                {
+                    pacman.Image = Resources.Pacman_down;
+                }
+                else
+                {
+                    pacman.Image = Resources.Pacman_down_closed;
+                }
+            }
         }
 
         string currentKey = "";
@@ -784,51 +894,6 @@ namespace Pacman_Projection
             }
         }
 
-        bool chompIsPlaying;
-        bool intermissionIsPlaying;
-
-        private void FoodEaten(int indexX, int indexY, bool bigFood) 
-        {
-            // Don't play chomp if intermission is playing
-            if (!bigFood)
-            { 
-                if (!chompIsPlaying)
-                {
-                    // set chompIsPlaying to true
-                    // This is so chomp cannot be queued and played multiple times
-                    chompIsPlaying = true;
-                    Task.Run(() => 
-                    {
-                        // After chomp has finished playing, chompIsPlaying is set to false 
-                        pacman_chomp.PlaySync();
-                        chompIsPlaying = false;
-                    });
-                }
-
-                // Remove the eaten food and increase score by the relevant value
-                Controls.Remove(food[indexX, indexY].pictureBox);
-                food[indexX, indexY] = null;
-
-                score += foodScore;
-                labelScore.Text = "Score: " + score;
-            }
-            else if (bigFood)
-            {
-                intermissionIsPlaying = true;
-                Task.Run(() =>
-                {
-                    pacman_intermission.PlaySync();
-                    intermissionIsPlaying = false;
-                });
-
-                Controls.Remove(food[indexX, indexY].pictureBox);
-                food[indexX, indexY] = null;
-
-                score += foodScoreBig;
-                labelScore.Text = "Score: " + score;
-            }
-        }
-
         bool teleportedLastTick;
         bool teleporting;
         int blocksIntoTeleporter;
@@ -836,6 +901,7 @@ namespace Pacman_Projection
 
         private void pacTickTimer_Tick(object sender, EventArgs e)
         {
+            
             bool canChangeDirection = false;
 
             //////////////////
@@ -1081,7 +1147,6 @@ namespace Pacman_Projection
         {
             // True == wall
             // False == no wall
-
             try
             {
                 if (boxes[box1X, box1Y].isWall ||boxes[box2X, box2Y].isWall)
@@ -1097,27 +1162,6 @@ namespace Pacman_Projection
             {
                 return true;
             }
-        }
-
-        private bool AbleToPlaceFood(int indexXfood, int indexYfood)
-        {
-            // True == To contain food
-            // False == Not to contain food
-
-            for (int indexX = 0; indexX < boxesHorizontally; indexX++)
-            {
-                for (int indexY = 0; indexY < boxesVertically; indexY++)
-                {
-                    if (food[indexXfood, indexYfood].pictureBox.Bounds.IntersectsWith(boxes[indexX, indexY].pictureBox.Bounds))
-                    {
-                        if (boxes[indexX, indexY].isWall || boxes[indexX, indexY].toContainFood == false) 
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
-            return true;
         }
 
         private bool CheckForTeleporter(int box1X, int box1Y, int box2X, int box2Y)
@@ -1140,6 +1184,105 @@ namespace Pacman_Projection
                 return false;
             }
         }
+
+        private bool CheckForEntityCollide(Ghost Entity)
+        {
+            // true == entity
+            // false == no entity
+
+            // Create a temporary pictureBox to move in the direction EntityA wants 
+            // to move, checking if EntityA will collide with pacman or another ghost
+
+            // Put testGhost at EntityA's location with it's relevant attributes
+            PictureBox testGhost = new PictureBox();
+            testGhost.Size = Entity.pictureBox.Size;
+            testGhost.Location = Entity.pictureBox.Location;
+
+            try
+            {
+                if (Entity.direction_up)
+                {
+                    testGhost.Top -= step;
+                    for (int index = 0; index < 3; index++)
+                    {
+                        if (testGhost.Bounds.IntersectsWith(ghosts[index].pictureBox.Bounds))
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+                else if (Entity.direction_down)
+                {
+                    testGhost.Top += step;
+                    for (int index = 0; index < 3; index++)
+                    {
+                        if (testGhost.Bounds.IntersectsWith(ghosts[index].pictureBox.Bounds))
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+                else if (Entity.direction_left)
+                {
+                    testGhost.Left -= step;
+                    for (int index = 0; index < 3; index++)
+                    {
+                        if (testGhost.Bounds.IntersectsWith(ghosts[index].pictureBox.Bounds))
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+                else if (Entity.direction_right)
+                {
+                    testGhost.Left += step;
+                    for (int index = 0; index < 3; index++)
+                    {
+                        if (testGhost.Bounds.IntersectsWith(ghosts[index].pictureBox.Bounds))
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+                return false;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+
+        //
+        // Food-related methods
+        //
+
+
+        private bool AbleToPlaceFood(int indexXfood, int indexYfood)
+        {
+            // True == To contain food
+            // False == Not to contain food
+
+            for (int indexX = 0; indexX < boxesHorizontally; indexX++)
+            {
+                for (int indexY = 0; indexY < boxesVertically; indexY++)
+                {
+                    if (food[indexXfood, indexYfood].pictureBox.Bounds.IntersectsWith(boxes[indexX, indexY].pictureBox.Bounds))
+                    {
+                        if (boxes[indexX, indexY].isWall || boxes[indexX, indexY].toContainFood == false)
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+
         private (bool food, bool bigFood) CheckForFoodCollide(PictureBox foodBox) 
         {
             // true, false == food
@@ -1174,55 +1317,224 @@ namespace Pacman_Projection
             }
         }
 
+        bool chompIsPlaying;
+        bool ghostScaredIsPlaying;
 
-        internal bool isOpenPicture;
-        private void pacImageTimer_Tick(object sender, EventArgs e)
+        private void FoodEaten(int indexX, int indexY, bool bigFood)
         {
-            isOpenPicture = !isOpenPicture;
+            // Don't play chomp if intermission is playing
+            if (!bigFood)
+            {
+                if (!chompIsPlaying)
+                {
+                    // set chompIsPlaying to true
+                    // This is so chomp cannot be queued and played multiple times
+                    chompIsPlaying = true;
+                    Task.Run(() =>
+                    {
+                        // After chomp has finished playing, chompIsPlaying is set to false 
+                        pacman_chomp.PlaySync();
+                        chompIsPlaying = false;
+                    });
+                }
 
-            if (latestKey == "Left")
-            {
-                if (isOpenPicture)
-                {
-                    pacman.Image = Resources.Pacman_left;
-                }
-                else
-                {
-                    pacman.Image = Resources.Pacman_left_closed;
-                }
-            }
-            else if (latestKey == "Right")
-            {
-                if (isOpenPicture)
-                {
-                    pacman.Image = Resources.Pacman_right;
-                }
-                else
-                {
-                    pacman.Image = Resources.Pacman_right_closed;
-                }
-            }
-            else if (latestKey == "Up")
-            {
-                if (isOpenPicture)
-                {
-                    pacman.Image = Resources.Pacman_up;
-                }
-                else
-                {
-                    pacman.Image = Resources.Pacman_up_closed;
-                }
-            }
-            else if (latestKey == "Down")
-            {
+                // Remove the eaten food and increase score by the relevant value
+                Controls.Remove(food[indexX, indexY].pictureBox);
+                food[indexX, indexY] = null;
 
-                if (isOpenPicture)
+                score += foodScore;
+                labelScore.Text = "Score: " + score;
+            }
+            else if (bigFood)
+            {
+                ghostScaredIsPlaying = true;
+                Task.Run(() =>
                 {
-                    pacman.Image = Resources.Pacman_down;
+                    ghost_scared.PlaySync();
+                    ghostScaredIsPlaying = false;
+                });
+
+                Controls.Remove(food[indexX, indexY].pictureBox);
+                food[indexX, indexY] = null;
+
+                score += foodScoreBig;
+                labelScore.Text = "Score: " + score;
+            }
+        }
+
+
+        //
+        // Ghost-related methods
+        //
+
+        bool ghostPic_ver2;
+        private void ghostImageTimer_Tick(object sender, EventArgs e)
+        {
+            ghostPic_ver2 = !ghostPic_ver2;
+
+            if (ghostPic_ver2)
+            {
+                // Blinky
+                if (Blinky.direction_up)
+                {
+                    Blinky.pictureBox.Image = Resources.Blinky_up;
                 }
-                else
+                else if (Blinky.direction_down)
                 {
-                    pacman.Image = Resources.Pacman_down_closed;
+                    Blinky.pictureBox.Image = Resources.Blinky_down;
+                }
+                else if (Blinky.direction_left)
+                {
+                    Blinky.pictureBox.Image = Resources.Blinky_left;
+                }
+                else if (Blinky.direction_right)
+                {
+                    Blinky.pictureBox.Image = Resources.Blinky_right;
+                }
+
+                // Pinky
+                if (Pinky.direction_up)
+                {
+                    Pinky.pictureBox.Image = Resources.Pinky_up;
+                }
+                else if (Pinky.direction_down)
+                {
+                    Pinky.pictureBox.Image = Resources.Pinky_down;
+                }
+                else if (Pinky.direction_left)
+                {
+                    Pinky.pictureBox.Image = Resources.Pinky_left;
+                }
+                else if (Pinky.direction_right)
+                {
+                    Pinky.pictureBox.Image = Resources.Pinky_right;
+                }
+
+                // Inky 
+                if (Inky.direction_up)
+                {
+                    Inky.pictureBox.Image = Resources.Inky_up;
+                }
+                else if (Inky.direction_down)
+                {
+                    Inky.pictureBox.Image = Resources.Inky_down;
+                }
+                else if (Inky.direction_left)
+                {
+                    Inky.pictureBox.Image = Resources.Inky_left;
+                }
+                else if (Inky.direction_right)
+                {
+                    Inky.pictureBox.Image = Resources.Inky_right;
+                }
+
+                // Clyde
+                if (Clyde.direction_up)
+                {
+                    Clyde.pictureBox.Image = Resources.Clyde_up;
+                }
+                else if (Clyde.direction_down)
+                {
+                    Clyde.pictureBox.Image = Resources.Clyde_down;
+                }
+                else if (Clyde.direction_left)
+                {
+                    Clyde.pictureBox.Image = Resources.Clyde_left;
+                }
+                else if (Clyde.direction_right)
+                {
+                    Clyde.pictureBox.Image = Resources.Clyde_right;
+                }
+            }
+            else
+            {
+                // Blinky
+                if (Blinky.direction_up)
+                {
+                    Blinky.pictureBox.Image = Resources.Blinky_up_ver__2;
+                }
+                else if (Blinky.direction_down)
+                {
+                    Blinky.pictureBox.Image = Resources.Blinky_down_ver__2;
+                }
+                else if (Blinky.direction_left)
+                {
+                    Blinky.pictureBox.Image = Resources.Blinky_left_ver__2;
+                }
+                else if (Blinky.direction_right)
+                {
+                    Blinky.pictureBox.Image = Resources.Blinky_right_ver__2;
+                }
+
+                // Pinky
+                if (Pinky.direction_up)
+                {
+                    Pinky.pictureBox.Image = Resources.Pinky_up_ver__2;
+                }
+                else if (Pinky.direction_down)
+                {
+                    Pinky.pictureBox.Image = Resources.Pinky_down_ver__2;
+                }
+                else if (Pinky.direction_left)
+                {
+                    Pinky.pictureBox.Image = Resources.Pinky_left_ver__2;
+                }
+                else if (Pinky.direction_right)
+                {
+                    Pinky.pictureBox.Image = Resources.Pinky_right_ver__2;
+                }
+
+                // Inky 
+                if (Inky.direction_up)
+                {
+                    Inky.pictureBox.Image = Resources.Inky_up_ver__2;
+                }
+                else if (Inky.direction_down)
+                {
+                    Inky.pictureBox.Image = Resources.Inky_down_ver__2;
+                }
+                else if (Inky.direction_left)
+                {
+                    Inky.pictureBox.Image = Resources.Inky_left_ver__2;
+                }
+                else if (Inky.direction_right)
+                {
+                    Inky.pictureBox.Image = Resources.Inky_right_ver__2;
+                }
+
+                // Clyde
+                if (Clyde.direction_up)
+                {
+                    Clyde.pictureBox.Image = Resources.Clyde_up_ver__2;
+                }
+                else if (Clyde.direction_down)
+                {
+                    Clyde.pictureBox.Image = Resources.Clyde_down_ver__2;
+                }
+                else if (Clyde.direction_left)
+                {
+                    Clyde.pictureBox.Image = Resources.Clyde_left_ver__2;
+                }
+                else if (Clyde.direction_right)
+                {
+                    Clyde.pictureBox.Image = Resources.Clyde_right_ver__2;
+                }
+            }
+        }
+
+        private void ghostTickTimer_Tick(object sender, EventArgs e)
+        {
+            if (Blinky.direction_left)
+            {
+                int box1X = (pacman.Left - boxSize) / boxSize;
+                int box1Y = (pacman.Top - boxSize) / boxSize;
+
+                int box2X = box1X;
+                int box2Y = box1Y - 1;
+
+                if (!CheckForWall(box1X, box1Y, box2X, box2Y))
+                {
+                    Blinky.pictureBox.Left -= step;
                 }
             }
         }

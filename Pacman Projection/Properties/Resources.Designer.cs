@@ -141,6 +141,15 @@ namespace Pacman_Projection.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream buttonReady_sound {
+            get {
+                return ResourceManager.GetStream("buttonReady_sound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap Clyde_down {
@@ -241,6 +250,33 @@ namespace Pacman_Projection.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream ghost_chase2 {
+            get {
+                return ResourceManager.GetStream("ghost_chase2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream ghost_chase3 {
+            get {
+                return ResourceManager.GetStream("ghost_chase3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream ghost_chase4 {
+            get {
+                return ResourceManager.GetStream("ghost_chase4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap Ghost_Eyes_down {
@@ -277,6 +313,33 @@ namespace Pacman_Projection.Properties {
             get {
                 object obj = ResourceManager.GetObject("Ghost_Eyes_up", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream ghost_moveNormal {
+            get {
+                return ResourceManager.GetStream("ghost_moveNormal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream ghost_return {
+            get {
+                return ResourceManager.GetStream("ghost_return", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream ghost_scared {
+            get {
+                return ResourceManager.GetStream("ghost_scared", resourceCulture);
             }
         }
         
@@ -510,6 +573,16 @@ namespace Pacman_Projection.Properties {
         internal static System.Drawing.Bitmap Pacman_right_closed {
             get {
                 object obj = ResourceManager.GetObject("Pacman_right_closed", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Pacman_start {
+            get {
+                object obj = ResourceManager.GetObject("Pacman_start", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

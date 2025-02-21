@@ -13,7 +13,6 @@ namespace Pacman_Projection
         internal bool isWall;
         internal bool isTeleporter;
         internal bool toContainFood;
-        internal bool isFood;
         internal bool isBigFood;
         public Box(PictureBox pictureBox, bool isWall, bool isTeleporter, bool toContainFood, bool isBigFood)
         {

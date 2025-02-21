@@ -286,5 +286,29 @@
   <ItemGroup>
     <None Include="Resources\Pinky up.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\buttonReady_sound.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ghost_chase2.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ghost_chase3.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ghost_chase4.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ghost_moveNormal.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ghost_return.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ghost_scared.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Pacman start.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

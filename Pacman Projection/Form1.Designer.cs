@@ -31,6 +31,8 @@
             this.components = new System.ComponentModel.Container();
             this.pacTickTimer = new System.Windows.Forms.Timer(this.components);
             this.pacImageTimer = new System.Windows.Forms.Timer(this.components);
+            this.ghostTickTimer = new System.Windows.Forms.Timer(this.components);
+            this.ghostImageTimer = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // pacTickTimer
@@ -40,8 +42,16 @@
             // 
             // pacImageTimer
             // 
-            this.pacImageTimer.Interval = 90;
             this.pacImageTimer.Tick += new System.EventHandler(this.pacImageTimer_Tick);
+            // 
+            // ghostTickTimer
+            // 
+            this.ghostTickTimer.Interval = 200;
+            this.ghostTickTimer.Tick += new System.EventHandler(this.ghostTickTimer_Tick);
+            // 
+            // ghostImageTimer
+            // 
+            this.ghostImageTimer.Tick += new System.EventHandler(this.ghostImageTimer_Tick);
             // 
             // Form1
             // 
@@ -61,6 +71,8 @@
 
         private System.Windows.Forms.Timer pacTickTimer;
         private System.Windows.Forms.Timer pacImageTimer;
+        private System.Windows.Forms.Timer ghostTickTimer;
+        private System.Windows.Forms.Timer ghostImageTimer;
     }
 }
 
