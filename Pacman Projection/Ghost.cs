@@ -10,39 +10,82 @@ namespace Pacman_Projection
 {
     class Ghost
     {
-        internal PictureBox pictureBox;
+        internal PictureBox box;
         internal bool scatter;
         internal bool chase;
         internal bool frightened;
 
-        internal bool direction_up;
-        internal bool direction_down;
+        internal bool teleportedLastTick;
+        internal bool teleporing;
+        internal int blocksIntoTeleporter;
+
         internal bool direction_left;
         internal bool direction_right;
+        internal bool direction_up;
+        internal bool direction_down;
 
         public Ghost(PictureBox pictureBox, bool scatter, bool chase, bool frightened)
         {
-            this.pictureBox = pictureBox;
+            box = pictureBox;
             this.scatter = scatter;
             this.chase = chase;
             this.frightened = frightened;
         }
 
-        void SetScatter()
+        internal void SetDirection(string direction)
+        {
+            if (direction == "Left")
+            {
+                direction_left = true;
+                direction_right = false;
+                direction_up = false;
+                direction_down = false;
+            }
+            else if (direction == "Right")
+            {
+                direction_left = false;
+                direction_right = true;
+                direction_up = false;
+                direction_down = false;
+            }
+            else if (direction == "Up")
+            {
+                direction_left = false;
+                direction_right = false;
+                direction_up = true;
+                direction_down = false;
+            }
+            else if (direction == "Down")
+            {
+                direction_left = false;
+                direction_right = false;
+                direction_up = false;
+                direction_down = true;
+            }
+            else if (direction == "Stationary")
+            {
+                direction_left = false;
+                direction_right = false;
+                direction_up = false;
+                direction_down = false;
+            }
+        }
+
+        internal void SetScatter()
         {
             scatter = true;
             chase = false;
             frightened = false;
         }
 
-        void SetChase()
+        internal void SetChase()
         {
             scatter = false;
             chase = true;
             frightened = false;
         }
 
-        void SetFrightened()
+        internal void SetFrightened()
         {
             scatter = false;
             chase = false;

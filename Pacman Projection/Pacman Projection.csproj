@@ -86,6 +86,7 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="Ghost.cs" />
+    <Compile Include="Pacman.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">
@@ -309,6 +310,30 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Pacman start.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Clyde stationary ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Clyde stationary.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Inky stationary ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Inky stationary.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Pinky stationary ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Pinky stationary.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Blinky stationary .png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Blinky stationary ver. 2.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

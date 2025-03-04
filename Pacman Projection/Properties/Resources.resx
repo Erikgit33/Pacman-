@@ -136,6 +136,12 @@
   <data name="Blinky_right_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Blinky right ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Blinky_stationary" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Blinky stationary .png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Blinky_stationary_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Blinky stationary ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Blinky_up" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Blinky up.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -162,6 +168,12 @@
   </data>
   <data name="Clyde_right_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Clyde right ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Clyde_stationary" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Clyde stationary.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Clyde_stationary_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Clyde stationary ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Clyde_up" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Clyde up.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -235,6 +247,12 @@
   <data name="Inky_right_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Inky right ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Inky_stationary" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Inky stationary.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Inky_stationary_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Inky stationary ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Inky_up" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Inky up.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -303,6 +321,12 @@
   </data>
   <data name="Pinky_right_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Pinky right ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Pinky_stationary" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Pinky stationary.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Pinky_stationary_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Pinky stationary ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Pinky_up" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Pinky up.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>

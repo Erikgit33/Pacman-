@@ -123,6 +123,26 @@ namespace Pacman_Projection.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Blinky_stationary {
+            get {
+                object obj = ResourceManager.GetObject("Blinky_stationary", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Blinky_stationary_ver__2 {
+            get {
+                object obj = ResourceManager.GetObject("Blinky_stationary_ver__2", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Blinky_up {
             get {
                 object obj = ResourceManager.GetObject("Blinky_up", resourceCulture);
@@ -205,6 +225,26 @@ namespace Pacman_Projection.Properties {
         internal static System.Drawing.Bitmap Clyde_right_ver__2 {
             get {
                 object obj = ResourceManager.GetObject("Clyde_right_ver__2", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Clyde_stationary {
+            get {
+                object obj = ResourceManager.GetObject("Clyde_stationary", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Clyde_stationary_ver__2 {
+            get {
+                object obj = ResourceManager.GetObject("Clyde_stationary_ver__2", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -446,6 +486,26 @@ namespace Pacman_Projection.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Inky_stationary {
+            get {
+                object obj = ResourceManager.GetObject("Inky_stationary", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Inky_stationary_ver__2 {
+            get {
+                object obj = ResourceManager.GetObject("Inky_stationary_ver__2", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Inky_up {
             get {
                 object obj = ResourceManager.GetObject("Inky_up", resourceCulture);
@@ -663,6 +723,26 @@ namespace Pacman_Projection.Properties {
         internal static System.Drawing.Bitmap Pinky_right_ver__2 {
             get {
                 object obj = ResourceManager.GetObject("Pinky_right_ver__2", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Pinky_stationary {
+            get {
+                object obj = ResourceManager.GetObject("Pinky_stationary", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Pinky_stationary_ver__2 {
+            get {
+                object obj = ResourceManager.GetObject("Pinky_stationary_ver__2", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
