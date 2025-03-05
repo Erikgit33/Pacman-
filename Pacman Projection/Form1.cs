@@ -1,5 +1,5 @@
 ﻿using Pacman_Projection.Properties;
-using NAudio.Wave;
+//using NAudio.Wave;
 using System.IO;
 using System.Resources;
 using System;
@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Tab;
+using System.CodeDom;
 
 namespace Pacman_Projection
 {
@@ -64,6 +65,7 @@ namespace Pacman_Projection
         internal Ghost Pinky;
         internal Ghost Inky;
         internal Ghost Clyde;
+
         // Declare foodsHorizontally and foodsVertically 
         const int foodsHorizontally = 29;
         const int foodsVertically = 37;
@@ -77,6 +79,9 @@ namespace Pacman_Projection
         // Declare scores to get when eating different types of food
         const int foodScore = 10;
         const int foodScoreBig = 50;
+        const int maxScoreFromFood = 10890;
+
+        const int msToWaitAfterGame = 1700;
 
         // Declare score and scoreLabel
         internal int score;
@@ -146,6 +151,7 @@ namespace Pacman_Projection
             boxFood.Size = new Size(boxSize, boxSize);
             pacman.box.Image = Resources.Pacman_start;
             pacman.box.SizeMode = PictureBoxSizeMode.StretchImage;
+            pacman.box.LocationChanged += pacman_LocationChanged;
             Controls.Add(pacman.box);
             Controls.Add(boxFood);
             boxFood.Hide();
@@ -827,18 +833,35 @@ namespace Pacman_Projection
             ghostImageTimer.Start();
         }
 
-        void GameOver()
+        bool timeFinished;
+        private void Game(bool win)
         {
             pacTickTimer.Stop();
             pacImageTimer.Stop();
             ghostTickTimer.Stop();
             ghostImageTimer.Stop();
+
+            var startTime = Process.GetCurrentProcess().StartTime.Millisecond;
+            Task.Run(() =>
+            {
+                while (true)
+                {
+                    if (Process.GetCurrentProcess().StartTime.Millisecond - startTime < msToWaitAfterGame)
+                    {
+                        Blinky.box.Hide();
+                        Pinky.box.Hide();
+                        Inky.box.Hide();
+                        Clyde.box.Hide();
+                        break;
+                    }
+                }
+                timeFinished = true;
+            });
         }
 
         //
         // Pacman & movement related methods
         //
-
 
         internal bool pacPic_open;
         private void pacImageTimer_Tick(object sender, EventArgs e)
@@ -888,6 +911,18 @@ namespace Pacman_Projection
                 else
                 {
                     pacman.box.Image = Resources.Pacman_down_closed;
+                }
+            }
+        }
+
+        // Every time pacman moves, check if he moves into a ghost, thus losing the game
+        private void pacman_LocationChanged(object sencer, EventArgs e)
+        {
+            for (int index = 0; index < ghosts.Count; index++)
+            {
+                if (pacman.box.Bounds.IntersectsWith(ghosts[index].box.Bounds))
+                {
+                    Game(false);
                 }
             }
         }
@@ -951,7 +986,7 @@ namespace Pacman_Projection
                     {
                         latestKey = currentKey;
                     }
-                    else if (CheckForEntity(pacman))
+                    else 
                     {
                         canChangeDirection = false;
                     }
@@ -1213,8 +1248,6 @@ namespace Pacman_Projection
             PictureBox testGhost = new PictureBox();
             testGhost.Size = Ghost.box.Size;
             testGhost.Location = Ghost.box.Location;
-            testGhost.BackColor = Color.White;
-            testGhost.BringToFront();
             Controls.Add(testGhost);
 
             try
@@ -1412,6 +1445,22 @@ namespace Pacman_Projection
                 score += foodScoreBig;
                 labelScore.Text = "Score: " + score;
             }
+
+            if (score >= maxScoreFromFood)
+            {
+                for (int X = 0; X < foodsHorizontally; X++)
+                {
+                    for (int Y = 0; Y < foodsVertically; Y++)
+                    {
+                        if (food[X, Y] != null)
+                        {
+                            break;
+                        }
+                    }
+                }
+                // If no food is left the player wins
+                Game(true);
+            }
         }
 
 
@@ -1440,7 +1489,7 @@ namespace Pacman_Projection
                 else if (CheckForEntity(Blinky) == (false, true))
                 {
                     Blinky.box.Left -= step;
-                    GameOver();
+                    Game(false);    
                 }
             }
             else if (Blinky.direction_right)
@@ -1464,7 +1513,7 @@ namespace Pacman_Projection
                 else if (CheckForEntity(Blinky) == (false, true))
                 {
                     Blinky.box.Left += step;
-                    GameOver();
+                    Game(false);
                 }
             }
             else if (Blinky.direction_up) 
@@ -1488,7 +1537,7 @@ namespace Pacman_Projection
                 else if (CheckForEntity(Blinky) == (false, true))
                 {
                     Blinky.box.Top -= step;
-                    GameOver();
+                    Game(false);
                 }
             }
             else if (Blinky.direction_down)
@@ -1509,9 +1558,10 @@ namespace Pacman_Projection
                 else if (CheckForEntity(Blinky) == (false, true))
                 {
                     Blinky.box.Top += step;
-                    GameOver();
+                    Game(false);
                 }
             }
+
 
             // Pinky
             if (Pinky.direction_left)
@@ -1532,7 +1582,7 @@ namespace Pacman_Projection
                 else if (CheckForEntity(Pinky) == (false, true))
                 {
                     Pinky.box.Left -= step;
-                    GameOver();
+                    Game(false  );
                 }
             }
             else if (Pinky.direction_right)
@@ -1556,7 +1606,7 @@ namespace Pacman_Projection
                 else if (CheckForEntity(Pinky) == (false, true))
                 {
                     Pinky.box.Left += step;
-                    GameOver();
+                    Game(false);
                 }
             }
             else if (Pinky.direction_up)
@@ -1580,7 +1630,7 @@ namespace Pacman_Projection
                 else if (CheckForEntity(Pinky) == (false, true))
                 {
                     Pinky.box.Top -= step;
-                    GameOver();
+                    Game(false);
                 }
             }
             else if (Pinky.direction_down)
@@ -1601,9 +1651,10 @@ namespace Pacman_Projection
                 else if (CheckForEntity(Pinky) == (false, true))
                 {
                     Pinky.box.Top += step;
-                    GameOver();
+                    Game(false);
                 }
             }
+
 
             // Inky
             if (Inky.direction_left)
@@ -1624,7 +1675,7 @@ namespace Pacman_Projection
                 else if (CheckForEntity(Inky) == (false, true))
                 {
                     Inky.box.Left -= step;
-                    GameOver();
+                    Game(false);
                 }
             }
             else if (Inky.direction_right)
@@ -1648,7 +1699,7 @@ namespace Pacman_Projection
                 else if (CheckForEntity(Inky) == (false, true))
                 {
                     Inky.box.Left += step;
-                    GameOver();
+                    Game(false);
                 }
             }
             else if (Inky.direction_up)
@@ -1672,7 +1723,7 @@ namespace Pacman_Projection
                 else if (CheckForEntity(Inky) == (false, true))
                 {
                     Inky.box.Top -= step;
-                    GameOver();
+                    Game(false);
                 }
             }
             else if (Inky.direction_down)
@@ -1693,9 +1744,10 @@ namespace Pacman_Projection
                 else if (CheckForEntity(Inky) == (false, true))
                 {
                     Inky.box.Top += step;
-                    GameOver();
+                    Game(false);
                 }
             }
+
 
             // Clyde
             if (Clyde.direction_left)
@@ -1716,7 +1768,7 @@ namespace Pacman_Projection
                 else if (CheckForEntity(Clyde) == (false, true))
                 {
                     Clyde.box.Left -= step;
-                    GameOver();
+                    Game(false);
                 }
             }
             else if (Clyde.direction_right)
@@ -1740,7 +1792,7 @@ namespace Pacman_Projection
                 else if (CheckForEntity(Clyde) == (false, true))
                 {
                     Clyde.box.Left += step;
-                    GameOver();
+                    Game(false);
                 }
             }
             else if (Clyde.direction_up)
@@ -1764,7 +1816,7 @@ namespace Pacman_Projection
                 else if (CheckForEntity(Clyde) == (false, true))
                 {
                     Clyde.box.Top -= step;
-                    GameOver();
+                    Game(false);
                 }
             }
             else if (Clyde.direction_down)
@@ -1785,7 +1837,7 @@ namespace Pacman_Projection
                 else if (CheckForEntity(Clyde) == (false, true))
                 {
                     Clyde.box.Top += step;
-                    GameOver();
+                    Game(false);
                 }
             }
         }
