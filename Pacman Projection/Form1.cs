@@ -784,24 +784,7 @@ namespace Pacman_Projection
                     }
                 }
             }
-
-            // TEST
-            if (rng.Next(0, 3) == 0)
-            {
-                Blinky.SetDirection("Left");
-            }
-            else if (rng.Next(0, 3) == 1)
-            {
-                Blinky.SetDirection("Right");
-            }
-            else if (rng.Next(0, 3) == 2)
-            {
-                Blinky.SetDirection("Up");
-            }
-            else if (rng.Next(0, 3) == 3)
-            {
-                Blinky.SetDirection("Down");
-            }
+            Blinky.SetDirection("Up");
         }
 
         private async void playButton_Click(object sender, EventArgs e)
@@ -968,7 +951,7 @@ namespace Pacman_Projection
                     {
                         latestKey = currentKey;
                     }
-                    else
+                    else if (CheckForEntity(pacman))
                     {
                         canChangeDirection = false;
                     }
@@ -1241,7 +1224,7 @@ namespace Pacman_Projection
                     testGhost.Top -= step;
                     for (int index = 0; index < ghosts.Count; index++)
                     {
-                        if (testGhost.Bounds.IntersectsWith(ghosts[index].box.Bounds))
+                        if (testGhost.Bounds.IntersectsWith(ghosts[index].box.Bounds) && ghosts[index].Equals(Ghost) == false)
                         {
                             // Dispose of testGhost every time the method is 
                             // about to return ist values as to not use more memory
@@ -1447,7 +1430,7 @@ namespace Pacman_Projection
                 int box2X = box1X;
                 int box2Y = box1Y - 1;
 
-                if (CheckForEntity(Blinky) == (false, false)) 
+                if (CheckForEntity(Blinky) == (true, false) || CheckForEntity(Blinky) == (false, false)) 
                 {
                     if (!CheckForWall(box1X, box1Y, box2X, box2Y))
                     {
@@ -1471,7 +1454,7 @@ namespace Pacman_Projection
                 int box4X = box1X + 1;
                 int box4Y = box1Y;
 
-                if (CheckForEntity(Blinky) == (false, false))
+                if (CheckForEntity(Blinky) == (true, false) || CheckForEntity(Blinky) == (false, false))
                 {
                     if (!CheckForWall(box3X, box3Y, box4X, box4Y))
                     {
@@ -1495,7 +1478,7 @@ namespace Pacman_Projection
                 int box3X = box1X + 1;
                 int box3Y = box1Y - 1;
 
-                if (CheckForEntity(Blinky) == (false, false))
+                if (CheckForEntity(Blinky) == (true, false) || CheckForEntity(Blinky) == (false, false))
                 {
                     if (!CheckForWall(box2X, box2Y, box3X, box3Y))
                     {
@@ -1516,7 +1499,7 @@ namespace Pacman_Projection
                 int box4X = box1X + 1;
                 int box4Y = box1Y;
 
-                if (CheckForEntity(Blinky) == (false, false))
+                if (CheckForEntity(Blinky) == (true, false) || CheckForEntity(Blinky) == (false, false))
                 {
                     if (!CheckForWall(box1X, box1Y, box4X, box4Y))
                     {
@@ -1539,7 +1522,7 @@ namespace Pacman_Projection
                 int box2X = box1X;
                 int box2Y = box1Y - 1;
 
-                if (CheckForEntity(Pinky) == (false, false))
+                if (CheckForEntity(Pinky) == (true, false) || CheckForEntity(Pinky) == (false, false))
                 {
                     if (!CheckForWall(box1X, box1Y, box2X, box2Y))
                     {
@@ -1563,7 +1546,7 @@ namespace Pacman_Projection
                 int box4X = box1X + 1;
                 int box4Y = box1Y;
 
-                if (CheckForEntity(Pinky) == (false, false))
+                if (CheckForEntity(Pinky) == (true, false) || CheckForEntity(Pinky) == (false, false))
                 {
                     if (!CheckForWall(box3X, box3Y, box4X, box4Y))
                     {
@@ -1587,7 +1570,7 @@ namespace Pacman_Projection
                 int box3X = box1X + 1;
                 int box3Y = box1Y - 1;
 
-                if (CheckForEntity(Pinky) == (false, false))
+                if (CheckForEntity(Pinky) == (true, false) || CheckForEntity(Pinky) == (false, false))
                 {
                     if (!CheckForWall(box2X, box2Y, box3X, box3Y))
                     {
@@ -1608,7 +1591,7 @@ namespace Pacman_Projection
                 int box4X = box1X + 1;
                 int box4Y = box1Y;
 
-                if (CheckForEntity(Pinky) == (false, false))
+                if (CheckForEntity(Pinky) == (true, false) || CheckForEntity(Pinky) == (false, false))
                 {
                     if (!CheckForWall(box1X, box1Y, box4X, box4Y))
                     {
@@ -1631,7 +1614,7 @@ namespace Pacman_Projection
                 int box2X = box1X;
                 int box2Y = box1Y - 1;
 
-                if (CheckForEntity(Inky) == (false, false))
+                if (CheckForEntity(Inky) == (true, false) || CheckForEntity(Inky) == (false, false))
                 {
                     if (!CheckForWall(box1X, box1Y, box2X, box2Y))
                     {
@@ -1655,7 +1638,7 @@ namespace Pacman_Projection
                 int box4X = box1X + 1;
                 int box4Y = box1Y;
 
-                if (CheckForEntity(Inky) == (false, false))
+                if (CheckForEntity(Inky) == (true, false) || CheckForEntity(Inky) == (false, false))
                 {
                     if (!CheckForWall(box3X, box3Y, box4X, box4Y))
                     {
@@ -1679,7 +1662,7 @@ namespace Pacman_Projection
                 int box3X = box1X + 1;
                 int box3Y = box1Y - 1;
 
-                if (CheckForEntity(Inky) == (false, false))
+                if (CheckForEntity(Inky) == (true, false) || CheckForEntity(Inky) == (false, false))
                 {
                     if (!CheckForWall(box2X, box2Y, box3X, box3Y))
                     {
@@ -1700,7 +1683,7 @@ namespace Pacman_Projection
                 int box4X = box1X + 1;
                 int box4Y = box1Y;
 
-                if (CheckForEntity(Inky) == (false, false))
+                if (CheckForEntity(Inky) == (true, false) || CheckForEntity(Inky) == (false, false))
                 {
                     if (!CheckForWall(box1X, box1Y, box4X, box4Y))
                     {
@@ -1723,7 +1706,7 @@ namespace Pacman_Projection
                 int box2X = box1X;
                 int box2Y = box1Y - 1;
 
-                if (CheckForEntity(Clyde) == (false, false))
+                if (CheckForEntity(Clyde) == (true, false) || CheckForEntity(Clyde) == (false, false))
                 {
                     if (!CheckForWall(box1X, box1Y, box2X, box2Y))
                     {
@@ -1747,7 +1730,7 @@ namespace Pacman_Projection
                 int box4X = box1X + 1;
                 int box4Y = box1Y;
 
-                if (CheckForEntity(Clyde) == (false, false))
+                if (CheckForEntity(Clyde) == (true, false) || CheckForEntity(Clyde) == (false, false))
                 {
                     if (!CheckForWall(box3X, box3Y, box4X, box4Y))
                     {
@@ -1771,7 +1754,7 @@ namespace Pacman_Projection
                 int box3X = box1X + 1;
                 int box3Y = box1Y - 1;
 
-                if (CheckForEntity(Clyde) == (false, false))
+                if (CheckForEntity(Clyde) == (true, false) || CheckForEntity(Clyde) == (false, false))
                 {
                     if (!CheckForWall(box2X, box2Y, box3X, box3Y))
                     {
@@ -1792,7 +1775,7 @@ namespace Pacman_Projection
                 int box4X = box1X + 1;
                 int box4Y = box1Y;
 
-                if (CheckForEntity(Clyde) == (false, false))
+                if (CheckForEntity(Clyde) == (true, false) || CheckForEntity(Clyde) == (false, false))
                 {
                     if (!CheckForWall(box1X, box1Y, box4X, box4Y))
                     {
