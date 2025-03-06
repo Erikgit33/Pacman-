@@ -71,6 +71,8 @@ namespace Pacman_Projection
         const int foodsVertically = 37;
         // Create food array
         internal Box[,] food = new Box[foodsHorizontally, foodsVertically];
+        // Create list for all big food indexes
+        List<string> bigFoodIndexes = new List<string>();
 
         // Declare food offset variables
         const int horizontalFoodOffset = boxSize + boxSize / 2;
@@ -164,7 +166,7 @@ namespace Pacman_Projection
             Blinky = new Ghost(new PictureBox(), false, false, false);
             Blinky.box.Size = new Size(entitySize, entitySize);
             Blinky.box.Image = Resources.Blinky_up;
-            Blinky.box.Location = new Point(boxSize * 14, boxSize * 19);
+            Blinky.box.Location = new Point(boxSize * 19, boxSize * 21);
             Controls.Add(Blinky.box);
             Blinky.box.BringToFront();
             Blinky.box.Hide();
@@ -174,7 +176,7 @@ namespace Pacman_Projection
             Pinky = new Ghost(new PictureBox(), false, false, false);
             Pinky.box.Size = new Size(entitySize, entitySize);
             Pinky.box.Image = Resources.Pinky_down;
-            Pinky.box.Location = new Point(boxSize * 14, boxSize * 21);
+            Pinky.box.Location = new Point(boxSize * 19, boxSize * 21);
             Controls.Add(Pinky.box);
             Pinky.box.BringToFront();
             Pinky.box.Hide();
@@ -184,7 +186,7 @@ namespace Pacman_Projection
             Inky = new Ghost(new PictureBox(), false, false, false);
             Inky.box.Size = new Size(entitySize, entitySize);
             Inky.box.Image = Resources.Inky_up;
-            Inky.box.Location = new Point(boxSize * 12, boxSize * 21);
+            Inky.box.Location = new Point(boxSize * 19, boxSize * 21);
             Controls.Add(Inky.box);
             Inky.box.BringToFront();
             Inky.box.Hide();
@@ -194,7 +196,7 @@ namespace Pacman_Projection
             Clyde = new Ghost(new PictureBox(), false, false, false);
             Clyde.box.Size = new Size(entitySize, entitySize);
             Clyde.box.Image = Resources.Clyde_up;
-            Clyde.box.Location = new Point(boxSize * 16, boxSize * 21);
+            Clyde.box.Location = new Point(boxSize * 19, boxSize * 21);
             Controls.Add(Clyde.box);
             Clyde.box.BringToFront();
             Clyde.box.Hide();
@@ -625,6 +627,12 @@ namespace Pacman_Projection
             boxes[28, 32].isWall = true;
             boxes[28, 32].pictureBox.BackColor = Color.Blue;
 
+            // Paint the "gate" into the ghosts enclosure 
+            boxes[13, 16].pictureBox.BackColor = Color.LightPink;
+            boxes[14, 16].pictureBox.BackColor = Color.LightPink;
+            boxes[15, 16].pictureBox.BackColor = Color.LightPink;
+            boxes[16, 16].pictureBox.BackColor = Color.LightPink;
+
             //
             // Set all walls not to contain food's bool "toContainFood" to false
             //
@@ -763,6 +771,8 @@ namespace Pacman_Projection
                     {
                         food[indexX, indexY] = new Box(new PictureBox(), false, false, true, true);
                         food[indexX, indexY].pictureBox.Image = Resources.FoodBig;
+                        // Add big food index to the list for use "pacTickTimer" method
+                        bigFoodIndexes.Add(indexX.ToString() + "." + indexY.ToString());
                     }
                     else
                     {
@@ -790,7 +800,12 @@ namespace Pacman_Projection
                     }
                 }
             }
-            Blinky.SetDirection("Up");
+
+            // TEST
+            Blinky.SetDirection("Right");
+            Pinky.SetDirection("Right");
+            Inky.SetDirection("Right");
+            Clyde.SetDirection("Right");
         }
 
         private async void playButton_Click(object sender, EventArgs e)
@@ -833,30 +848,27 @@ namespace Pacman_Projection
             ghostImageTimer.Start();
         }
 
-        bool timeFinished;
         private void Game(bool win)
         {
             pacTickTimer.Stop();
             pacImageTimer.Stop();
             ghostTickTimer.Stop();
             ghostImageTimer.Stop();
+            Thread.Sleep(msToWaitAfterGame);
 
-            var startTime = Process.GetCurrentProcess().StartTime.Millisecond;
-            Task.Run(() =>
+            Blinky.box.Hide();
+            Pinky.box.Hide();
+            Inky.box.Hide();
+            Clyde.box.Hide();
+
+            if (win)
             {
-                while (true)
-                {
-                    if (Process.GetCurrentProcess().StartTime.Millisecond - startTime < msToWaitAfterGame)
-                    {
-                        Blinky.box.Hide();
-                        Pinky.box.Hide();
-                        Inky.box.Hide();
-                        Clyde.box.Hide();
-                        break;
-                    }
-                }
-                timeFinished = true;
-            });
+                
+            }
+            else
+            {
+
+            }
         }
 
         //
@@ -1236,7 +1248,7 @@ namespace Pacman_Projection
             }
         }
 
-        private (bool ghost, bool pacman) CheckForEntity(Ghost Ghost)
+        private (bool ghost, bool pacman) CheckForEntity(Ghost ghost)
         {
             // false, false == no entity
             // true, false == ghost
@@ -1246,18 +1258,18 @@ namespace Pacman_Projection
             // to move, checking if EntityA will collide with pacman or another ghost
             // Put testGhost at EntityA's location with it's relevant attributes
             PictureBox testGhost = new PictureBox();
-            testGhost.Size = Ghost.box.Size;
-            testGhost.Location = Ghost.box.Location;
+            testGhost.Size = ghost.box.Size;
+            testGhost.Location = ghost.box.Location;
             Controls.Add(testGhost);
 
             try
             {
-                if (Ghost.direction_up)
+                if (ghost.direction_up)
                 {
                     testGhost.Top -= step;
                     for (int index = 0; index < ghosts.Count; index++)
                     {
-                        if (testGhost.Bounds.IntersectsWith(ghosts[index].box.Bounds) && ghosts[index].Equals(Ghost) == false)
+                        if (testGhost.Bounds.IntersectsWith(ghosts[index].box.Bounds) && ghosts[index].Equals(ghost) == false)
                         {
                             // Dispose of testGhost every time the method is 
                             // about to return ist values as to not use more memory
@@ -1274,7 +1286,7 @@ namespace Pacman_Projection
                     testGhost.Dispose();
                     return (false, false);
                 }
-                else if (Ghost.direction_down)
+                else if (ghost.direction_down)
                 {
                     testGhost.Top += step;
                     for (int index = 0; index < ghosts.Count; index++)
@@ -1293,7 +1305,7 @@ namespace Pacman_Projection
                     testGhost.Dispose();
                     return (false, false);
                 }
-                else if (Ghost.direction_left)
+                else if (ghost.direction_left)
                 {
                     testGhost.Left -= step;
                     for (int index = 0; index < ghosts.Count; index++)
@@ -1312,7 +1324,7 @@ namespace Pacman_Projection
                     testGhost.Dispose();
                     return (false, true);
                 }
-                else if (Ghost.direction_right)
+                else if (ghost.direction_right)
                 {
                     testGhost.Left += step;
                     for (int index = 0; index < ghosts.Count; index++)
@@ -1446,6 +1458,8 @@ namespace Pacman_Projection
                 labelScore.Text = "Score: " + score;
             }
 
+            // If score is bigger than or equal to the maximum possible score the
+            // player can get from eating food, the food-array is guaranteed to be beginning to empty or is empty
             if (score >= maxScoreFromFood)
             {
                 for (int X = 0; X < foodsHorizontally; X++)
@@ -1461,6 +1475,14 @@ namespace Pacman_Projection
                 // If no food is left the player wins
                 Game(true);
             }
+        }
+
+        bool filled;
+        private void bigFoodBlinkTimer_Tick(object sender, EventArgs e)
+        {
+            filled = !filled;
+
+            //for (int index = 0; index < )
         }
 
 
@@ -1479,11 +1501,28 @@ namespace Pacman_Projection
                 int box2X = box1X;
                 int box2Y = box1Y - 1;
 
-                if (CheckForEntity(Blinky) == (true, false) || CheckForEntity(Blinky) == (false, false)) 
+                if (CheckForTeleporter(box1X, box1Y, box2X, box2Y) && Blinky.teleportedLastTick == false || Blinky.teleporting == true)
+                {
+                    Blinky.teleporting = true;
+                    Blinky.box.Left -= step;
+                    Blinky.blocksIntoTeleporter++;
+                    if (Blinky.blocksIntoTeleporter == 3)
+                    {
+                        Blinky.teleporting = false;
+                        Blinky.box.Left = boxesHorizontally * boxSize;
+                        Blinky.teleportedLastTick = true;
+                        Blinky.blocksIntoTeleporter = 0;
+                    }
+                }
+                else if (CheckForEntity(Blinky) == (true, false) || CheckForEntity(Blinky) == (false, false)) 
                 {
                     if (!CheckForWall(box1X, box1Y, box2X, box2Y))
                     {
                         Blinky.box.Left -= step;
+                    }
+                    else
+                    {
+                        NewDirection(Blinky);
                     }
                 }
                 else if (CheckForEntity(Blinky) == (false, true))
@@ -1503,12 +1542,30 @@ namespace Pacman_Projection
                 int box4X = box1X + 1;
                 int box4Y = box1Y;
 
-                if (CheckForEntity(Blinky) == (true, false) || CheckForEntity(Blinky) == (false, false))
+                if (CheckForTeleporter(box3X, box3Y, box4X, box4Y) && Blinky.teleportedLastTick == false || Blinky.teleporting == true)
+                {
+                    Blinky.teleporting = true;
+                    Blinky.box.Left += step;
+                    Blinky.blocksIntoTeleporter++;
+                    if (Blinky.blocksIntoTeleporter == 3)
+                    {
+                        Blinky.teleporting = false;
+                        Blinky.box.Left = -boxSize*2;
+                        Blinky.teleportedLastTick = true;
+                        Blinky.blocksIntoTeleporter = 0;
+                    }
+                }
+                else if (CheckForEntity(Blinky) == (true, false) || CheckForEntity(Blinky) == (false, false))
                 {
                     if (!CheckForWall(box3X, box3Y, box4X, box4Y))
                     {
                         Blinky.box.Left += step;
                     }
+                    else
+                    {
+                        NewDirection(Blinky);
+                    }
+
                 }
                 else if (CheckForEntity(Blinky) == (false, true))
                 {
@@ -1533,6 +1590,10 @@ namespace Pacman_Projection
                     {
                         Blinky.box.Top -= step;
                     }
+                    else
+                    {
+                        NewDirection(Blinky);
+                    }
                 }
                 else if (CheckForEntity(Blinky) == (false, true))
                 {
@@ -1554,6 +1615,10 @@ namespace Pacman_Projection
                     {
                         Blinky.box.Top += step;
                     }
+                    else
+                    {
+                        NewDirection(Blinky);
+                    }
                 }
                 else if (CheckForEntity(Blinky) == (false, true))
                 {
@@ -1572,11 +1637,28 @@ namespace Pacman_Projection
                 int box2X = box1X;
                 int box2Y = box1Y - 1;
 
-                if (CheckForEntity(Pinky) == (true, false) || CheckForEntity(Pinky) == (false, false))
+                if (CheckForTeleporter(box1X, box1Y, box2X, box2Y) && Pinky.teleportedLastTick == false || Pinky.teleporting == true)
+                {
+                    Pinky.teleporting = true;
+                    Pinky.box.Left -= step;
+                    Pinky.blocksIntoTeleporter++;
+                    if (Pinky.blocksIntoTeleporter == 3)
+                    {
+                        Pinky.teleporting = false;
+                        Pinky.box.Left = boxesHorizontally * boxSize;
+                        Pinky.teleportedLastTick = true;
+                        Pinky.blocksIntoTeleporter = 0;
+                    }
+                }
+                else if (CheckForEntity(Pinky) == (true, false) || CheckForEntity(Pinky) == (false, false))
                 {
                     if (!CheckForWall(box1X, box1Y, box2X, box2Y))
                     {
                         Pinky.box.Left -= step;
+                    }
+                    else
+                    {
+                        NewDirection(Pinky);
                     }
                 }
                 else if (CheckForEntity(Pinky) == (false, true))
@@ -1596,11 +1678,28 @@ namespace Pacman_Projection
                 int box4X = box1X + 1;
                 int box4Y = box1Y;
 
-                if (CheckForEntity(Pinky) == (true, false) || CheckForEntity(Pinky) == (false, false))
+                if (CheckForTeleporter(box3X, box3Y, box4X, box4Y) && Pinky.teleportedLastTick == false || Pinky.teleporting == true)
+                {
+                    Pinky.teleporting = true;
+                    Pinky.box.Left += step;
+                    Pinky.blocksIntoTeleporter++;
+                    if (Pinky.blocksIntoTeleporter == 3)
+                    {
+                        Pinky.teleporting = false;
+                        Pinky.box.Left = -boxSize * 2;
+                        Pinky.teleportedLastTick = true;
+                        Pinky.blocksIntoTeleporter = 0;
+                    }
+                }
+                else if (CheckForEntity(Pinky) == (true, false) || CheckForEntity(Pinky) == (false, false))
                 {
                     if (!CheckForWall(box3X, box3Y, box4X, box4Y))
                     {
                         Pinky.box.Left += step;
+                    }
+                    else
+                    {
+                        NewDirection(Pinky);
                     }
                 }
                 else if (CheckForEntity(Pinky) == (false, true))
@@ -1626,6 +1725,10 @@ namespace Pacman_Projection
                     {
                         Pinky.box.Top -= step;
                     }
+                    else
+                    {
+                        NewDirection(Pinky);
+                    }
                 }
                 else if (CheckForEntity(Pinky) == (false, true))
                 {
@@ -1647,6 +1750,10 @@ namespace Pacman_Projection
                     {
                         Pinky.box.Top += step;
                     }
+                    else
+                    {
+                        NewDirection(Pinky);
+                    }
                 }
                 else if (CheckForEntity(Pinky) == (false, true))
                 {
@@ -1665,11 +1772,28 @@ namespace Pacman_Projection
                 int box2X = box1X;
                 int box2Y = box1Y - 1;
 
-                if (CheckForEntity(Inky) == (true, false) || CheckForEntity(Inky) == (false, false))
+                if (CheckForTeleporter(box1X, box1Y, box2X, box2Y) && Inky.teleportedLastTick == false || Inky.teleporting == true)
+                {
+                    Inky.teleporting = true;
+                    Inky.box.Left -= step;
+                    Inky.blocksIntoTeleporter++;
+                    if (Inky.blocksIntoTeleporter == 3)
+                    {
+                        Inky.teleporting = false;
+                        Inky.box.Left = boxesHorizontally * boxSize;
+                        Inky.teleportedLastTick = true;
+                        Inky.blocksIntoTeleporter = 0;
+                    }
+                }
+                else if (CheckForEntity(Inky) == (true, false) || CheckForEntity(Inky) == (false, false))
                 {
                     if (!CheckForWall(box1X, box1Y, box2X, box2Y))
                     {
                         Inky.box.Left -= step;
+                    }
+                    else
+                    {
+                        NewDirection(Inky);
                     }
                 }
                 else if (CheckForEntity(Inky) == (false, true))
@@ -1689,11 +1813,28 @@ namespace Pacman_Projection
                 int box4X = box1X + 1;
                 int box4Y = box1Y;
 
-                if (CheckForEntity(Inky) == (true, false) || CheckForEntity(Inky) == (false, false))
+                if (CheckForTeleporter(box3X, box3Y, box4X, box4Y) && Inky.teleportedLastTick == false || Inky.teleporting == true)
+                {
+                    Inky.teleporting = true;
+                    Inky.box.Left += step;
+                    Inky.blocksIntoTeleporter++;
+                    if (Inky.blocksIntoTeleporter == 3)
+                    {
+                        Inky.teleporting = false;
+                        Inky.box.Left = -boxSize * 2;
+                        Inky.teleportedLastTick = true;
+                        Inky.blocksIntoTeleporter = 0;
+                    }
+                }
+                else if (CheckForEntity(Inky) == (true, false) || CheckForEntity(Inky) == (false, false))
                 {
                     if (!CheckForWall(box3X, box3Y, box4X, box4Y))
                     {
                         Inky.box.Left += step;
+                    }
+                    else
+                    {
+                        NewDirection(Inky);
                     }
                 }
                 else if (CheckForEntity(Inky) == (false, true))
@@ -1719,6 +1860,10 @@ namespace Pacman_Projection
                     {
                         Inky.box.Top -= step;
                     }
+                    else
+                    {
+                        NewDirection(Inky);
+                    }
                 }
                 else if (CheckForEntity(Inky) == (false, true))
                 {
@@ -1740,6 +1885,10 @@ namespace Pacman_Projection
                     {
                         Inky.box.Top += step;
                     }
+                    else
+                    {
+                        NewDirection(Inky);
+                    }
                 }
                 else if (CheckForEntity(Inky) == (false, true))
                 {
@@ -1758,11 +1907,28 @@ namespace Pacman_Projection
                 int box2X = box1X;
                 int box2Y = box1Y - 1;
 
-                if (CheckForEntity(Clyde) == (true, false) || CheckForEntity(Clyde) == (false, false))
+                if (CheckForTeleporter(box1X, box1Y, box2X, box2Y) && Clyde.teleportedLastTick == false || Clyde.teleporting == true)
+                {
+                    Clyde.teleporting = true;
+                    Clyde.box.Left -= step;
+                    Clyde.blocksIntoTeleporter++;
+                    if (Clyde.blocksIntoTeleporter == 3)
+                    {
+                        Clyde.teleporting = false;
+                        Clyde.box.Left = boxesHorizontally * boxSize;
+                        Clyde.teleportedLastTick = true;
+                        Clyde.blocksIntoTeleporter = 0;
+                    }
+                }
+                else if (CheckForEntity(Clyde) == (true, false) || CheckForEntity(Clyde) == (false, false))
                 {
                     if (!CheckForWall(box1X, box1Y, box2X, box2Y))
                     {
                         Clyde.box.Left -= step;
+                    }
+                    else
+                    {
+                        NewDirection(Clyde);
                     }
                 }
                 else if (CheckForEntity(Clyde) == (false, true))
@@ -1782,11 +1948,28 @@ namespace Pacman_Projection
                 int box4X = box1X + 1;
                 int box4Y = box1Y;
 
-                if (CheckForEntity(Clyde) == (true, false) || CheckForEntity(Clyde) == (false, false))
+                if (CheckForTeleporter(box3X, box3Y, box4X, box4Y) && Clyde.teleportedLastTick == false || Clyde.teleporting == true)
+                {
+                    Clyde.teleporting = true;
+                    Clyde.box.Left += step;
+                    Clyde.blocksIntoTeleporter++;
+                    if (Clyde.blocksIntoTeleporter == 3)
+                    {
+                        Clyde.teleporting = false;
+                        Clyde.box.Left = -boxSize * 2;
+                        Clyde.teleportedLastTick = true;
+                        Clyde.blocksIntoTeleporter = 0;
+                    }
+                }
+                else if (CheckForEntity(Clyde) == (true, false) || CheckForEntity(Clyde) == (false, false))
                 {
                     if (!CheckForWall(box3X, box3Y, box4X, box4Y))
                     {
                         Clyde.box.Left += step;
+                    }
+                    else
+                    {
+                        NewDirection(Clyde);
                     }
                 }
                 else if (CheckForEntity(Clyde) == (false, true))
@@ -1812,6 +1995,10 @@ namespace Pacman_Projection
                     {
                         Clyde.box.Top -= step;
                     }
+                    else
+                    {
+                        NewDirection(Clyde);
+                    }
                 }
                 else if (CheckForEntity(Clyde) == (false, true))
                 {
@@ -1833,12 +2020,38 @@ namespace Pacman_Projection
                     {
                         Clyde.box.Top += step;
                     }
+                    else
+                    {
+                        NewDirection(Clyde);
+                    }
                 }
                 else if (CheckForEntity(Clyde) == (false, true))
                 {
                     Clyde.box.Top += step;
                     Game(false);
                 }
+            }
+        }
+
+        private void NewDirection(Ghost ghost)
+        {
+            Random rng = new Random();
+            int direction = rng.Next(0, 4);
+            if (direction == 0)
+            {
+                ghost.SetDirection("Left");
+            }
+            else if (direction == 1)
+            {
+                ghost.SetDirection("Right");
+            }
+            else if (direction == 2)
+            {
+                ghost.SetDirection("Up");
+            }
+            else
+            {
+                ghost.SetDirection("Down");
             }
         }
 

@@ -16,7 +16,7 @@ namespace Pacman_Projection
         internal bool frightened;
 
         internal bool teleportedLastTick;
-        internal bool teleporing;
+        internal bool teleporting;
         internal int blocksIntoTeleporter;
 
         internal bool direction_left;

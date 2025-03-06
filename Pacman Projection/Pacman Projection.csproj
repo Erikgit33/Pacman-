@@ -159,9 +159,6 @@
     <None Include="Resources\Food.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\FoodBig.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\pacman_eatfruit.wav" />
   </ItemGroup>
   <ItemGroup>
@@ -334,6 +331,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Blinky stationary ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\FoodBig.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

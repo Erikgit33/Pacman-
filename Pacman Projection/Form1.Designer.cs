@@ -33,6 +33,7 @@
             this.pacImageTimer = new System.Windows.Forms.Timer(this.components);
             this.ghostTickTimer = new System.Windows.Forms.Timer(this.components);
             this.ghostImageTimer = new System.Windows.Forms.Timer(this.components);
+            this.bigFoodBlinkTimer = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // pacTickTimer
@@ -52,6 +53,11 @@
             // ghostImageTimer
             // 
             this.ghostImageTimer.Tick += new System.EventHandler(this.ghostImageTimer_Tick);
+            // 
+            // bigFoodBlinkTimer
+            // 
+            this.bigFoodBlinkTimer.Interval = 200;
+            this.bigFoodBlinkTimer.Tick += new System.EventHandler(this.bigFoodBlinkTimer_Tick);
             // 
             // Form1
             // 
@@ -73,6 +79,7 @@
         private System.Windows.Forms.Timer pacImageTimer;
         private System.Windows.Forms.Timer ghostTickTimer;
         private System.Windows.Forms.Timer ghostImageTimer;
+        private System.Windows.Forms.Timer bigFoodBlinkTimer;
     }
 }
 
