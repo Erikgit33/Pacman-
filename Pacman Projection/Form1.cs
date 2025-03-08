@@ -855,12 +855,16 @@ namespace Pacman_Projection
 
         private void Game(bool win)
         {
+            Blinky.box.Image = Resources.Blinky_stationary;
+            Pinky.box.Image = Resources.Pinky_stationary;
+            Inky.box.Image = Resources.Inky_stationary;
+            Clyde.box.Image = Resources.Clyde_stationary;
+
             pacTickTimer.Stop();
             pacImageTimer.Stop();
             ghostTickTimer.Stop();
             ghostImageTimer.Stop();
             bigFoodBlinkTimer.Stop();
-            Thread.Sleep(msToWaitAfterGame);
 
             Blinky.box.Hide();
             Pinky.box.Hide();
@@ -875,6 +879,13 @@ namespace Pacman_Projection
             {
 
             }
+            method();
+        }
+
+        private void method()
+        {
+            Thread.Sleep(msToWaitAfterGame);
+            MessageBox.Show("BOO");
         }
 
         //
@@ -1479,7 +1490,12 @@ namespace Pacman_Projection
                 for (int index = 0; index < 4; index++)
                 {
                     string[] indexes = bigFoodIndexes[index].Split('_');
-                    food[Convert.ToInt32(indexes[0]), Convert.ToInt32(indexes[1])].pictureBox.Show();
+                    int indexX = Convert.ToInt32(indexes[0]);
+                    int indexY = Convert.ToInt32(indexes[1]);
+                    if (food[indexX, indexY] != null)
+                    {
+                        food[Convert.ToInt32(indexes[0]), Convert.ToInt32(indexes[1])].pictureBox.Show();
+                    }
                 }
             }
             else
@@ -1487,7 +1503,12 @@ namespace Pacman_Projection
                 for (int index = 0; index < 4; index++)
                 {
                     string[] indexes = bigFoodIndexes[index].Split('_');
-                    food[Convert.ToInt32(indexes[0]), Convert.ToInt32(indexes[1])].pictureBox.Hide();
+                    int indexX = Convert.ToInt32(indexes[0]);
+                    int indexY = Convert.ToInt32(indexes[1]);
+                    if (food[indexX, indexY] != null)
+                    {
+                        food[Convert.ToInt32(indexes[0]), Convert.ToInt32(indexes[1])].pictureBox.Show();
+                    }
                 }
             }
         }
