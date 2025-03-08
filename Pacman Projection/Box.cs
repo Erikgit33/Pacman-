@@ -11,6 +11,7 @@ namespace Pacman_Projection
     {
         internal PictureBox pictureBox;
         internal bool isWall;
+        internal bool isGate;
         internal bool isTeleporter;
         internal bool toContainFood;
         internal bool isBigFood;

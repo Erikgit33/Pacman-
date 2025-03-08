@@ -56,7 +56,6 @@
             // 
             // bigFoodBlinkTimer
             // 
-            this.bigFoodBlinkTimer.Interval = 200;
             this.bigFoodBlinkTimer.Tick += new System.EventHandler(this.bigFoodBlinkTimer_Tick);
             // 
             // Form1
