@@ -38,8 +38,6 @@ namespace Pacman_Projection
         // JORDGUBBE
         // DRAKFRUKT
 
-        Random rng = new Random();
-
         const int step = 14; // Pixels per step and size of blocks (one block per step)
         // Declare boxesHorizontally and boxesVertically
         const int boxesHorizontally = 30; 
@@ -78,10 +76,10 @@ namespace Pacman_Projection
         const int horizontalFoodOffset = boxSize + boxSize / 2;
         const int verticalFoodOffset = boxSize * 3 + boxSize / 2;
 
-        // Declare scores to get when eating different types of food
+        // Declare scores to get when eating different types of food and amount of foods placed
         const int foodScore = 10;
         const int foodScoreBig = 50;
-        const int maxScoreFromFood = 10890;
+        int foodsOnMap = 0;
 
         const int msToWaitAfterGame = 1700;
 
@@ -166,7 +164,7 @@ namespace Pacman_Projection
             Blinky = new Ghost(new PictureBox(), false, false, false);
             Blinky.box.Size = new Size(entitySize, entitySize);
             Blinky.box.Image = Resources.Blinky_up;
-            Blinky.box.Location = new Point(boxSize * 14, boxSize * 19);
+            Blinky.box.Location = new Point(boxSize * 7, boxSize * 14);
             Controls.Add(Blinky.box);
             Blinky.box.BringToFront();
             Blinky.box.Hide();
@@ -176,7 +174,7 @@ namespace Pacman_Projection
             Pinky = new Ghost(new PictureBox(), false, false, false);
             Pinky.box.Size = new Size(entitySize, entitySize);
             Pinky.box.Image = Resources.Pinky_down;
-            Pinky.box.Location = new Point(boxSize * 19, boxSize * 21);
+            Pinky.box.Location = new Point(boxSize * 23, boxSize * 21);
             Controls.Add(Pinky.box);
             Pinky.box.BringToFront();
             Pinky.box.Hide();
@@ -186,7 +184,7 @@ namespace Pacman_Projection
             Inky = new Ghost(new PictureBox(), false, false, false);
             Inky.box.Size = new Size(entitySize, entitySize);
             Inky.box.Image = Resources.Inky_up;
-            Inky.box.Location = new Point(boxSize * 19, boxSize * 21);
+            Inky.box.Location = new Point(boxSize * 21, boxSize * 21);
             Controls.Add(Inky.box);
             Inky.box.BringToFront();
             Inky.box.Hide();
@@ -774,6 +772,7 @@ namespace Pacman_Projection
                      || indexX == 26 && indexY == 34)
                     {
                         food[indexX, indexY] = new Box(new PictureBox(), false, false, true, true);
+                        foodsOnMap++;
                         food[indexX, indexY].pictureBox.Image = Resources.FoodBig;
                         // Add big food index to the list for use "pacTickTimer" method
                         bigFoodIndexes.Add(indexX.ToString() + "_" + indexY.ToString());
@@ -781,6 +780,7 @@ namespace Pacman_Projection
                     else
                     {
                         food[indexX, indexY] = new Box(new PictureBox(), false, false, true, false);
+                        foodsOnMap++;
                         food[indexX, indexY].pictureBox.Image = Resources.Food;
                     }
 
@@ -806,7 +806,7 @@ namespace Pacman_Projection
             }
 
             // TEST
-            Blinky.SetDirection("Up");
+            Blinky.SetDirection("Left");
             Pinky.SetDirection("Right");
             Inky.SetDirection("Right");
             Clyde.SetDirection("Right");
@@ -1425,11 +1425,15 @@ namespace Pacman_Projection
             // Don't play chomp if intermission is playing
             if (!bigFood)
             {
-                if (!chompIsPlaying)
+                if (!chompIsPlaying && !ghostScaredIsPlaying)
                 {
                     // set chompIsPlaying to true
                     // This is so chomp cannot be queued and played multiple times
                     chompIsPlaying = true;
+                    Blinky.SetChase();
+                    Pinky.SetChase();
+                    Inky.SetChase();
+                    Clyde.SetChase();
                     Task.Run(() =>
                     {
                         // After chomp has finished playing, chompIsPlaying is set to false 
@@ -1448,6 +1452,10 @@ namespace Pacman_Projection
             else if (bigFood)
             {
                 ghostScaredIsPlaying = true;
+                Blinky.SetFrightened();
+                Pinky.SetFrightened();
+                Inky.SetFrightened();
+                Clyde.SetFrightened();
                 Task.Run(() =>
                 {
                     ghost_scared.PlaySync();
@@ -1461,21 +1469,9 @@ namespace Pacman_Projection
                 labelScore.Text = "Score: " + score;
             }
 
-            // If score is bigger than or equal to the maximum possible score the
-            // player can get from eating food, the food-array is guaranteed to be beginning to empty or is empty
-            if (score >= maxScoreFromFood)
+            foodsOnMap--;
+            if (foodsOnMap == 0)
             {
-                for (int X = 0; X < foodsHorizontally; X++)
-                {
-                    for (int Y = 0; Y < foodsVertically; Y++)
-                    {
-                        if (food[X, Y] != null)
-                        {
-                            break;
-                        }
-                    }
-                }
-                // If no food is left the player wins
                 Game(true);
             }
         }
@@ -1554,11 +1550,14 @@ namespace Pacman_Projection
                         NewDirection(Blinky);
                     }
                 }
-                else if (CheckForPacman(Blinky))
+                else if (!Blinky.frightened)
                 {
-                    Blinky.box.Left -= step;
-                    game = true;
-                }
+                    if (CheckForPacman(Blinky))
+                    {
+                        Blinky.box.Left -= step;
+                        game = true;
+                    }
+                } 
             }
             else if (Blinky.direction_right)
             {
@@ -1596,10 +1595,13 @@ namespace Pacman_Projection
                     }
 
                 }
-                else if (CheckForPacman(Blinky))
+                else if (!Blinky.frightened)
                 {
-                    Blinky.box.Left += step;
-                    game = true;
+                    if (CheckForPacman(Blinky))
+                    {
+                        Blinky.box.Left -= step;
+                        game = true;
+                    }
                 }
             }
             else if (Blinky.direction_up) 
@@ -1624,10 +1626,13 @@ namespace Pacman_Projection
                         NewDirection(Blinky);
                     }
                 }
-                else 
+                else if (!Blinky.frightened)
                 {
-                    Blinky.box.Top -= step;
-                    game = true;
+                    if (CheckForPacman(Blinky))
+                    {
+                        Blinky.box.Left -= step;
+                        game = true;
+                    }
                 }
             }
             else if (Blinky.direction_down)
@@ -1649,10 +1654,13 @@ namespace Pacman_Projection
                         NewDirection(Blinky);
                     }
                 }
-                else 
+                else if (!Blinky.frightened)
                 {
-                    Blinky.box.Top += step;
-                    game = true; 
+                    if (CheckForPacman(Blinky))
+                    {
+                        Blinky.box.Left -= step;
+                        game = true;
+                    }
                 }
             }
 
@@ -1690,10 +1698,13 @@ namespace Pacman_Projection
                         NewDirection(Pinky);
                     }
                 }
-                else if (CheckForPacman(Pinky))
+                else if (!Pinky.frightened)
                 {
-                    Pinky.box.Left -= step;
-                    game = true;
+                    if (CheckForPacman(Pinky))
+                    {
+                        Pinky.box.Left -= step;
+                        game = true;
+                    }
                 }
             }
             else if (Pinky.direction_right)
@@ -1731,10 +1742,13 @@ namespace Pacman_Projection
                         NewDirection(Pinky);
                     }
                 }
-                else if (CheckForPacman(Pinky))
+                else if (!Pinky.frightened)
                 {
-                    Pinky.box.Left += step;
-                    game = true;
+                    if (CheckForPacman(Pinky))
+                    {
+                        Pinky.box.Left -= step;
+                        game = true;
+                    }
                 }
             }
             else if (Pinky.direction_up)
@@ -1759,10 +1773,13 @@ namespace Pacman_Projection
                         NewDirection(Pinky);
                     }
                 }
-                else
+                else if (!Pinky.frightened)
                 {
-                    Pinky.box.Top -= step;
-                    game = true;
+                    if (CheckForPacman(Pinky))
+                    {
+                        Pinky.box.Left -= step;
+                        game = true;
+                    }
                 }
             }
             else if (Pinky.direction_down)
@@ -1784,10 +1801,13 @@ namespace Pacman_Projection
                         NewDirection(Pinky);
                     }
                 }
-                else 
+                else if (!Pinky.frightened)
                 {
-                    Pinky.box.Top += step;
-                    game = true;
+                    if (CheckForPacman(Pinky))
+                    {
+                        Pinky.box.Left -= step;
+                        game = true;
+                    }
                 }
             }
 
@@ -1825,10 +1845,13 @@ namespace Pacman_Projection
                         NewDirection(Inky);
                     }
                 }
-                else if (CheckForPacman(Inky))
+                else if (!Inky.frightened)
                 {
-                    Inky.box.Left -= step;
-                    game = true;
+                    if (CheckForPacman(Inky))
+                    {
+                        Inky.box.Left -= step;
+                        game = true;
+                    }
                 }
             }
             else if (Inky.direction_right)
@@ -1866,10 +1889,13 @@ namespace Pacman_Projection
                         NewDirection(Inky);
                     }
                 }
-                else if (CheckForPacman(Inky))
+                else if (!Inky.frightened)
                 {
-                    Inky.box.Left += step;
-                    game = true;
+                    if (CheckForPacman(Inky))
+                    {
+                        Inky.box.Left -= step;
+                        game = true;
+                    }
                 }
             }
             else if (Inky.direction_up)
@@ -1894,10 +1920,13 @@ namespace Pacman_Projection
                         NewDirection(Inky);
                     }
                 }
-                else 
+                else if (!Inky.frightened)
                 {
-                    Inky.box.Top -= step;
-                    game = true;
+                    if (CheckForPacman(Inky))
+                    {
+                        Inky.box.Left -= step;
+                        game = true;
+                    }
                 }
             }
             else if (Inky.direction_down)
@@ -1919,10 +1948,13 @@ namespace Pacman_Projection
                         NewDirection(Inky);
                     }
                 }
-                else
+                else if (!Inky.frightened)
                 {
-                    Inky.box.Top += step;
-                    game = true;
+                    if (CheckForPacman(Inky))
+                    {
+                        Inky.box.Left -= step;
+                        game = true;
+                    }
                 }
             }
 
@@ -1960,10 +1992,13 @@ namespace Pacman_Projection
                         NewDirection(Clyde);
                     }
                 }
-                else if (CheckForPacman(Clyde))
+                else if (!Clyde.frightened)
                 {
-                    Clyde.box.Left -= step;
-                    game = true;
+                    if (CheckForPacman(Clyde))
+                    {
+                        Clyde.box.Left -= step;
+                        game = true;
+                    }
                 }
             }
             else if (Clyde.direction_right)
@@ -2001,10 +2036,13 @@ namespace Pacman_Projection
                         NewDirection(Clyde);
                     }
                 }
-                else if (CheckForPacman(Clyde))
+                else if (!Clyde.frightened)
                 {
-                    Clyde.box.Left += step;
-                    game = true;
+                    if (CheckForPacman(Clyde))
+                    {
+                        Clyde.box.Left -= step;
+                        game = true;
+                    }
                 }
             }
             else if (Clyde.direction_up)
@@ -2029,10 +2067,13 @@ namespace Pacman_Projection
                         NewDirection(Clyde);
                     }
                 }
-                else 
+                else if (!Clyde.frightened)
                 {
-                    Clyde.box.Top -= step;
-                    game = true;
+                    if (CheckForPacman(Clyde))
+                    {
+                        Clyde.box.Left -= step;
+                        game = true;
+                    }
                 }
             }
             else if (Clyde.direction_down)
@@ -2054,10 +2095,13 @@ namespace Pacman_Projection
                         NewDirection(Clyde);
                     }
                 }
-                else
+                else if (!Clyde.frightened)
                 {
-                    Clyde.box.Top += step;
-                    game = true;
+                    if (CheckForPacman(Clyde))
+                    {
+                        Clyde.box.Left -= step;
+                        game = true;
+                    }
                 }
             }
 
@@ -2084,7 +2128,7 @@ namespace Pacman_Projection
             {
                 ghost.SetDirection("Up");
             }
-            else
+            else if (direction == 3)
             {
                 ghost.SetDirection("Down");
             }
@@ -2095,152 +2139,208 @@ namespace Pacman_Projection
         {
             ghostPic_ver2 = !ghostPic_ver2;
 
-            if (ghostPic_ver2)
+            if (!ghostPic_ver2)
             {
                 // Blinky
-                if (Blinky.direction_up)
+                if (Blinky.frightened)
                 {
-                    Blinky.box.Image = Resources.Blinky_up;
+                    Blinky.box.Image = Resources.Ghost_Scared_Blue;
                 }
-                else if (Blinky.direction_down)
+                else
                 {
-                    Blinky.box.Image = Resources.Blinky_down;
-                }
-                else if (Blinky.direction_left)
-                {
-                    Blinky.box.Image = Resources.Blinky_left;
-                }
-                else if (Blinky.direction_right)
-                {
-                    Blinky.box.Image = Resources.Blinky_right;
-                }
+                    if (Blinky.direction_up)
+                    {
+                        Blinky.box.Image = Resources.Blinky_up;
+                    }
+                    else if (Blinky.direction_down)
+                    {
+                        Blinky.box.Image = Resources.Blinky_down;
+                    }
+                    else if (Blinky.direction_left)
+                    {
+                        Blinky.box.Image = Resources.Blinky_left;
+                    }
+                    else if (Blinky.direction_right)
+                    {
+                        Blinky.box.Image = Resources.Blinky_right;
+                    }
+                } 
 
                 // Pinky
-                if (Pinky.direction_up)
+                if (Pinky.frightened)
                 {
-                    Pinky.box.Image = Resources.Pinky_up;
+                    Pinky.box.Image = Resources.Ghost_Scared_Blue;
                 }
-                else if (Pinky.direction_down)
+                else
                 {
-                    Pinky.box.Image = Resources.Pinky_down;
-                }
-                else if (Pinky.direction_left)
-                {
-                    Pinky.box.Image = Resources.Pinky_left;
-                }
-                else if (Pinky.direction_right)
-                {
-                    Pinky.box.Image = Resources.Pinky_right;
+                    if (Pinky.direction_up)
+                    {
+                        Pinky.box.Image = Resources.Pinky_up;
+                    }
+                    else if (Pinky.direction_down)
+                    {
+                        Pinky.box.Image = Resources.Pinky_down;
+                    }
+                    else if (Pinky.direction_left)
+                    {
+                        Pinky.box.Image = Resources.Pinky_left;
+                    }
+                    else if (Pinky.direction_right)
+                    {
+                        Pinky.box.Image = Resources.Pinky_right;
+                    }
                 }
 
                 // Inky 
-                if (Inky.direction_up)
+                if (Inky.frightened)
                 {
-                    Inky.box.Image = Resources.Inky_up;
+                    Inky.box.Image = Resources.Ghost_Scared_Blue;
                 }
-                else if (Inky.direction_down)
+                else
                 {
-                    Inky.box.Image = Resources.Inky_down;
-                }
-                else if (Inky.direction_left)
-                {
-                    Inky.box.Image = Resources.Inky_left;
-                }
-                else if (Inky.direction_right)
-                {
-                    Inky.box.Image = Resources.Inky_right;
+                    if (Inky.direction_up)
+                    {
+                        Inky.box.Image = Resources.Inky_up;
+                    }
+                    else if (Inky.direction_down)
+                    {
+                        Inky.box.Image = Resources.Inky_down;
+                    }
+                    else if (Inky.direction_left)
+                    {
+                        Inky.box.Image = Resources.Inky_left;
+                    }
+                    else if (Inky.direction_right)
+                    {
+                        Inky.box.Image = Resources.Inky_right;
+                    }
                 }
 
                 // Clyde
-                if (Clyde.direction_up)
+                if (Clyde.frightened)
                 {
-                    Clyde.box.Image = Resources.Clyde_up;
+                    Clyde.box.Image = Resources.Ghost_Scared_Blue;
                 }
-                else if (Clyde.direction_down)
+                else
                 {
-                    Clyde.box.Image = Resources.Clyde_down;
-                }
-                else if (Clyde.direction_left)
-                {
-                    Clyde.box.Image = Resources.Clyde_left;
-                }
-                else if (Clyde.direction_right)
-                {
-                    Clyde.box.Image = Resources.Clyde_right;
+                    if (Clyde.direction_up)
+                    {
+                        Clyde.box.Image = Resources.Clyde_up;
+                    }
+                    else if (Clyde.direction_down)
+                    {
+                        Clyde.box.Image = Resources.Clyde_down;
+                    }
+                    else if (Clyde.direction_left)
+                    {
+                        Clyde.box.Image = Resources.Clyde_left;
+                    }
+                    else if (Clyde.direction_right)
+                    {
+                        Clyde.box.Image = Resources.Clyde_right;
+                    }
                 }
             }
             else
             {
                 // Blinky
-                if (Blinky.direction_up)
+                if (Blinky.frightened)
                 {
-                    Blinky.box.Image = Resources.Blinky_up_ver__2;
+                    Blinky.box.Image = Resources.Ghost_Scared_Blue_ver__2;
                 }
-                else if (Blinky.direction_down)
+                else
                 {
-                    Blinky.box.Image = Resources.Blinky_down_ver__2;
-                }
-                else if (Blinky.direction_left)
-                {
-                    Blinky.box.Image = Resources.Blinky_left_ver__2;
-                }
-                else if (Blinky.direction_right)
-                {
-                    Blinky.box.Image = Resources.Blinky_right_ver__2;
+                    if (Blinky.direction_up)
+                    {
+                        Blinky.box.Image = Resources.Blinky_up_ver__2;
+                    }
+                    else if (Blinky.direction_down)
+                    {
+                        Blinky.box.Image = Resources.Blinky_down_ver__2;
+                    }
+                    else if (Blinky.direction_left)
+                    {
+                        Blinky.box.Image = Resources.Blinky_left_ver__2;
+                    }
+                    else if (Blinky.direction_right)
+                    {
+                        Blinky.box.Image = Resources.Blinky_right_ver__2;
+                    }
                 }
 
                 // Pinky
-                if (Pinky.direction_up)
+                if (Pinky.frightened)
                 {
-                    Pinky.box.Image = Resources.Pinky_up_ver__2;
+                    Pinky.box.Image = Resources.Ghost_Scared_Blue_ver__2;
                 }
-                else if (Pinky.direction_down)
+                else
                 {
-                    Pinky.box.Image = Resources.Pinky_down_ver__2;
-                }
-                else if (Pinky.direction_left)
-                {
-                    Pinky.box.Image = Resources.Pinky_left_ver__2;
-                }
-                else if (Pinky.direction_right)
-                {
-                    Pinky.box.Image = Resources.Pinky_right_ver__2;
+                    if (Pinky.direction_up)
+                    {
+                        Pinky.box.Image = Resources.Pinky_up_ver__2;
+                    }
+                    else if (Pinky.direction_down)
+                    {
+                        Pinky.box.Image = Resources.Pinky_down_ver__2;
+                    }
+                    else if (Pinky.direction_left)
+                    {
+                        Pinky.box.Image = Resources.Pinky_left_ver__2;
+                    }
+                    else if (Pinky.direction_right)
+                    {
+                        Pinky.box.Image = Resources.Pinky_right_ver__2;
+                    }
                 }
 
                 // Inky 
-                if (Inky.direction_up)
+                if (Inky.frightened)
                 {
-                    Inky.box.Image = Resources.Inky_up_ver__2;
+                    Inky.box.Image = Resources.Ghost_Scared_Blue_ver__2;
                 }
-                else if (Inky.direction_down)
+                else
                 {
-                    Inky.box.Image = Resources.Inky_down_ver__2;
-                }
-                else if (Inky.direction_left)
-                {
-                    Inky.box.Image = Resources.Inky_left_ver__2;
-                }
-                else if (Inky.direction_right)
-                {
-                    Inky.box.Image = Resources.Inky_right_ver__2;
+                    if (Inky.direction_up)
+                    {
+                        Inky.box.Image = Resources.Inky_up_ver__2;
+                    }
+                    else if (Inky.direction_down)
+                    {
+                        Inky.box.Image = Resources.Inky_down_ver__2;
+                    }
+                    else if (Inky.direction_left)
+                    {
+                        Inky.box.Image = Resources.Inky_left_ver__2;
+                    }
+                    else if (Inky.direction_right)
+                    {
+                        Inky.box.Image = Resources.Inky_right_ver__2;
+                    }
                 }
 
                 // Clyde
-                if (Clyde.direction_up)
+                if (Clyde.frightened)
                 {
-                    Clyde.box.Image = Resources.Clyde_up_ver__2;
+                    Clyde.box.Image = Resources.Ghost_Scared_Blue_ver__2;
                 }
-                else if (Clyde.direction_down)
+                else
                 {
-                    Clyde.box.Image = Resources.Clyde_down_ver__2;
-                }
-                else if (Clyde.direction_left)
-                {
-                    Clyde.box.Image = Resources.Clyde_left_ver__2;
-                }
-                else if (Clyde.direction_right)
-                {
-                    Clyde.box.Image = Resources.Clyde_right_ver__2;
+                    if (Clyde.direction_up)
+                    {
+                        Clyde.box.Image = Resources.Clyde_up_ver__2;
+                    }
+                    else if (Clyde.direction_down)
+                    {
+                        Clyde.box.Image = Resources.Clyde_down_ver__2;
+                    }
+                    else if (Clyde.direction_left)
+                    {
+                        Clyde.box.Image = Resources.Clyde_left_ver__2;
+                    }
+                    else if (Clyde.direction_right)
+                    {
+                        Clyde.box.Image = Resources.Clyde_right_ver__2;
+                    }
                 }
             }
         }
