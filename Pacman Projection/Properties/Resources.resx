@@ -118,6 +118,12 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="Apple" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Apple.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Banana" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Banana.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Blinky_down" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Blinky down.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -151,6 +157,9 @@
   <data name="buttonReady_sound" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\buttonReady_sound.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="Cherry" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Cherry.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Clyde_down" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Clyde down.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -180,6 +189,9 @@
   </data>
   <data name="Clyde_up_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Clyde up ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Dragonfruit" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Dragonfruit.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Food" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Food.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -289,6 +301,9 @@
   <data name="Pacman_left_closed" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Pacman left closed.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Pacman_Life" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Pacman Life.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Pacman_right" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Pacman right.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -333,5 +348,8 @@
   </data>
   <data name="Pinky_up_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Pinky up ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Strawberry" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Strawberry.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

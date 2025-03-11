@@ -335,5 +335,23 @@
   <ItemGroup>
     <None Include="Resources\FoodBig.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Apple.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Banana.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Cherry.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Dragonfruit.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Strawberry.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Pacman Life.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

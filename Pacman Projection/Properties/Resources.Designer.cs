@@ -63,6 +63,26 @@ namespace Pacman_Projection.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Apple {
+            get {
+                object obj = ResourceManager.GetObject("Apple", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Banana {
+            get {
+                object obj = ResourceManager.GetObject("Banana", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Blinky_down {
             get {
                 object obj = ResourceManager.GetObject("Blinky_down", resourceCulture);
@@ -172,6 +192,16 @@ namespace Pacman_Projection.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Cherry {
+            get {
+                object obj = ResourceManager.GetObject("Cherry", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Clyde_down {
             get {
                 object obj = ResourceManager.GetObject("Clyde_down", resourceCulture);
@@ -265,6 +295,16 @@ namespace Pacman_Projection.Properties {
         internal static System.Drawing.Bitmap Clyde_up_ver__2 {
             get {
                 object obj = ResourceManager.GetObject("Clyde_up_ver__2", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Dragonfruit {
+            get {
+                object obj = ResourceManager.GetObject("Dragonfruit", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -620,6 +660,16 @@ namespace Pacman_Projection.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Pacman_Life {
+            get {
+                object obj = ResourceManager.GetObject("Pacman_Life", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Pacman_right {
             get {
                 object obj = ResourceManager.GetObject("Pacman_right", resourceCulture);
@@ -763,6 +813,16 @@ namespace Pacman_Projection.Properties {
         internal static System.Drawing.Bitmap Pinky_up_ver__2 {
             get {
                 object obj = ResourceManager.GetObject("Pinky_up_ver__2", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Strawberry {
+            get {
+                object obj = ResourceManager.GetObject("Strawberry", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
