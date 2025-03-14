@@ -162,9 +162,6 @@
     <None Include="Resources\pacman_eatfruit.wav" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\pacman_chomp.wav" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Blinky down ver. 2.png" />
   </ItemGroup>
   <ItemGroup>
@@ -352,6 +349,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Pacman Life.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pacman_chomp.wav" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
