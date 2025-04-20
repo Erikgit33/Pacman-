@@ -564,6 +564,16 @@ namespace Pacman_Projection.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Menu_background {
+            get {
+                object obj = ResourceManager.GetObject("Menu_background", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
         /// </summary>
         internal static System.IO.UnmanagedMemoryStream pacman_beginning {
@@ -587,6 +597,96 @@ namespace Pacman_Projection.Properties {
         internal static System.IO.UnmanagedMemoryStream pacman_death {
             get {
                 return ResourceManager.GetStream("pacman_death", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap pacman_death_0_8_ {
+            get {
+                object obj = ResourceManager.GetObject("pacman_death_0_8_", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap pacman_death_1_8_ {
+            get {
+                object obj = ResourceManager.GetObject("pacman_death_1_8_", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap pacman_death_2_8_ {
+            get {
+                object obj = ResourceManager.GetObject("pacman_death_2_8_", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap pacman_death_3_8_ {
+            get {
+                object obj = ResourceManager.GetObject("pacman_death_3_8_", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap pacman_death_4_8_ {
+            get {
+                object obj = ResourceManager.GetObject("pacman_death_4_8_", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap pacman_death_5_8_ {
+            get {
+                object obj = ResourceManager.GetObject("pacman_death_5_8_", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap pacman_death_6_8_ {
+            get {
+                object obj = ResourceManager.GetObject("pacman_death_6_8_", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap pacman_death_7_8_ {
+            get {
+                object obj = ResourceManager.GetObject("pacman_death_7_8_", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap pacman_death_8_8_ {
+            get {
+                object obj = ResourceManager.GetObject("pacman_death_8_8_", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         

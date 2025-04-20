@@ -14,6 +14,8 @@ namespace Pacman_Projection
         internal bool scatter;
         internal bool chase;
         internal bool frightened;
+        internal bool white;
+        internal bool dead;
 
         internal bool teleportedLastTick;
         internal bool teleporting;
@@ -76,6 +78,10 @@ namespace Pacman_Projection
             scatter = true;
             chase = false;
             frightened = false;
+            if (white)
+            {
+                white = false;
+            }
         }
 
         internal void SetChase()
@@ -83,6 +89,10 @@ namespace Pacman_Projection
             scatter = false;
             chase = true;
             frightened = false;
+            if (white)
+            {
+                white = false;
+            }
         }
 
         internal void SetFrightened()

@@ -271,6 +271,9 @@
   <data name="Inky_up_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Inky up ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Menu_background" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Menu background.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="pacman_beginning" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\pacman_beginning.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -279,6 +282,33 @@
   </data>
   <data name="pacman_death" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\pacman_death.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="pacman_death_0_8_" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\pacman death 0(8).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="pacman_death_1_8_" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Pacman death 1(8).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="pacman_death_2_8_" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\pacman death 2(8).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="pacman_death_3_8_" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\pacman death 3()8.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="pacman_death_4_8_" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\pacman death 4(8).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="pacman_death_5_8_" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\pacman death 5(8).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="pacman_death_6_8_" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\pacman death 6(8).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="pacman_death_7_8_" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\pacman death 7(8).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="pacman_death_8_8_" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\pacman death 8(8).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Pacman_down" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Pacman down.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
