@@ -28,6 +28,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.Tab;
 using System.CodeDom;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters;
+using System.Drawing.Drawing2D;
 
 namespace Pacman_Projection
 {
@@ -191,8 +192,15 @@ namespace Pacman_Projection
         internal int score;
         internal System.Windows.Forms.Label labelScore = new System.Windows.Forms.Label();
 
-        // Dictionary to keep track of all active sounds and their corresponding embedded resources
-        internal static Dictionary<Stream, WaveOutEvent> activeSounds = new Dictionary<Stream, WaveOutEvent>();
+
+        // TEST
+        internal System.Windows.Forms.Label labelTest = new System.Windows.Forms.Label();
+
+
+        // Dictionary to keep track of all active sounds and their corresponding embedded
+        // resources names, I.e. the sound file names (ghost_Scared.wav => ghost_Scared), which should always be the same for ease of use
+        internal Dictionary<string, WaveOutEvent> activeSounds = new Dictionary<string, WaveOutEvent>();
+        internal Dictionary<string, Stream> nameStreamDict = new Dictionary<string, Stream>();
 
         FormMenu formMenu;
 
@@ -317,6 +325,15 @@ namespace Pacman_Projection
             labelScore.ForeColor = Color.White;
             labelScore.Text = "0";
             Controls.Add(labelScore);
+
+            // labelTest properties
+            labelTest.Location = new Point(boxSize*8, 2);
+            labelTest.Size = new Size(100, 20);
+            labelTest.FlatStyle = FlatStyle.Popup;
+            labelTest.Font = new Font("Arial", 10, FontStyle.Bold);
+            labelTest.ForeColor = Color.White;
+            labelTest.Text = "0";
+            Controls.Add(labelTest);
 
             //
             // Add all the walls according to the map
@@ -901,6 +918,10 @@ namespace Pacman_Projection
                 }
             }
 
+            //
+            // Ghosts 
+            //
+
             Task.Run(() => eatGhostDurationDecreaseLoop());
         
             // Set ghosts starting directions
@@ -908,6 +929,24 @@ namespace Pacman_Projection
             Pinky.SetDirection(PinkyStartDirection);
             Inky.SetDirection(InkyStartDirection);
             Clyde.SetDirection(ClydeStartDirection);
+
+            //
+            // Sound
+            //
+
+            // Add all sound resources to the dictionary streamNamePairs
+            nameStreamDict.Add("buttonReady_sound", Resources.buttonReady_sound);
+            nameStreamDict.Add("pacman_beginning", Resources.pacman_beginning);
+            nameStreamDict.Add("pacman_chomp", Resources.pacman_chomp);
+            nameStreamDict.Add("pacman_eatFruit", Resources.pacman_eatfruit);
+            nameStreamDict.Add("pacman_eatGhost", Resources.pacman_eatghost);
+            nameStreamDict.Add("pacman_death", Resources.pacman_death);
+            nameStreamDict.Add("ghost_scared", Resources.ghost_scared);
+            nameStreamDict.Add("ghost_return", Resources.ghost_return);
+            nameStreamDict.Add("ghost_moveNormal", Resources.ghost_moveNormal);
+            nameStreamDict.Add("ghost_chase2", Resources.ghost_chase2);
+            nameStreamDict.Add("ghost_chase3", Resources.ghost_chase3);
+            nameStreamDict.Add("ghost_chase4", Resources.ghost_chase4);
 
             await Task.Delay(msToWaitBetweenGames);
             Initialize();
@@ -918,8 +957,10 @@ namespace Pacman_Projection
             formMenu.Show(); 
         }
 
-        public async void Initialize()
+        private async void Initialize()
         {
+            await Task.Run(() => PlaySound(Resources.buttonReady_sound));
+
             // labelReady properties
             labelReady.Location = new Point(boxSize * 11, boxSize * 11);
             labelReady.Size = new Size(boxSize * 8, boxSize * 3);
@@ -994,7 +1035,7 @@ namespace Pacman_Projection
                 if (level != 10)
                 {
                     level++;
-                    //Restart after win
+                    Restart();
                 }
             }
             else
@@ -1106,7 +1147,16 @@ namespace Pacman_Projection
                     var waveOut = new WaveOutEvent();
                     var reader = new WaveFileReader(memoryStream);
                     waveOut.Init(reader);
-                    activeSounds.Add(soundResource, waveOut);
+
+                    // Get the name of the sound from nameStreamDict
+                    string soundResourceName = null;
+                    for (int index = 0; index < nameStreamDict.Count; index++)
+                    {
+                        if (nameStreamDict.ElementAt(index).Value == )
+                    }
+                    
+
+                    activeSounds.Add(soundResourceName, waveOut);
                     waveOut.Play();
 
                     waveOut.PlaybackStopped += (sender, e) =>
@@ -1123,7 +1173,7 @@ namespace Pacman_Projection
                         memoryStream.Dispose();
                         reader.Dispose();
 
-                        activeSounds.Remove(soundResource);
+                        activeSounds.Remove(soundResourceName);
                     };
                 }
             });
@@ -1131,16 +1181,20 @@ namespace Pacman_Projection
 
         private bool CheckForSound(Stream soundResource)
         {
-            if (activeSounds.ContainsKey(soundResource))
+            // Loop through activeSounds to check if any key in it mathces a key in 
+            for (int index = 0; index < nameStreamDict.Count; index++)
             {
-                return true;
+                if (activeSounds.ContainsKey(nameStreamDict.ElementAt(index).Key))
+                { 
+                    return true;
+                }
             }
             return false;
         }
 
         private void StopSound(Stream soundResource)
         {
-            activeSounds[soundResource].Stop();
+            activeSounds[nameStreamDict[soundResource]].Stop();
         }
 
         private void PauseSound(Stream soundResource)
@@ -1519,6 +1573,11 @@ namespace Pacman_Projection
         }
 
         const int ghostBlinkDuration = 250;
+
+        // TEST
+        int thing = 0;
+
+
         private async void eatGhostDurationDecreaseLoop()
         {
             while (true)
@@ -1530,15 +1589,17 @@ namespace Pacman_Projection
                     if (!CheckForSound(Resources.ghost_scared))
                     {
                         PlaySound(Resources.ghost_scared);
+                        thing++;
                     }
 
                     UpdateEatGhostDuration();
+
+
                     /* 
                       
                       Method for setting intervals to appropriate values according to level
 
                     */
-
                     if (level == 1)
                     {
                         ghostTickTimer.Interval = ghostTickTimerIntervalScared1;
@@ -1730,13 +1791,15 @@ namespace Pacman_Projection
             {
                 currentGhostEatDuration += msToAddAfterBigFood;
                 // If the ghosts are blinking, make them stop as
-                // currentGhostEatDuration is now over the threshold, regardless
+                // currentGhostEatDuration is now over the threshold,
+                // regardless of its previous value
                 Blinky.white = false;
                 Pinky.white = false;
                 Inky.white = false;
                 Clyde.white = false;
                 ghostBlink = false;
 
+                // Ensure the ghosts are set to frightened
                 Blinky.SetFrightened();
                 Pinky.SetFrightened();
                 Inky.SetFrightened();
@@ -1749,8 +1812,7 @@ namespace Pacman_Projection
                 food[indexX, indexY] = null;
                 foodsOnMap--;
             }
-
-            foodsOnMap--;
+            // If all foods are eaten, the player wins
             if (foodsOnMap == 0)
             {
                 Game(true);
