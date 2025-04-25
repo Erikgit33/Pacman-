@@ -153,22 +153,22 @@
     <None Include="Resources\Pacman up closed.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\pacman_beginning.wav" />
+    <EmbeddedResource Include="Resources\pacman_beginning.wav" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\pacman_intermission.wav" />
+    <EmbeddedResource Include="Resources\pacman_intermission.wav" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\pacman_eatghost.wav" />
+    <EmbeddedResource Include="Resources\pacman_eatghost.wav" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\pacman_death.wav" />
+    <EmbeddedResource Include="Resources\pacman_death.wav" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Food.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\pacman_eatfruit.wav" />
+    <EmbeddedResource Include="Resources\pacman_eatfruit.wav" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Blinky down ver. 2.png" />
@@ -291,25 +291,25 @@
     <None Include="Resources\Pinky up.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\buttonReady_sound.wav" />
+    <EmbeddedResource Include="Resources\buttonReady_sound.wav" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\ghost_chase2.wav" />
+    <EmbeddedResource Include="Resources\ghost_chase2.wav" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\ghost_chase3.wav" />
+    <EmbeddedResource Include="Resources\ghost_chase3.wav" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\ghost_chase4.wav" />
+    <EmbeddedResource Include="Resources\ghost_chase4.wav" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\ghost_moveNormal.wav" />
+    <EmbeddedResource Include="Resources\ghost_moveNormal.wav" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\ghost_return.wav" />
+    <EmbeddedResource Include="Resources\ghost_return.wav" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\ghost_scared.wav" />
+    <EmbeddedResource Include="Resources\ghost_scared.wav" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Pacman start.png" />
@@ -360,7 +360,7 @@
     <None Include="Resources\Pacman Life.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\pacman_chomp.wav" />
+    <EmbeddedResource Include="Resources\pacman_chomp.wav" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\pacman death 0%288%29.png" />

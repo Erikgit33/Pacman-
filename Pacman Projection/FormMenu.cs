@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Pacman_Projection.Properties;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Media;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -17,9 +19,9 @@ namespace Pacman_Projection
             InitializeComponent();
         }
 
-        const int sizeX = 200;
-        const int sizeY = 200;
         const int boxSize = 14;
+
+        SoundPlayer readyButton_sound = new SoundPlayer(Resources.buttonReady_sound);
 
         private void FormMenu_Load(object sender, EventArgs e)
         {
@@ -41,8 +43,10 @@ namespace Pacman_Projection
             buttonPlay.BringToFront();
         }
 
-        private void playButton_Click(object sender, EventArgs e)
+        private async void playButton_Click(object sender, EventArgs e)
         {
+            await Task.Run(() => readyButton_sound.Play());
+
             new Form1(this).Show();
             this.Hide();
         }
