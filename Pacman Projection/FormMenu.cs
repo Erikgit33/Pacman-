@@ -46,6 +46,7 @@ namespace Pacman_Projection
         private async void playButton_Click(object sender, EventArgs e)
         {
             await Task.Run(() => readyButton_sound.Play());
+            await Task.Delay(300); 
 
             new Form1(this).Show();
             this.Hide();

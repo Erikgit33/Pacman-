@@ -975,8 +975,6 @@ namespace Pacman_Projection
 
         private async void Initialize()
         {
-            await Task.Run(() => PlaySound("buttonReady_sound"));
-
             // labelReady properties
             labelReady.Location = new Point(boxSize * 11, boxSize * 11);
             labelReady.Size = new Size(boxSize * 8, boxSize * 3);
@@ -1158,53 +1156,49 @@ namespace Pacman_Projection
             }
         }
 
-        private void PlaySound(string soundName)
+        private async void PlaySound(string soundName)
         {
-            Task.Run(async () =>
+            // If a sound is to be played, but it hasn't been removed from active sound 
+            // yet, it is still playing, stop the sound and play it again to stop overlapping
+
+            if (soundData.ContainsKey(soundName))
             {
-                // If a sound is to be played, but it hasn't been removed from active sound 
-                // yet, it is still playing, stop the sound and play it again
-                if (CheckForSound(soundName))
+                var memoryStream = new MemoryStream(soundData[soundName]); // Fresh stream each time
+                var reader = new WaveFileReader(memoryStream);
+                var waveOut = new WaveOutEvent();
+
+                waveOut.Init(reader);
+                waveOut.Play();
+
+                if (!await CheckForSound(soundName))
                 {
-                    await Task.Run(() => StopSound(soundName));
-                }
-
-                if (soundData.ContainsKey(soundName)) { 
-                    
-                    var memoryStream = new MemoryStream(soundData[soundName]); // Fresh stream each time
-                    var reader = new WaveFileReader(memoryStream);
-                    var waveOut = new WaveOutEvent();
-
-                    waveOut.Init(reader);
-                    waveOut.Play();
                     activeSounds.Add(soundName, waveOut);
-
-                    waveOut.PlaybackStopped += (sender, e) =>
-                    {
-                        if (soundName == "ghost_scared")
-                        {
-                            ghostScared = false;
-                        }
-
-                        // Dispose of all variables used and
-                        // remove the played sound's resource from the dictionary
-                        waveOut.Dispose();
-                        memoryStream.Dispose();
-                        reader.Dispose();
-
-                        activeSounds.Remove(soundName);
-                    };
                 }
-            });
+
+                waveOut.PlaybackStopped += (sender, e) =>
+                {
+                    if (soundName == "ghost_scared")
+                    {
+                        ghostScared = false;
+                    }
+
+                    // Dispose of all variables used and
+                    // remove the played sound's resource from the dictionary
+                    waveOut.Dispose();
+                    memoryStream.Dispose();
+                    reader.Dispose();
+
+                    activeSounds.Remove(soundName);
+                };
+            }
         }
 
-        private bool CheckForSound(string soundName)
+        private Task<bool> CheckForSound(string soundName)
         {
-            if (activeSounds.ContainsKey(soundName))
+            return Task.Run(() => 
             {
-                return true;
-            }
-            return false;
+                return activeSounds.ContainsKey(soundName);
+            });
         }
 
         private void StopSound(string soundName)
@@ -1601,7 +1595,7 @@ namespace Pacman_Projection
                 {
                     // If ghost scared has stopped playing, but 
                     // eatGhostDuraiton is still above zero, play it again
-                    if (!CheckForSound("ghost_scared"))
+                    if (!await CheckForSound("ghost_scared"))
                     {
                         PlaySound("ghost_scared");
                     }
@@ -1624,7 +1618,7 @@ namespace Pacman_Projection
                 else
                 {
                     // If ghostScared is still playing, stop it 
-                    if (CheckForSound("ghost_scared"))
+                    if (await CheckForSound("ghost_scared"))
                     {
                         StopSound("ghost_scared");
                     }
@@ -1793,7 +1787,7 @@ namespace Pacman_Projection
 
         bool ghostScared;
 
-        private void FoodEaten(int indexX, int indexY, bool bigFood)
+        private async void FoodEaten(int indexX, int indexY, bool bigFood)
         {
             if (!bigFood)
             {
@@ -1823,7 +1817,7 @@ namespace Pacman_Projection
 
                 // If ghost_scared is already playing and pacman eats 
                 // another big food, don't play another instance of it
-                if (!CheckForSound("ghost_scared"))
+                if (!await CheckForSound("ghost_scared"))
                 {
                     PlaySound("ghost_scared");
                 }
