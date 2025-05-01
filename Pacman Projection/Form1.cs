@@ -1170,6 +1170,10 @@ namespace Pacman_Projection
                 waveOut.Init(reader);
                 waveOut.Play();
 
+                // If a sound is already in activeSounds, don't add it again
+                // to avoid a DuplicateKeyException, so, if a sound is playing in rapid succession (such as 
+                // pacman_chomp), it will always be present in the dictionary, only being removed when pacman stops 
+                // eating for one timer-tick or more
                 if (!await CheckForSound(soundName))
                 {
                     activeSounds.Add(soundName, waveOut);
