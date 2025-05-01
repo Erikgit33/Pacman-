@@ -62,15 +62,15 @@ namespace Pacman_Projection
         const int ghostTickTimerIntervalScared9 = 170;
         const int ghostTickTimerIntervalScared10 = 160;
 
-        const int ghostTickTimerIntervalFaster1 = 190;
-        const int ghostTickTimerIntervalFaster2 = 180;
-        const int ghostTickTimerIntervalFaster3 = 170;
-        const int ghostTickTimerIntervalFaster4 = 160;
-        const int ghostTickTimerIntervalFaster5 = 150;
-        const int ghostTickTimerIntervalFaster6 = 140;
-        const int ghostTickTimerIntervalFaster7 = 130;
-        const int ghostTickTimerIntervalFaster8 = 120;
-        const int ghostTickTimerIntervalFaster9 = 110;
+        const int ghostTickTimerIntervalFaster1 = 190; 
+        const int ghostTickTimerIntervalFaster2 = 180;  
+        const int ghostTickTimerIntervalFaster3 = 170;  
+        const int ghostTickTimerIntervalFaster4 = 160; 
+        const int ghostTickTimerIntervalFaster5 = 150;  
+        const int ghostTickTimerIntervalFaster6 = 140;  
+        const int ghostTickTimerIntervalFaster7 = 130; 
+        const int ghostTickTimerIntervalFaster8 = 120;  
+        const int ghostTickTimerIntervalFaster9 = 110;  
         const int ghostTickTimerIntervalFaster10 = 100;
 
         // Put all intervals into arrays for management according to level
@@ -192,16 +192,13 @@ namespace Pacman_Projection
         internal int score;
         internal System.Windows.Forms.Label labelScore = new System.Windows.Forms.Label();
 
-
-        // TEST
-        internal System.Windows.Forms.Label labelTest = new System.Windows.Forms.Label();
-
-
         // Dictionary to keep track of all active sounds and their corresponding embedded
         // resources names, I.e. the sound file names (ghost_Scared.wav => ghost_Scared), which should always be the same for ease of use
         // To avoid threading issues while playing sounds in quick succession, load and store all sounds in soundData in the form of byte[]
+        // Store paused sounds in pausedSounds for ease of access
         internal Dictionary<string, WaveOutEvent> activeSounds = new Dictionary<string, WaveOutEvent>();
         internal Dictionary<string, byte[]> soundData = new Dictionary<string, byte[]>();
+        internal Dictionary<string, byte[]> pausedSounds = new Dictionary<string, byte[]>();
 
         FormMenu formMenu;
 
@@ -326,15 +323,6 @@ namespace Pacman_Projection
             labelScore.ForeColor = Color.White;
             labelScore.Text = "0";
             Controls.Add(labelScore);
-
-            // labelTest properties
-            labelTest.Location = new Point(boxSize*8, 2);
-            labelTest.Size = new Size(100, 20);
-            labelTest.FlatStyle = FlatStyle.Popup;
-            labelTest.Font = new Font("Arial", 10, FontStyle.Bold);
-            labelTest.ForeColor = Color.White;
-            labelTest.Text = "0";
-            Controls.Add(labelTest);
 
             //
             // Add all the walls according to the map
@@ -922,8 +910,6 @@ namespace Pacman_Projection
             //
             // Ghosts 
             //
-
-            Task.Run(() => eatGhostDurationDecreaseLoop());
         
             // Set ghosts starting directions
             Blinky.SetDirection(BlinkyStartDirection);
@@ -949,7 +935,7 @@ namespace Pacman_Projection
             soundData.Add("ghost_chase4", null);
 
 
-            /*   ENSURE ALL SOUNDS HAVE 'Build Action' SET TO 'Embedded Resources'   */
+            /*   ENSURE ALL SOUNDS TO BE LODADED HAVE 'Build Action' SET TO 'Embedded Resources'   */
 
 
             LoadSound("pacman_beginning", "Pacman_Projection.Resources.pacman_beginning.wav");
@@ -959,10 +945,10 @@ namespace Pacman_Projection
             LoadSound("pacman_death", "Pacman_Projection.Resources.pacman_death.wav");
             LoadSound("ghost_scared", "Pacman_Projection.Resources.ghost_scared.wav");
             LoadSound("ghost_return", "Pacman_Projection.Resources.ghost_return.wav");
-            LoadSound("ghost_moveNormal", "Pacman_Projection.Resources.ghost_moveNormal.wav");
+            LoadSound("ghost_scatter", "Pacman_Projection.Resources.ghost_scatter.wav");
+            LoadSound("ghost_chase1", "Pacman_Projection.Resources.ghost_chase1.wav");
             LoadSound("ghost_chase2", "Pacman_Projection.Resources.ghost_chase2.wav");
             LoadSound("ghost_chase3", "Pacman_Projection.Resources.ghost_chase3.wav");
-            LoadSound("ghost_chase4", "Pacman_Projection.Resources.ghost_chase4.wav");
 
             await Task.Delay(msToWaitBetweenGames);
             Initialize();
@@ -1025,11 +1011,17 @@ namespace Pacman_Projection
             // Hide labelReady and start timers
             labelReady.Hide();
             StartTimers();
+
+            eatGhostDurationDecreaseLoop();
+            ghostSoundLoop();
         }
 
         private async void Game(bool win)
         {
-            StopTimers();
+            for (int index = 0; index < activeSounds.Count; index++)
+            {
+                StopSound(activeSounds.ElementAt(index).Key);
+            }
 
             Blinky.box.Image = Resources.Blinky_stationary;
             Pinky.box.Image = Resources.Pinky_stationary;
@@ -1158,9 +1150,6 @@ namespace Pacman_Projection
 
         private async void PlaySound(string soundName)
         {
-            // If a sound is to be played, but it hasn't been removed from active sound 
-            // yet, it is still playing, stop the sound and play it again to stop overlapping
-
             if (soundData.ContainsKey(soundName))
             {
                 var memoryStream = new MemoryStream(soundData[soundName]); // Fresh stream each time
@@ -1170,24 +1159,23 @@ namespace Pacman_Projection
                 waveOut.Init(reader);
                 waveOut.Play();
 
-                // If a sound is already in activeSounds, don't add it again
-                // to avoid a DuplicateKeyException, so, if a sound is playing in rapid succession (such as 
-                // pacman_chomp), it will always be present in the dictionary, only being removed when pacman stops 
-                // eating for one timer-tick or more
+
                 if (!await CheckForSound(soundName))
+
+                if (await CheckForSound(soundName) == false)
                 {
                     activeSounds.Add(soundName, waveOut);
                 }
 
                 waveOut.PlaybackStopped += (sender, e) =>
                 {
-                    if (soundName == "ghost_scared")
+                    if (soundName == "ghost_scared" && currentEatGhostDuration == 0)
                     {
                         ghostScared = false;
                     }
 
                     // Dispose of all variables used and
-                    // remove the played sound's resource from the dictionary
+                    // remove the played sound from activeSounds
                     waveOut.Dispose();
                     memoryStream.Dispose();
                     reader.Dispose();
@@ -1199,10 +1187,7 @@ namespace Pacman_Projection
 
         private Task<bool> CheckForSound(string soundName)
         {
-            return Task.Run(() => 
-            {
-                return activeSounds.ContainsKey(soundName);
-            });
+            return Task.FromResult(activeSounds.ContainsKey(soundName));
         }
 
         private void StopSound(string soundName)
@@ -1213,6 +1198,28 @@ namespace Pacman_Projection
         private void PauseSound(string soundName)
         {
 
+        }
+
+        private async Task ghostSoundLoop()
+        {
+            while (true)
+            {
+                if (!await CheckForSound("pacman_beginning") && !ghostScared)
+                {
+                    if (!await CheckForSound("ghost_scatter"))
+                    {
+                        await Task.Run(() => PlaySound("ghost_scatter"));  
+                    }
+                    else
+                    {
+                        await Task.Delay(100);
+                    }
+                }
+                else
+                {
+                    await Task.Delay(100);
+                }
+            }
         }
         //
         // Pacman & movement related methods
@@ -1587,23 +1594,12 @@ namespace Pacman_Projection
 
         const int ghostBlinkDuration = 250;
 
-        // TEST
-        int thing = 0;
-
-
-        private async void eatGhostDurationDecreaseLoop()
+        private async Task eatGhostDurationDecreaseLoop()
         {
             while (true)
             {
-                if (currentGhostEatDuration > 0)
+                if (currentEatGhostDuration > 0)
                 {
-                    // If ghost scared has stopped playing, but 
-                    // eatGhostDuraiton is still above zero, play it again
-                    if (!await CheckForSound("ghost_scared"))
-                    {
-                        PlaySound("ghost_scared");
-                    }
-
                     UpdateEatGhostDuration();
 
 
@@ -1621,12 +1617,6 @@ namespace Pacman_Projection
                 }
                 else
                 {
-                    // If ghostScared is still playing, stop it 
-                    if (await CheckForSound("ghost_scared"))
-                    {
-                        StopSound("ghost_scared");
-                    }
-
                     ghostTickTimer.Interval = ghostTickTimerIntervalStandard;
                     ghostBlink = false;
                     Blinky.SetChase();
@@ -1641,13 +1631,13 @@ namespace Pacman_Projection
 
         const int timesToBlink = 6;
         internal bool ghostBlink = false;
-        internal int currentGhostEatDuration = 0;
+        internal int currentEatGhostDuration = 0;
         private void UpdateEatGhostDuration()
         {
-            if (currentGhostEatDuration <= (ghostBlinkDuration * timesToBlink) || ghostBlink) 
+            if (currentEatGhostDuration <= (ghostBlinkDuration * timesToBlink) || ghostBlink) 
             {
                 ghostBlink = true;
-                if ((currentGhostEatDuration/ghostBlinkDuration) % 2 == 0)
+                if ((currentEatGhostDuration/ghostBlinkDuration) % 2 == 0)
                 {
                     Blinky.white = false;
                     Pinky.white = false;
@@ -1662,7 +1652,7 @@ namespace Pacman_Projection
                     Clyde.white = true;
                 }
             }
-            currentGhostEatDuration -= ghostBlinkDuration;
+            currentEatGhostDuration -= ghostBlinkDuration;
         }
 
         private bool CheckForWall(int box1X, int box1Y, int box2X, int box2Y)
@@ -1791,7 +1781,7 @@ namespace Pacman_Projection
 
         bool ghostScared;
 
-        private async void FoodEaten(int indexX, int indexY, bool bigFood)
+        private void FoodEaten(int indexX, int indexY, bool bigFood)
         {
             if (!bigFood)
             {
@@ -1803,7 +1793,7 @@ namespace Pacman_Projection
             }
             else
             {
-                currentGhostEatDuration += msToAddAfterBigFood;
+                currentEatGhostDuration += msToAddAfterBigFood;
                 // If the ghosts are blinking, make them stop as
                 // currentGhostEatDuration is now over the threshold,
                 // regardless of its previous value
@@ -1813,18 +1803,12 @@ namespace Pacman_Projection
                 Clyde.white = false;
                 ghostBlink = false;
 
-                // Ensure the ghosts are set to frightened
+                // Ensure all ghosts are frightened
                 Blinky.SetFrightened();
                 Pinky.SetFrightened();
                 Inky.SetFrightened();
                 Clyde.SetFrightened();
 
-                // If ghost_scared is already playing and pacman eats 
-                // another big food, don't play another instance of it
-                if (!await CheckForSound("ghost_scared"))
-                {
-                    PlaySound("ghost_scared");
-                }
                 ghostScared = true;
                 UpdateScore(foodScoreBig);
                 Controls.Remove(food[indexX, indexY].pictureBox);
