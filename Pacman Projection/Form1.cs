@@ -929,7 +929,7 @@ namespace Pacman_Projection
             soundData.Add("pacman_death", null);
             soundData.Add("ghost_scared", null);
             soundData.Add("ghost_return", null);
-            soundData.Add("ghost_moveNormal", null);
+            soundData.Add("ghost_scatter", null);
             soundData.Add("ghost_chase2", null);
             soundData.Add("ghost_chase3", null);
             soundData.Add("ghost_chase4", null);
@@ -1208,7 +1208,7 @@ namespace Pacman_Projection
                 {
                     if (!await CheckForSound("ghost_scatter"))
                     {
-                        await Task.Run(() => PlaySound("ghost_scatter"));  
+                        PlaySound("ghost_scatter");  
                     }
                     else
                     {
@@ -1219,6 +1219,7 @@ namespace Pacman_Projection
                 {
                     await Task.Delay(100);
                 }
+                await Task.Delay(100);
             }
         }
         //
