@@ -199,14 +199,14 @@
   <data name="FoodBig" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\FoodBig.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="ghost_chase1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ghost_chase1.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="ghost_chase2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ghost_chase2.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="ghost_chase3" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ghost_chase3.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="ghost_chase4" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\ghost_chase4.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="Ghost_Eyes_down" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Ghost Eyes down.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>

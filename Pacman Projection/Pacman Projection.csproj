@@ -93,6 +93,7 @@
     </Compile>
     <Compile Include="Ghost.cs" />
     <Compile Include="Pacman.cs" />
+    <Compile Include="PausedSound.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">
@@ -294,16 +295,13 @@
     <EmbeddedResource Include="Resources\buttonReady_sound.wav" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\ghost_chase1.wav" />
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="Resources\ghost_chase2.wav" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\ghost_chase3.wav" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\ghost_chase4.wav" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\ghost_moveNormal.wav" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\ghost_return.wav" />
@@ -393,7 +391,7 @@
     <None Include="Resources\Menu background.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\ghost_scatter.wav" />
+    <EmbeddedResource Include="Resources\ghost_scatter.wav" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

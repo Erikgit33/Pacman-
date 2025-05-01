@@ -332,6 +332,15 @@ namespace Pacman_Projection.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
         /// </summary>
+        internal static System.IO.UnmanagedMemoryStream ghost_chase1 {
+            get {
+                return ResourceManager.GetStream("ghost_chase1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
         internal static System.IO.UnmanagedMemoryStream ghost_chase2 {
             get {
                 return ResourceManager.GetStream("ghost_chase2", resourceCulture);
@@ -344,15 +353,6 @@ namespace Pacman_Projection.Properties {
         internal static System.IO.UnmanagedMemoryStream ghost_chase3 {
             get {
                 return ResourceManager.GetStream("ghost_chase3", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
-        /// </summary>
-        internal static System.IO.UnmanagedMemoryStream ghost_chase4 {
-            get {
-                return ResourceManager.GetStream("ghost_chase4", resourceCulture);
             }
         }
         
