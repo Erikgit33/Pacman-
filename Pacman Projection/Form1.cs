@@ -62,16 +62,16 @@ namespace Pacman_Projection
         const int ghostTickTimerIntervalScared9 = 170;
         const int ghostTickTimerIntervalScared10 = 160;
 
-        const int ghostTickTimerIntervalFaster1 = 190; 
-        const int ghostTickTimerIntervalFaster2 = 180;  
-        const int ghostTickTimerIntervalFaster3 = 170;  
-        const int ghostTickTimerIntervalFaster4 = 160; 
-        const int ghostTickTimerIntervalFaster5 = 150;  
-        const int ghostTickTimerIntervalFaster6 = 140;  
-        const int ghostTickTimerIntervalFaster7 = 130; 
-        const int ghostTickTimerIntervalFaster8 = 120;  
-        const int ghostTickTimerIntervalFaster9 = 110;  
-        const int ghostTickTimerIntervalFaster10 = 100;
+        const int ghostTickTimerIntervalFaster1 = 190; // Chase1, level 1-3
+        const int ghostTickTimerIntervalFaster2 = 180; // 
+        const int ghostTickTimerIntervalFaster3 = 170; // 
+        const int ghostTickTimerIntervalFaster4 = 160; // Chase2, level 4-6
+        const int ghostTickTimerIntervalFaster5 = 150; // 
+        const int ghostTickTimerIntervalFaster6 = 140; // 
+        const int ghostTickTimerIntervalFaster7 = 130; // Chase3, level 7-10
+        const int ghostTickTimerIntervalFaster8 = 120; // 
+        const int ghostTickTimerIntervalFaster9 = 110; // 
+        const int ghostTickTimerIntervalFaster10 = 100;//
 
         // Put all intervals into arrays for management according to level
         // Index 0 is also set to the first levels interval for ease of use: 
@@ -1159,10 +1159,7 @@ namespace Pacman_Projection
                 waveOut.Init(reader);
                 waveOut.Play();
 
-
                 if (!await CheckForSound(soundName))
-
-                if (await CheckForSound(soundName) == false)
                 {
                     activeSounds.Add(soundName, waveOut);
                 }
@@ -1198,6 +1195,28 @@ namespace Pacman_Projection
         private void PauseSound(string soundName)
         {
 
+        }
+
+        private async Task ghostSoundLoop()
+        {
+            while (true)
+            {
+                if (!await CheckForSound("pacman_beginning") && !ghostScared)
+                {
+                    if (!await CheckForSound("ghost_scatter"))
+                    {
+                        await Task.Run(() => PlaySound("ghost_scatter"));  
+                    }
+                    else
+                    {
+                        await Task.Delay(100);
+                    }
+                }
+                else
+                {
+                    await Task.Delay(100);
+                }
+            }
         }
 
         private async Task ghostSoundLoop()
@@ -1599,8 +1618,15 @@ namespace Pacman_Projection
         {
             while (true)
             {
-                if (currentEatGhostDuration > 0)
+                if (currentGhostEatDuration > 0)
                 {
+                    // If ghost scared has stopped playing, but 
+                    // eatGhostDuraiton is still above zero, play it again
+                    if (!await CheckForSound("ghost_scared"))
+                    {
+                        PlaySound("ghost_scared");
+                    }
+
                     UpdateEatGhostDuration();
 
 
