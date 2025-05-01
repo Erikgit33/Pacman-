@@ -1205,28 +1205,6 @@ namespace Pacman_Projection
                 {
                     if (!await CheckForSound("ghost_scatter"))
                     {
-                        await Task.Run(() => PlaySound("ghost_scatter"));  
-                    }
-                    else
-                    {
-                        await Task.Delay(100);
-                    }
-                }
-                else
-                {
-                    await Task.Delay(100);
-                }
-            }
-        }
-
-        private async Task ghostSoundLoop()
-        {
-            while (true)
-            {
-                if (!await CheckForSound("pacman_beginning") && !ghostScared)
-                {
-                    if (!await CheckForSound("ghost_scatter"))
-                    {
                         PlaySound("ghost_scatter");  
                     }
                     else
@@ -1618,7 +1596,7 @@ namespace Pacman_Projection
         {
             while (true)
             {
-                if (currentGhostEatDuration > 0)
+                if (currentEatGhostDuration > 0)
                 {
                     // If ghost scared has stopped playing, but 
                     // eatGhostDuraiton is still above zero, play it again
