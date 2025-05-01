@@ -92,8 +92,8 @@
       <DependentUpon>FormMenu.cs</DependentUpon>
     </Compile>
     <Compile Include="Ghost.cs" />
+    <Compile Include="LoopStream.cs" />
     <Compile Include="Pacman.cs" />
-    <Compile Include="PausedSound.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">

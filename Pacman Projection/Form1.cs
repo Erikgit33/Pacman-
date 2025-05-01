@@ -198,8 +198,8 @@ namespace Pacman_Projection
         // To avoid threading issues while playing sounds in quick succession, load and store all sounds in soundData in the form of byte[]
         // Store paused sounds in pausedSounds for ease of access
         internal Dictionary<string, WaveOutEvent> activeSounds = new Dictionary<string, WaveOutEvent>();
+        internal Dictionary<string, WaveOutEvent> pausedSounds = new Dictionary<string, WaveOutEvent>();
         internal Dictionary<string, byte[]> soundData = new Dictionary<string, byte[]>();
-        internal Dictionary<string, PausedSound> pausedSounds = new Dictionary<string, PausedSound>();
 
         FormMenu formMenu;
 
@@ -958,10 +958,13 @@ namespace Pacman_Projection
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             // Stop all sound before closing so they don't play in the background while in the menu
-            foreach (var sound in activeSounds)
+            int index = activeSounds.Count - 1;
+            while (activeSounds.Count > 0)
             {
-                StopSound(sound.Key);
+                StopSound(activeSounds.ElementAt(index).Key);
+                index--;
             }
+            
             formMenu.Show(); 
         }
 
@@ -1017,8 +1020,10 @@ namespace Pacman_Projection
             // Hide labelReady and start timers
             labelReady.Hide();
             StartTimers();
-            
-            eatGhostDurationDecreaseLoop();
+
+            UpdateEatGhostDurationLoop();
+            GhostSoundLoop();
+            PlaySound("ghost_scatter", true, false);
         }
 
         private async void Game(bool win)
@@ -1153,80 +1158,70 @@ namespace Pacman_Projection
             }
         }
 
-        private async void PlaySound(string soundName, bool loop, bool fromPaused)
+        private void PlaySound(string soundName, bool loop, bool unPause)
         {
-            if (soundData.ContainsKey(soundName))
+            Task.Run(async () =>
             {
-                // Access throughout whole method
-                MemoryStream memoryStream = null;
-                WaveFileReader reader = null;
-                WaveOutEvent waveOut = null;
-
-                if (!fromPaused)
+                if (soundData.ContainsKey(soundName))
                 {
-                    memoryStream = new MemoryStream(soundData[soundName]); // Fresh stream each time
-                    reader = new WaveFileReader(memoryStream);
-                    waveOut = new WaveOutEvent();
+                    MemoryStream memoryStream = null;
+                    WaveFileReader reader = null;
+                    WaveOutEvent waveOut = null;
+                    WaveStream stream = null;
 
-                    waveOut.Init(reader);
-                    waveOut.Play();
-
-                    if (!await CheckForSound(soundName))
+                    if (unPause)
                     {
-                        activeSounds.Add(soundName, waveOut);
+                        try
+                        {
+                            pausedSounds[soundName].Play();
+                        }
+                        catch (Exception)
+                        {
+                            memoryStream = new MemoryStream(soundData[soundName]);
+                            reader = new WaveFileReader(memoryStream);
+
+                            stream = loop ? new LoopStream(reader) : (WaveStream)reader; 
+                            waveOut = new WaveOutEvent();
+                            waveOut.Init(stream);
+                            waveOut.Play();
+
+                            activeSounds.Add(soundName, waveOut);
+                        }
                     }
-                }
-                else
-                {
-                    // If the sound is resumed from paused state, use the saved stream and reader
-                    waveOut = pausedSounds[soundName].waveOut;
-                    reader = pausedSounds[soundName].reader;
-                    pausedSounds[soundName].waveOut.Play();
-                }
-
-                waveOut.PlaybackStopped += (sender, e) =>
-                {
-                    if (fromPaused)
+                    else
                     {
-                        loop = pausedSounds[soundName].loop;
-                    }
+                        memoryStream = new MemoryStream(soundData[soundName]);
+                        reader = new WaveFileReader(memoryStream);
 
-                    bool paused = false;
-                    // If the sound is not at its end, it has probably been paused
-                    if (waveOut.GetPosition() < soundData[soundName].Length)
-                    {
-                        paused = true;
-                    }
-
-                    if (loop && !paused)
-                    {
-                        memoryStream.Position = 0; // Reset stream position for looping
+                        stream = loop ? new LoopStream(reader) : (WaveStream)reader; 
+                        waveOut = new WaveOutEvent();
+                        waveOut.Init(stream);
                         waveOut.Play();
+
+                        if (!await CheckForSound(soundName))
+                        {
+                            activeSounds.Add(soundName, waveOut);
+                        }
                     }
-                    else if (!loop && !paused)
+
+                    waveOut.PlaybackStopped += (sender, e) =>
                     {
                         if (soundName == "ghost_scared" && currentEatGhostDuration == 0)
                         {
                             ghostScared = false;
                         }
 
-                        // Dispose of all variables used and
-                        // remove the played sound from activeSounds
                         waveOut.Dispose();
+                        stream?.Dispose(); 
                         memoryStream.Dispose();
                         reader.Dispose();
 
                         activeSounds.Remove(soundName);
-                    }
-                    else if (paused)
-                    {
-                        // If the sound is paused, move it from activeSounds to pausedSounds and don't dispose of it 
-                        activeSounds.Remove(soundName);
-                        pausedSounds.Add(soundName, new PausedSound(reader, waveOut, loop));
-                    }
-                };
-            }
+                    };
+                }
+            });
         }
+
 
         private Task<bool> CheckForSound(string soundName)
         {
@@ -1237,7 +1232,8 @@ namespace Pacman_Projection
         {
             if (soundData.ContainsKey(soundName))
             {
-                activeSounds[soundName].Stop();
+                activeSounds[soundName]?.Stop();
+                activeSounds.Remove(soundName);
             }
         }
 
@@ -1245,7 +1241,9 @@ namespace Pacman_Projection
         {
             if (soundData.ContainsKey(soundName))
             {
-                activeSounds[soundName].Pause();
+                activeSounds[soundName]?.Pause();
+                pausedSounds.Add(soundName, activeSounds[soundName]);
+                activeSounds.Remove(soundName);
             }
         }
 
@@ -1621,64 +1619,20 @@ namespace Pacman_Projection
         }
 
         const int ghostBlinkDuration = 250;
-
-        private async Task eatGhostDurationDecreaseLoop()
-        {
-            PlaySound("ghost_scatter", true, false);
-
-            while (true)
-            {
-                if (currentEatGhostDuration > 0)
-                {
-                    if (await CheckForSound("ghost_scatter"))
-                    {
-                        PauseSound("ghost_scatter");
-                        PlaySound("ghost_scared", true, true);
-                    }
-                    UpdateEatGhostDuration();
-
-
-                    /* 
-                      
-                      Method for setting intervals to appropriate values according to level
-
-                    */
-
-
-                    if (level == 1)
-                    {
-                        ghostTickTimer.Interval = ghostTickTimerIntervalScared1;
-                    }
-                }
-                else
-                {
-                    if (await CheckForSound("ghost_scared"))
-                    {
-                        PauseSound("ghost_scared");
-                        PlaySound("ghost_scatter", true, true);
-                    }
-
-                    ghostTickTimer.Interval = ghostTickTimerIntervalStandard;
-                    ghostBlink = false;
-                    Blinky.SetChase();
-                    Pinky.SetChase();
-                    Inky.SetChase();
-                    Clyde.SetChase();
-                }
-
-                await Task.Delay(ghostBlinkDuration);
-            }
-        }
-
         const int timesToBlink = 6;
         internal bool ghostBlink = false;
         internal int currentEatGhostDuration = 0;
-        private void UpdateEatGhostDuration()
+        private async Task UpdateEatGhostDurationLoop()
         {
-            if (currentEatGhostDuration <= (ghostBlinkDuration * timesToBlink) || ghostBlink) 
+            if (currentEatGhostDuration > 0)
+            {
+                currentEatGhostDuration -= ghostBlinkDuration;
+            }
+
+            if (currentEatGhostDuration <= (ghostBlinkDuration * timesToBlink) || ghostBlink)
             {
                 ghostBlink = true;
-                if ((currentEatGhostDuration/ghostBlinkDuration) % 2 == 0)
+                if (currentEatGhostDuration / ghostBlinkDuration % 2 == 0)
                 {
                     Blinky.white = false;
                     Pinky.white = false;
@@ -1693,8 +1647,72 @@ namespace Pacman_Projection
                     Clyde.white = true;
                 }
             }
-            currentEatGhostDuration -= ghostBlinkDuration;
+
+            await Task.Delay(ghostBlinkDuration);
         }
+
+        private async Task GhostSoundLoop()
+        {
+            while (true)
+            {
+                if (currentEatGhostDuration > 0)
+                {
+                    SetSound_Scared();
+                }
+                else
+                {
+                    //
+                    // OR SetSound_Chase();
+                    //
+
+                    SetSound_Scatter();
+                }
+                await Task.Delay(5);
+            } 
+        }
+
+        private void SetSound_Scared()
+        {
+            PauseSound("ghost_scatter");
+            PauseSound("ghost_chase1");
+            PauseSound("ghost_chase2");
+            PauseSound("ghost_chase3");
+
+            PlaySound("ghost_scated", true, true);
+        }
+
+        private void SetSound_Scatter()
+        {
+            PauseSound("ghost_scared");
+            PauseSound("ghost_chase1");
+            PauseSound("ghost_chase2");
+            PauseSound("ghost_chase3");
+
+            PlaySound("ghost_scatter", true, true);
+        }
+
+        private void SetSound_Chase()
+        {
+            PauseSound("ghost_scared");
+            PauseSound("ghost_scatter");
+
+            if (level < 4)
+            {
+                PlaySound("ghost_chase" + 1.ToString(), true, true);
+            }
+            else if (level > 4 && level < 7 )
+            {
+                PlaySound("ghost_chase" + 2.ToString(), true, true);
+            }
+            else if (level > 7)
+            {
+                PlaySound("ghost_chase" + 3.ToString(), true, true);
+            }
+        }
+
+        //
+        // Collision-related methods
+        //
 
         private bool CheckForWall(int box1X, int box1Y, int box2X, int box2Y)
         {
