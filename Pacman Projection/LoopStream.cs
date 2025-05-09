@@ -14,13 +14,10 @@ namespace Pacman_Projection
         public LoopStream(WaveStream sourceStream)
         {
             this.sourceStream = sourceStream;
-            EnableLooping = true;
         }
 
-        internal bool EnableLooping { get; set; }
-
+        internal bool EnableLooping { get; set; } = true; // Ensures value of EnableLooping can be specifically set and get
         public override WaveFormat WaveFormat => sourceStream.WaveFormat;
-
         public override long Length => sourceStream.Length;
 
         public override long Position
@@ -43,8 +40,10 @@ namespace Pacman_Projection
         protected override void Dispose(bool disposing)
         {
             if (disposing)
+            {
                 sourceStream.Dispose();
-            base.Dispose(disposing);
+                base.Dispose(disposing);
+            }
         }
     }
 

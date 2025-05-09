@@ -790,9 +790,9 @@ namespace Pacman_Projection.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Pacman_start {
+        internal static System.Drawing.Bitmap Pacman_stationary {
             get {
-                object obj = ResourceManager.GetObject("Pacman_start", resourceCulture);
+                object obj = ResourceManager.GetObject("Pacman_stationary", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

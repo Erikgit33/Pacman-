@@ -96,6 +96,7 @@
     <Compile Include="Pacman.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Sound.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
@@ -295,21 +296,6 @@
     <EmbeddedResource Include="Resources\buttonReady_sound.wav" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\ghost_chase1.wav" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\ghost_chase2.wav" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\ghost_chase3.wav" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\ghost_return.wav" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\ghost_scared.wav" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Pacman start.png" />
   </ItemGroup>
   <ItemGroup>
@@ -389,6 +375,21 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Menu background.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\ghost_chase1.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\ghost_chase2.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\ghost_chase3.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\ghost_return.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\ghost_scared.wav" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\ghost_scatter.wav" />

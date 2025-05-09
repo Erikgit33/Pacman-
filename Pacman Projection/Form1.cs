@@ -37,6 +37,7 @@ namespace Pacman_Projection
     {
         // Declare level, max 10
         internal int level = 1;
+        internal bool gamePaused = false;
         const int step = 14; // Pixels per step and size of blocks (one block per step)
         // Declare boxesHorizontally and boxesVertically
         const int boxesHorizontally = 30; 
@@ -48,68 +49,61 @@ namespace Pacman_Projection
         const int verticalOffset = boxSize * 2;
 
         // Declare the interval for pacTickTimer and ghostTickTimer, that is, essentially, their speed
-        const int pacTickTimerInterval = 200;
+        const int pacTickTimerIntervalStandard = 180;
+        const int ghostTickTimerIntervalStandard = 180;
 
-        const int ghostTickTimerIntervalStandard = 200;
+        // Declare ghosts and pacman speeds for all levels
+        internal Dictionary<int, int> ghostSpeedForLevelScared = new Dictionary<int, int>
+        {
+            {1, ghostTickTimerIntervalStandard + 5*18}, // 270
+            {2, ghostTickTimerIntervalStandard + 5*17},     
+            {3, ghostTickTimerIntervalStandard + 5*16},          
+            {4, ghostTickTimerIntervalStandard + 5*15},          
+            {5, ghostTickTimerIntervalStandard + 5*14},       
+            {6, ghostTickTimerIntervalStandard + 5*13},       
+            {7, ghostTickTimerIntervalStandard + 5*12},                
+            {8, ghostTickTimerIntervalStandard + 5*11},          
+            {9, ghostTickTimerIntervalStandard + 5*10},      
+            {10, ghostTickTimerIntervalStandard + 5*9} // 225
+        };
 
-        const int ghostTickTimerIntervalScared1 = 250;
-        const int ghostTickTimerIntervalScared2 = 240;
-        const int ghostTickTimerIntervalScared3 = 230;
-        const int ghostTickTimerIntervalScared4 = 220;
-        const int ghostTickTimerIntervalScared5 = 210;
-        const int ghostTickTimerIntervalScared6 = 200;
-        const int ghostTickTimerIntervalScared7 = 190;
-        const int ghostTickTimerIntervalScared8 = 180;
-        const int ghostTickTimerIntervalScared9 = 170;
-        const int ghostTickTimerIntervalScared10 = 160;
+        internal Dictionary<int, int> ghostSpeedForLevel = new Dictionary<int, int>
+        {
+            {1, ghostTickTimerIntervalStandard}, // 180
+            {2, ghostTickTimerIntervalStandard - 3},    
+            {3, ghostTickTimerIntervalStandard - 3*2},
+            {4, ghostTickTimerIntervalStandard - 3*3},
+            {5, ghostTickTimerIntervalStandard - 3*4},
+            {6, ghostTickTimerIntervalStandard - 3*5},
+            {7, ghostTickTimerIntervalStandard - 3*6},
+            {8, ghostTickTimerIntervalStandard - 3*7},
+            {9, ghostTickTimerIntervalStandard - 3*8},
+            {10, ghostTickTimerIntervalStandard - 3*9} // 153
+        };
 
-        const int ghostTickTimerIntervalFaster1 = 190; // Chase1, level 1-3
-        const int ghostTickTimerIntervalFaster2 = 180; // 
-        const int ghostTickTimerIntervalFaster3 = 170; // 
-        const int ghostTickTimerIntervalFaster4 = 160; // Chase2, level 4-6
-        const int ghostTickTimerIntervalFaster5 = 150; // 
-        const int ghostTickTimerIntervalFaster6 = 140; // 
-        const int ghostTickTimerIntervalFaster7 = 130; // Chase3, level 7-10
-        const int ghostTickTimerIntervalFaster8 = 120; // 
-        const int ghostTickTimerIntervalFaster9 = 110; // 
-        const int ghostTickTimerIntervalFaster10 = 100;//
+        internal Dictionary<int, int> pacmanSpeedForLevel = new Dictionary<int, int>
+        {
+            {1, pacTickTimerIntervalStandard}, // 180
+            {2, pacTickTimerIntervalStandard - 2}, 
+            {3, pacTickTimerIntervalStandard - 2*2}, 
+            {4, pacTickTimerIntervalStandard - 2*3}, 
+            {5, pacTickTimerIntervalStandard - 2*4}, 
+            {6, pacTickTimerIntervalStandard - 2*5}, 
+            {7, pacTickTimerIntervalStandard - 2*6}, 
+            {8, pacTickTimerIntervalStandard - 2*7}, 
+            {9, pacTickTimerIntervalStandard - 2*8}, 
+            {10, pacTickTimerIntervalStandard - 2*9} // 162
+        };
 
-        // Put all intervals into arrays for management according to level
-        // Index 0 is also set to the first levels interval for ease of use: 
-        // index 1 will equal the speed of level 1, index 2 - level 2's and so on
-        internal int[] ghostSpeedScared = {
-            ghostTickTimerIntervalScared1,
-            ghostTickTimerIntervalScared1,
-            ghostTickTimerIntervalScared2,
-            ghostTickTimerIntervalScared3,
-            ghostTickTimerIntervalScared4,
-            ghostTickTimerIntervalScared5,
-            ghostTickTimerIntervalScared6,
-            ghostTickTimerIntervalScared7,
-            ghostTickTimerIntervalScared8,
-            ghostTickTimerIntervalScared9,
-            ghostTickTimerIntervalScared10 };
-
-        internal int[] ghostSpeed = {
-            ghostTickTimerIntervalFaster1,
-            ghostTickTimerIntervalFaster1,
-            ghostTickTimerIntervalFaster2,
-            ghostTickTimerIntervalFaster3,
-            ghostTickTimerIntervalFaster4,
-            ghostTickTimerIntervalFaster5,
-            ghostTickTimerIntervalFaster6,
-            ghostTickTimerIntervalFaster7,
-            ghostTickTimerIntervalFaster8,
-            ghostTickTimerIntervalFaster9,
-            ghostTickTimerIntervalFaster10 };
-
-        // Create all required labels
+        // Declare all required labels and buttons
         internal System.Windows.Forms.Label labelReady = new System.Windows.Forms.Label();
         internal System.Windows.Forms.Label labelGameOver = new System.Windows.Forms.Label();
+        internal Button buttonRestartGamé = new Button();
 
-        // Create array containing all boxes
+        // Declare array containing all boxes and a list for all walls
         internal Box[,] boxes = new Box[boxesHorizontally, boxesVertically];
-        // Create Pacman, his start coords, and his life list containing three "lives"
+        internal List<Box> walls = new List<Box>(); 
+        // Declare Pacman, his start coords, and his life list containing three lives
         internal Pacman pacman = new Pacman(new PictureBox());
         const int pacman_StartX = boxSize*14;
         const int pacman_StartY = boxSize*25;
@@ -120,12 +114,8 @@ namespace Pacman_Projection
             new Box(new PictureBox(), false, false, false, false),
             new Box(new PictureBox(), false, false, false, false)
         };
-        // Create variables related to the duration pacman can eat 
-        // ghsots after eating a big food
-        const int msToAddAfterBigFood = 6000;
 
-        // Create a list with all pacmans death images in to 
-        // be able to loop through on death
+        // Declare list with all pacmans death images in to loop through on death
         internal List<Image> pacmandeathSequence = new List<Image>
         {
             Resources.pacman_death_0_8_,
@@ -138,9 +128,9 @@ namespace Pacman_Projection
             Resources.pacman_death_7_8_,
             Resources.pacman_death_8_8_
         };
-        // Create list containing the ghosts
+        // Declare list containing the ghosts
         internal List<Ghost> ghosts = new List<Ghost>();
-        // Create ghosts and declare their respective starting coordinates
+        // Declare ghosts and their respective starting positions and directions
         internal Ghost Blinky;
         const int Blinky_StartX = boxSize*14;
         const int Blinky_StartY = boxSize*16;
@@ -154,22 +144,24 @@ namespace Pacman_Projection
         const int Clyde_StartX = boxSize*16;
         const int Clyde_StartY = boxSize*20;
 
+        internal int ghostsEatenDuringPeriod = 0;
+
         const string BlinkyStartDirection = "Left";
-        Image BlinkyStartImage = Resources.Blinky_left;
+        internal Image BlinkyStartImage = Resources.Blinky_left;
         const string PinkyStartDirection = "Down";
-        Image PinkyStartImage = Resources.Pinky_down;
+        internal Image PinkyStartImage = Resources.Pinky_down;
         const string InkyStartDirection = "Up";
-        Image InkyStartImage = Resources.Inky_up;
+        internal Image InkyStartImage = Resources.Inky_up;
         const string ClydeStartDirection = "Up";
-        Image ClydeStartImage = Resources.Clyde_up;
+        internal Image ClydeStartImage = Resources.Clyde_up;
 
         // Declare foodsHorizontally and foodsVertically 
         const int foodsHorizontally = 29;
         const int foodsVertically = 37;
-        // Create food array
+        // Declare food array
         internal Box[,] food = new Box[foodsHorizontally, foodsVertically];
-        // Create list for all big food indexes
-        List<string> bigFoodIndexes = new List<string>();
+        // Declare list for all big food indexes
+        internal List<string> bigFoodIndexes = new List<string>();
 
         // Declare food offset variables
         const int horizontalFoodOffset = boxSize + boxSize / 2;
@@ -180,25 +172,24 @@ namespace Pacman_Projection
         const int foodScoreBig = 50;
         const int fruitScore = 100;
         const int ghostScore = 200;
-        int foodsOnMap = 0;
+        internal int foodsOnMap = 0;
 
+        const int msToAddAfterBigFood = 6000;
         const int msDeathSequence = 160;
         const int msToWaitAfterGhostsAppear = 2800;
         const int msToWaitBetweenGames = 1500;
         const int msToWaitBeforeRestart = 2500;
         const int msToWaitAfterDeath = 800;
-        const int msToWaitAfterGhostEaten = 500;
+        const int msToWaitAfterGhostEaten = 1000;
+        const int msToWaitBetweenWallBlink = 180;
 
         // Declare score and scoreLabel
         internal int score;
         internal System.Windows.Forms.Label labelScore = new System.Windows.Forms.Label();
 
-        // Dictionary to keep track of all active sounds and their corresponding embedded
-        // resources names, I.e. the sound file names (ghost_Scared.wav => ghost_Scared), which should always be the same for ease of use
-        // To avoid threading issues while playing sounds in quick succession, load and store all sounds in soundData in the form of byte[]
-        // Store paused sounds in pausedSounds for ease of access
-        internal Dictionary<string, WaveOutEvent> activeSounds = new Dictionary<string, WaveOutEvent>();
-        internal Dictionary<string, WaveOutEvent> pausedSounds = new Dictionary<string, WaveOutEvent>();
+        // Declare dictionaries to keep track of all sounds and their current states
+        internal Dictionary<string, Sound> activeSounds = new Dictionary<string, Sound>();
+        internal Dictionary<string, Sound> pausedSounds = new Dictionary<string, Sound>();
         internal Dictionary<string, byte[]> soundData = new Dictionary<string, byte[]>();
 
         FormMenu formMenu;
@@ -220,9 +211,9 @@ namespace Pacman_Projection
             this.Location = new Point(388, 57);
 
             // Set timerIntervals to designated interval
-            pacTickTimer.Interval = pacTickTimerInterval;
-            ghostTickTimer.Interval = ghostTickTimerIntervalStandard;
-            
+            pacTickTimer.Interval = pacmanSpeedForLevel[level];
+            ghostTickTimer.Interval = ghostSpeedForLevel[level];
+
             //
             // Create all boxes
             //
@@ -251,11 +242,17 @@ namespace Pacman_Projection
                 }
             }
 
+            // FruitBox properties
+            fruitBox.pictureBox.BackColor = Color.Transparent;
+            /*fruitBox.pictureBox.BorderStyle = BorderStyle.None;*/
+            fruitBox.pictureBox.Size = new Size(boxSize, boxSize);
+            fruitBox.pictureBox.Location = new Point(pacman_StartX, pacman_StartY);
+
             // Pacman properties (+ foodBox)
             pacman.box.Location = new Point(pacman_StartX, pacman_StartY);
             pacman.box.Size = new Size(entitySize, entitySize);
             boxFood.Size = new Size(boxSize, boxSize);
-            pacman.box.Image = Resources.Pacman_start;
+            pacman.box.Image = Resources.Pacman_stationary;
             pacman.box.SizeMode = PictureBoxSizeMode.StretchImage;
             pacman.box.LocationChanged += pacman_LocationChanged;
             Controls.Add(pacman.box);
@@ -269,7 +266,7 @@ namespace Pacman_Projection
             {
                 pacmanLives[indexLife].pictureBox.Image = Resources.Pacman_Life;
                 pacmanLives[indexLife].pictureBox.SizeMode = PictureBoxSizeMode.StretchImage;
-                pacmanLives[indexLife].pictureBox.Location = new Point((int)(boxSize*28 - indexLife*boxSize*2.2), 0);
+                pacmanLives[indexLife].pictureBox.Location = new Point((int)(boxSize * 28 - indexLife * boxSize * 2.2), 0);
                 pacmanLives[indexLife].pictureBox.Size = new Size(entitySize, entitySize);
                 Controls.Add(pacmanLives[indexLife].pictureBox);
             }
@@ -334,30 +331,36 @@ namespace Pacman_Projection
             {
                 boxes[indexX, 0].isWall = true;
                 boxes[indexX, 0].pictureBox.BackColor = Color.Blue;
+                walls.Add(boxes[indexX, 0]);
             }
             // Left & right upper walls
             for (int indexY = 0; indexY < 12; indexY++)
             {
                 boxes[0, indexY].isWall = true;
                 boxes[0, indexY].pictureBox.BackColor = Color.Blue;
+                walls.Add(boxes[0, indexY]);
 
                 boxes[boxesHorizontally - 1, indexY].isWall = true;
                 boxes[boxesHorizontally - 1, indexY].pictureBox.BackColor = Color.Blue;
+                walls.Add(boxes[boxesHorizontally - 1, indexY]);
             }
             // Lower wall
             for (int indexX = 0; indexX < boxesHorizontally; indexX++)
             {
                 boxes[indexX, boxesVertically - 2].isWall = true;
                 boxes[indexX, boxesVertically - 2].pictureBox.BackColor = Color.Blue;
+                walls.Add(boxes[indexX, boxesVertically - 2]);
             }
             // Left & right lower walls
             for (int indexY = 27; indexY < boxesVertically - 1; indexY++)
             {
                 boxes[0, indexY].isWall = true;
                 boxes[0, indexY].pictureBox.BackColor = Color.Blue;
+                walls.Add(boxes[0, indexY]);
 
                 boxes[boxesHorizontally - 1, indexY].isWall = true;
                 boxes[boxesHorizontally - 1, indexY].pictureBox.BackColor = Color.Blue;
+                walls.Add(boxes[boxesHorizontally - 1, indexY]);
             }
 
             // Left middle walls
@@ -365,25 +368,31 @@ namespace Pacman_Projection
             {
                 boxes[indexX, 12].isWall = true;
                 boxes[indexX, 12].pictureBox.BackColor = Color.Blue;
+                walls.Add(boxes[indexX, 12]);
 
                 boxes[indexX, boxesHorizontally - 4].isWall = true;
                 boxes[indexX, boxesHorizontally - 4].pictureBox.BackColor = Color.Blue;
+                walls.Add(boxes[indexX, boxesHorizontally - 4]);
             }
             for (int indexY = 12; indexY < 17; indexY++)
             {
                 boxes[5, indexY].isWall = true;
                 boxes[5, indexY].pictureBox.BackColor = Color.Blue;
+                walls.Add(boxes[5, indexY]);
 
                 boxes[5, boxesHorizontally - indexY + 8].isWall = true;
                 boxes[5, boxesHorizontally - indexY + 8].pictureBox.BackColor = Color.Blue;
+                walls.Add(boxes[5, boxesHorizontally - indexY + 8]);
             }
             for (int indexX = 5; indexX >= 0; indexX--)
             {
                 boxes[indexX, 17].isWall = true;
                 boxes[indexX, 17].pictureBox.BackColor = Color.Blue;
+                walls.Add(boxes[indexX, 17]);
 
                 boxes[indexX, 21].isWall = true;
                 boxes[indexX, 21].pictureBox.BackColor = Color.Blue;
+                walls.Add(boxes[indexX, 21]);
             }
 
             // Right middle walls
@@ -391,25 +400,31 @@ namespace Pacman_Projection
             {
                 boxes[indexX, 12].isWall = true;
                 boxes[indexX, 12].pictureBox.BackColor = Color.Blue;
+                walls.Add(boxes[indexX, 12]);
 
                 boxes[indexX, boxesHorizontally - 4].isWall = true;
                 boxes[indexX, boxesHorizontally - 4].pictureBox.BackColor = Color.Blue;
+                walls.Add(boxes[indexX, boxesHorizontally - 4]);
             }
             for (int indexY = 12; indexY < 17; indexY++)
             {
                 boxes[boxesHorizontally - 6, indexY].isWall = true;
                 boxes[boxesHorizontally - 6, indexY].pictureBox.BackColor = Color.Blue;
+                walls.Add(boxes[boxesHorizontally - 6, indexY]);
 
                 boxes[boxesHorizontally - 6, boxesHorizontally - indexY + 8].isWall = true;
                 boxes[boxesHorizontally - 6, boxesHorizontally - indexY + 8].pictureBox.BackColor = Color.Blue;
+                walls.Add(boxes[boxesHorizontally - 6, boxesHorizontally - indexY + 8]);
             }
             for (int indexX = boxesHorizontally - 6; indexX < boxesHorizontally; indexX++)
             {
                 boxes[indexX, 17].isWall = true;
                 boxes[indexX, 17].pictureBox.BackColor = Color.Blue;
+                walls.Add(boxes[indexX, 17]);
 
                 boxes[indexX, 21].isWall = true;
                 boxes[indexX, 21].pictureBox.BackColor = Color.Blue;
+                walls.Add(boxes[indexX, 21]);
             }
 
             // Middle walls
@@ -419,22 +434,28 @@ namespace Pacman_Projection
                 {
                     boxes[8, indexY].isWall = true;
                     boxes[8, indexY].pictureBox.BackColor = Color.Blue;
+                    walls.Add(boxes[8 ,indexY]);
 
                     boxes[21, indexY].isWall = true;
                     boxes[21, indexY].pictureBox.BackColor = Color.Blue;
+                    walls.Add(boxes[21, indexY]);
                 }
 
                 if (indexY == 12)
                 {
                     boxes[9, indexY].isWall = true;
                     boxes[9, indexY].pictureBox.BackColor = Color.Blue;
+                    walls.Add(boxes[9, indexY]);
                     boxes[10, indexY].isWall = true;
                     boxes[10, indexY].pictureBox.BackColor = Color.Blue;
+                    walls.Add(boxes[10, indexY]);
 
-                    boxes[20, indexY].isWall = true;
-                    boxes[20, indexY].pictureBox.BackColor = Color.Blue;
                     boxes[19, indexY].isWall = true;
                     boxes[19, indexY].pictureBox.BackColor = Color.Blue;
+                    walls.Add(boxes[19, indexY]);
+                    boxes[20, indexY].isWall = true;
+                    boxes[20, indexY].pictureBox.BackColor = Color.Blue;
+                    walls.Add(boxes[20, indexY]);
                 }
             }
 
@@ -444,290 +465,418 @@ namespace Pacman_Projection
             {
                 boxes[indexX, 3].isWall = true;
                 boxes[indexX, 3].pictureBox.BackColor = Color.Blue;
+                walls.Add(boxes[indexX, 3]);
                 if (indexX == 9 || indexX == 10)
                 {
                     boxes[indexX, 4].isWall = true;
                     boxes[indexX, 4].pictureBox.BackColor = Color.Blue;
+                    walls.Add(boxes[indexX, 4]);
                 }
             }
 
             boxes[1, 4].isWall = true;
             boxes[1, 4].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[1, 4]);
             boxes[1, 5].isWall = true;
             boxes[1, 5].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[1, 5]);
             boxes[2, 4].isWall = true;
             boxes[2, 4].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[2, 4]);
             boxes[2, 5].isWall = true;
             boxes[2, 5].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[2, 5]);
 
             boxes[5, 7].isWall = true;
             boxes[5, 7].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[5, 7]);
             boxes[5, 8].isWall = true;
             boxes[5, 8].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[5, 8]);
             boxes[5, 9].isWall = true;
             boxes[5, 9].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[5, 9]);
             boxes[4, 9].isWall = true;
             boxes[4, 9].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[4, 9]);
             boxes[3, 9].isWall = true;
             boxes[3, 9].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[3, 9]);
 
             boxes[14, 1].isWall = true;
             boxes[14, 1].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[14, 1]);
             boxes[14, 2].isWall = true;
             boxes[14, 2].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[14, 2]);
             boxes[14, 3].isWall = true;
             boxes[14, 3].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[14, 3]);
             boxes[14, 4].isWall = true;
             boxes[14, 4].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[14, 4]);
 
             boxes[17, 4].isWall = true;
             boxes[17, 4].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[17, 4]);
             boxes[17, 3].isWall = true;
             boxes[17, 3].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[17, 3]);
             boxes[18, 3].isWall = true;
             boxes[18, 3].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[18, 3]);
             boxes[19, 3].isWall = true;
             boxes[19, 3].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[19, 3]);
             boxes[20, 3].isWall = true;
             boxes[20, 3].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[20, 3]);
             boxes[20, 4].isWall = true;
             boxes[20, 4].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[20, 4]);
 
             boxes[24, 4].isWall = true;
             boxes[24, 4].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[24, 4]);
             boxes[25, 4].isWall = true;
             boxes[25, 4].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[25, 4]);
             boxes[26, 4].isWall = true;
             boxes[26, 4].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[26, 4]);
             boxes[24, 3].isWall = true;
             boxes[24, 3].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[24, 3]);
             boxes[25, 3].isWall = true;
             boxes[25, 3].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[25, 3]);
             boxes[26, 3].isWall = true;
             boxes[26, 3].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[26, 3]);
 
             boxes[24, 7].isWall = true;
             boxes[24, 7].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[24, 7]);
             boxes[25, 7].isWall = true;
             boxes[25, 7].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[25, 7]);
             boxes[26, 7].isWall = true;
             boxes[26, 7].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[26, 7]);
             boxes[26, 8].isWall = true;
             boxes[26, 8].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[26, 8]);
             boxes[26, 9].isWall = true;
             boxes[26, 9].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[26, 9]);
             boxes[25, 9].isWall = true;
             boxes[25, 9].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[25, 9]);
             boxes[24, 9].isWall = true;
             boxes[24, 9].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[24, 9]);
             boxes[24, 8].isWall = true;
             boxes[24, 8].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[24, 8]);
 
             for (int indexX = 11; indexX < 19; indexX++)
             {
                 boxes[indexX, 7].isWall = true;
                 boxes[indexX, 7].pictureBox.BackColor = Color.Blue;
+                walls.Add(boxes[indexX, 7]);
 
                 boxes[indexX, 25].isWall = true;
                 boxes[indexX, 25].pictureBox.BackColor = Color.Blue;
+                walls.Add(boxes[indexX, 25]);
             }
             for (int indexX = 11; indexX < 19; indexX++)
             {
                 boxes[indexX, 8].isWall = true;
                 boxes[indexX, 8].pictureBox.BackColor = Color.Blue;
+                walls.Add(boxes[indexX, 8]);
 
                 boxes[indexX, 26].isWall = true;
                 boxes[indexX, 26].pictureBox.BackColor = Color.Blue;
+                walls.Add(boxes[indexX, 26]);
             }
             boxes[14, 9].isWall = true;
             boxes[14, 9].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[14, 9]);
             boxes[14, 10].isWall = true;
             boxes[14, 10].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[14, 10]);
             boxes[14, 11].isWall = true;
             boxes[14, 11].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[14, 11]);
             boxes[14, 12].isWall = true;
             boxes[14, 12].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[14, 12]);
             boxes[15, 9].isWall = true;
             boxes[15, 9].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[15, 9]);
             boxes[15, 10].isWall = true;
             boxes[15, 10].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[15, 10]);
             boxes[15, 11].isWall = true;
             boxes[15, 11].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[15, 11]);
             boxes[15, 12].isWall = true;
             boxes[15, 12].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[15, 12]);
 
             boxes[14, 27].isWall = true;
             boxes[14, 27].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[14, 27]);
             boxes[14, 28].isWall = true;
             boxes[14, 28].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[14, 28]);
             boxes[14, 29].isWall = true;
             boxes[14, 29].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[14, 29]);
             boxes[15, 27].isWall = true;
             boxes[15, 27].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[15, 27]);
             boxes[15, 28].isWall = true;
             boxes[15, 28].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[15, 28]);
             boxes[15, 29].isWall = true;
             boxes[15, 29].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[15, 29]);
 
             boxes[12, 16].isWall = true;
             boxes[12, 16].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[12, 16]);
             boxes[11, 16].isWall = true;
             boxes[11, 16].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[11, 16]);
             boxes[11, 17].isWall = true;
             boxes[11, 17].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[11, 17]);
             boxes[11, 18].isWall = true;
             boxes[11, 18].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[11, 18]);
             boxes[11, 19].isWall = true;
             boxes[11, 19].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[11, 19]);
             boxes[11, 20].isWall = true;
             boxes[11, 20].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[11, 20]);
             boxes[11, 21].isWall = true;
             boxes[11, 21].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[11, 21]);
             boxes[11, 22].isWall = true;
             boxes[11, 22].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[11, 22]);
             boxes[12, 22].isWall = true;
             boxes[12, 22].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[12, 22]);
             boxes[13, 22].isWall = true;
             boxes[13, 22].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[13, 22]);
             boxes[14, 22].isWall = true;
             boxes[14, 22].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[14, 22]);
             boxes[15, 22].isWall = true;
             boxes[15, 22].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[15, 22]);
             boxes[16, 22].isWall = true;
             boxes[16, 22].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[16, 22]);
             boxes[17, 22].isWall = true;
             boxes[17, 22].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[17, 22]);
             boxes[18, 22].isWall = true;
             boxes[18, 22].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[18, 22]);
             boxes[18, 21].isWall = true;
             boxes[18, 21].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[18, 21]);
             boxes[18, 20].isWall = true;
             boxes[18, 20].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[18, 20]);
             boxes[18, 19].isWall = true;
             boxes[18, 19].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[18, 19]);
             boxes[18, 18].isWall = true;
             boxes[18, 18].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[18, 18]);
             boxes[18, 17].isWall = true;
             boxes[18, 17].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[18, 17]);
             boxes[18, 16].isWall = true;
             boxes[18, 16].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[18, 16]);
             boxes[17, 16].isWall = true;
             boxes[17, 16].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[17, 16]);
 
             boxes[3, 29].isWall = true;
             boxes[3, 29].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[3, 29]);
             boxes[4, 29].isWall = true;
             boxes[4, 29].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[4, 29]);
             boxes[5, 29].isWall = true;
             boxes[5, 29].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[5, 29]);
             boxes[5, 30].isWall = true;
             boxes[5, 30].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[5, 30]);
             boxes[5, 31].isWall = true;
             boxes[5, 31].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[5, 31]);
             boxes[4, 31].isWall = true;
             boxes[4, 31].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[4, 31]);
             boxes[3, 31].isWall = true;
             boxes[3, 31].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[3, 31]);
             boxes[3, 30].isWall = true;
             boxes[3, 30].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[3, 30]);
 
             boxes[8, 29].isWall = true;
             boxes[8, 29].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[8, 29]);
             boxes[9, 29].isWall = true;
             boxes[9, 29].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[9, 29]);
             boxes[10, 29].isWall = true;
             boxes[10, 29].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[10, 29]);
             boxes[11, 29].isWall = true;
             boxes[11, 29].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[11, 29]);
 
             boxes[18, 29].isWall = true;
             boxes[18, 29].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[18, 29]);
             boxes[19, 29].isWall = true;
             boxes[19, 29].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[19, 29]);
             boxes[20, 29].isWall = true;
             boxes[20, 29].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[20, 29]);
             boxes[21, 29].isWall = true;
             boxes[21, 29].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[21, 29]);
 
             boxes[24, 29].isWall = true;
             boxes[24, 29].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[24, 29]);
             boxes[25, 29].isWall = true;
             boxes[25, 29].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[25, 29]);
             boxes[26, 29].isWall = true;
             boxes[26, 29].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[26, 29]);
             boxes[24, 30].isWall = true;
             boxes[24, 30].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[24, 30]);
             boxes[24, 31].isWall = true;
             boxes[24, 31].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[24, 31]);
 
             boxes[3, 34].isWall = true;
             boxes[3, 34].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[3, 34]);
             boxes[4, 34].isWall = true;
             boxes[4, 34].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[4, 34]);
             boxes[5, 34].isWall = true;
             boxes[5, 34].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[5, 34]);
 
             boxes[8, 32].isWall = true;
             boxes[8, 32].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[8, 32]);
             boxes[9, 32].isWall = true;
             boxes[9, 32].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[9, 32]);
             boxes[10, 32].isWall = true;
             boxes[10, 32].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[10, 32]);
             boxes[11, 32].isWall = true;
             boxes[11, 32].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[11, 32]);
             boxes[11, 33].isWall = true;
             boxes[11, 33].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[11, 33]);
             boxes[11, 34].isWall = true;
             boxes[11, 34].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[11, 34]);
             boxes[10, 34].isWall = true;
             boxes[10, 34].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[10, 34]);
             boxes[9, 34].isWall = true;
             boxes[9, 34].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[9 ,34]);
             boxes[8, 34].isWall = true;
             boxes[8, 34].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[8, 34]);
             boxes[8, 33].isWall = true;
             boxes[8, 33].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[8, 33]);
 
             boxes[14, 32].isWall = true;
             boxes[14, 32].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[14, 32]);
             boxes[14, 33].isWall = true;
             boxes[14, 33].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[14, 33]);
             boxes[14, 34].isWall = true;
             boxes[14, 34].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[14, 34]);
             boxes[15, 34].isWall = true;
             boxes[15, 34].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[15, 34]);
             boxes[15, 33].isWall = true;
             boxes[15, 33].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[15, 33]);
             boxes[15, 32].isWall = true;
             boxes[15, 32].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[15, 32]);
             boxes[16, 32].isWall = true;
             boxes[16, 32].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[16, 32]);
             boxes[17, 32].isWall = true;
             boxes[17, 32].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[17, 32]);
 
             boxes[20, 32].isWall = true;
             boxes[20, 32].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[20, 32]);
             boxes[21, 32].isWall = true;
             boxes[21, 32].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[21, 32]);
             boxes[21, 33].isWall = true;
             boxes[21, 33].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[21, 33]);
             boxes[20, 33].isWall = true;
             boxes[20, 33].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[20, 33]);
             boxes[20, 34].isWall = true;
             boxes[20, 34].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[20, 34]);
             boxes[21, 34].isWall = true;
             boxes[21, 34].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[21, 34]);
             boxes[22, 34].isWall = true;
             boxes[22, 34].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[22, 34]);
             boxes[23, 34].isWall = true;
             boxes[23, 34].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[23, 34]);
             boxes[24, 34].isWall = true;
             boxes[24, 34].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[24, 34]);
             boxes[25, 34].isWall = true;
             boxes[25, 34].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[25, 34]);
 
             boxes[28, 32].isWall = true;
             boxes[28, 32].pictureBox.BackColor = Color.Blue;
+            walls.Add(boxes[28, 32]);
 
             // Make the "gate" into the ghosts encolsure
             boxes[13, 16].isGate = true;
@@ -740,19 +889,12 @@ namespace Pacman_Projection
             boxes[16, 16].pictureBox.BackColor = Color.LightPink;
 
             //
-            // Set all walls not to contain food's bool "toContainFood" to false
+            // Set all walls and boxes not to contain food
             //
 
-            // Walls
-            for (int horizontalIndex = 0; horizontalIndex < boxesHorizontally; horizontalIndex++)
+            foreach (Box wall in walls)
             {
-                for (int verticalIndex = 0; verticalIndex < boxesVertically; verticalIndex++)
-                {
-                    if (boxes[horizontalIndex, verticalIndex].isWall == true)
-                    {
-                        boxes[horizontalIndex, verticalIndex].toContainFood = false;
-                    }
-                }
+                wall.toContainFood = false;
             }
 
             // Others
@@ -830,7 +972,7 @@ namespace Pacman_Projection
             boxes[25, 13].toContainFood = false;
             boxes[25, 14].toContainFood = false;
             boxes[25, 16].toContainFood = false;
-            boxes[27 ,13].toContainFood = false;
+            boxes[27, 13].toContainFood = false;
             boxes[27, 14].toContainFood = false;
             boxes[27, 16].toContainFood = false;
             boxes[29, 13].toContainFood = false;
@@ -848,7 +990,7 @@ namespace Pacman_Projection
             boxes[25, 23].toContainFood = false;
             boxes[25, 25].toContainFood = false;
             boxes[27, 22].toContainFood = false;
-            boxes[27 ,23].toContainFood = false;
+            boxes[27, 23].toContainFood = false;
             boxes[27, 25].toContainFood = false;
             boxes[29, 22].toContainFood = false;
             boxes[29, 23].toContainFood = false;
@@ -859,6 +1001,7 @@ namespace Pacman_Projection
             boxes[28, 34].toContainFood = false;
             boxes[16, 33].toContainFood = false;
             boxes[17, 34].toContainFood = false;
+            boxes[pacman_StartX / boxSize, pacman_StartY / boxSize].toContainFood = false;
 
             //
             // Food
@@ -868,12 +1011,13 @@ namespace Pacman_Projection
             // checking if it collides with any walls, if so, they are removed
             for (int indexY = 0; indexY < foodsVertically; indexY++)
             {
+                // Don't add a food to where pacman starts
                 for (int indexX = 0; indexX < foodsHorizontally; indexX++)
                 {
                     if (indexX == 0 && indexY == 0
-                     || indexX == 26 && indexY == 0
-                     || indexX == 0 && indexY == 34
-                     || indexX == 26 && indexY == 34)
+                         || indexX == 26 && indexY == 0
+                         || indexX == 0 && indexY == 34
+                         || indexX == 26 && indexY == 34)
                     {
                         food[indexX, indexY] = new Box(new PictureBox(), false, false, true, true);
                         food[indexX, indexY].pictureBox.Image = Resources.FoodBig;
@@ -907,16 +1051,6 @@ namespace Pacman_Projection
                     }
                 }
             }
-
-            //
-            // Ghosts 
-            //
-        
-            // Set ghosts starting directions
-            Blinky.SetDirection(BlinkyStartDirection);
-            Pinky.SetDirection(PinkyStartDirection);
-            Inky.SetDirection(InkyStartDirection);
-            Clyde.SetDirection(ClydeStartDirection);
 
             //
             // Sound
@@ -957,14 +1091,9 @@ namespace Pacman_Projection
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // Stop all sound before closing so they don't play in the background while in the menu
-            int index = activeSounds.Count - 1;
-            while (activeSounds.Count > 0)
-            {
-                StopSound(activeSounds.ElementAt(index).Key);
-                index--;
-            }
-            
+            StopAllSounds();
+
+            this.Dispose();
             formMenu.Show(); 
         }
 
@@ -978,6 +1107,7 @@ namespace Pacman_Projection
             labelReady.ForeColor = Color.Yellow;
             labelReady.BackColor = Color.Transparent;
             labelReady.BorderStyle = BorderStyle.FixedSingle;
+            labelReady.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             Controls.Add(labelReady);
             labelReady.BringToFront();
 
@@ -989,6 +1119,7 @@ namespace Pacman_Projection
             labelGameOver.ForeColor = Color.Red;
             labelGameOver.BackColor = Color.Transparent;
             labelGameOver.BorderStyle = BorderStyle.FixedSingle; 
+            labelGameOver.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             Controls.Add(labelGameOver);
             labelGameOver.BringToFront();
             labelGameOver.Hide();
@@ -997,9 +1128,15 @@ namespace Pacman_Projection
             pacman.box.Show();
             pacman.box.BringToFront();
 
-            PlaySound("pacman_beginning", false, false);
+            PlaySound("pacman_beginning", false);
             // Wait for 'msToWaitBetweenGames' milliseconds before showing ghosts
             await Task.Delay(msToWaitBetweenGames);
+
+            // Set ghosts starting directions
+            Blinky.SetDirection(BlinkyStartDirection);
+            Pinky.SetDirection(PinkyStartDirection);
+            Inky.SetDirection(InkyStartDirection);
+            Clyde.SetDirection(ClydeStartDirection);
 
             Blinky.box.Show();
             Blinky.box.BringToFront();
@@ -1023,16 +1160,15 @@ namespace Pacman_Projection
 
             UpdateEatGhostDurationLoop();
             GhostSoundLoop();
-            PlaySound("ghost_scatter", true, false);
         }
 
         private async void Game(bool win)
         {
-            for (int index = 0; index < activeSounds.Count; index++)
-            {
-                StopSound(activeSounds.ElementAt(index).Key);
-            }
+            gamePaused = true;
+            StopTimers();
+            StopAllSounds();
 
+            pacman.box.Image = Resources.Pacman_stationary;
             Blinky.box.Image = Resources.Blinky_stationary;
             Pinky.box.Image = Resources.Pinky_stationary;
             Inky.box.Image = Resources.Inky_stationary;
@@ -1047,20 +1183,42 @@ namespace Pacman_Projection
 
             if (win)
             {
+                int timesToBlink = 8;
+                while (timesToBlink > 0)
+                {
+                    foreach (Box box in walls)
+                    {
+                        if (timesToBlink % 2 == 0)
+                        {
+                            box.pictureBox.BackColor = Color.LightYellow;
+                        }
+                        else
+                        {
+                            box.pictureBox.BackColor = Color.Blue;
+                            
+                        }
+                    }
+                    timesToBlink--;
+                    await Task.Delay(msToWaitBetweenWallBlink);
+                }
+
                 // WIN
                 if (level != 10)
                 {
-                    level++;
                     Restart();
+                }
+                else
+                {
+                    //WIN
                 }
             }
             else
             {
                 // Play pacman death sound and play his death animation
-                PlaySound("pacman_death", false, false);
-                for (int index = 0; index < pacmandeathSequence.Count; index++)
+                PlaySound("pacman_death", false);
+                foreach (Image image in pacmandeathSequence)
                 {
-                    pacman.box.Image = pacmandeathSequence[index];
+                    pacman.box.Image = image;
                     await Task.Delay(msDeathSequence);
                 }
 
@@ -1071,6 +1229,8 @@ namespace Pacman_Projection
         private async void Restart()
         {
             await Task.Delay(msToWaitAfterDeath);
+
+            level++;
 
             bool restart = false;
             try
@@ -1093,8 +1253,8 @@ namespace Pacman_Projection
                 Inky.box.Location = new Point(Inky_StartX, Inky_StartY);
                 Clyde.box.Location = new Point(Clyde_StartX, Clyde_StartY);
                 pacman.box.Location = new Point(pacman_StartX, pacman_StartY);
-                pacman.box.Image = Resources.Pacman_start;
-                latestKey = "";
+                pacman.box.Image = Resources.Pacman_stationary;
+                ResetPacmanKey();
                 // Set ghosts starting directions, pictures, and make them visible 
                 Blinky.SetDirection(BlinkyStartDirection);
                 Blinky.box.Image = BlinkyStartImage;
@@ -1116,11 +1276,8 @@ namespace Pacman_Projection
 
                 labelReady.Hide();
 
-                pacTickTimer.Start();
-                pacImageTimer.Start();
-                ghostTickTimer.Start();
-                ghostImageTimer.Start();
-                bigFoodBlinkTimer.Start();
+                StartTimers();
+                gamePaused = false;
             }
         }
 
@@ -1158,66 +1315,58 @@ namespace Pacman_Projection
             }
         }
 
-        private void PlaySound(string soundName, bool loop, bool unPause)
+        private void PlaySound(string soundName, bool loop)
         {
             Task.Run(async () =>
             {
                 if (soundData.ContainsKey(soundName))
                 {
-                    MemoryStream memoryStream = null;
-                    WaveFileReader reader = null;
+                    MemoryStream memoryStream = new MemoryStream(soundData[soundName]);
+                    WaveFileReader reader = new WaveFileReader(memoryStream);
                     WaveOutEvent waveOut = null;
-                    WaveStream stream = null;
+                    WaveStream waveStream = null;
 
-                    if (unPause)
+                    if (loop)
                     {
-                        try
-                        {
-                            pausedSounds[soundName].Play();
-                        }
-                        catch (Exception)
-                        {
-                            memoryStream = new MemoryStream(soundData[soundName]);
-                            reader = new WaveFileReader(memoryStream);
+                        waveStream = loop ? new LoopStream(reader) : (WaveStream)reader;
+                        waveOut = new WaveOutEvent();
+                        waveOut.DesiredLatency = 70; // To remove gap between sounds when looping
 
-                            stream = loop ? new LoopStream(reader) : (WaveStream)reader; 
-                            waveOut = new WaveOutEvent();
-                            waveOut.Init(stream);
-                            waveOut.Play();
-
-                            activeSounds.Add(soundName, waveOut);
-                        }
+                        waveOut.Init(waveStream);
+                        waveOut.Play();
                     }
                     else
                     {
-                        memoryStream = new MemoryStream(soundData[soundName]);
-                        reader = new WaveFileReader(memoryStream);
-
-                        stream = loop ? new LoopStream(reader) : (WaveStream)reader; 
                         waveOut = new WaveOutEvent();
-                        waveOut.Init(stream);
-                        waveOut.Play();
 
-                        if (!await CheckForSound(soundName))
-                        {
-                            activeSounds.Add(soundName, waveOut);
-                        }
+                        waveOut.Init(reader);
+                        waveOut.Play();
                     }
 
-                    waveOut.PlaybackStopped += (sender, e) =>
+                    if (!await CheckForSound(soundName))
                     {
-                        if (soundName == "ghost_scared" && currentEatGhostDuration == 0)
-                        {
-                            ghostScared = false;
-                        }
+                        activeSounds.Add(soundName, new Sound(soundName, memoryStream, reader, waveOut, waveStream));
+                    }
 
-                        waveOut.Dispose();
-                        stream?.Dispose(); 
-                        memoryStream.Dispose();
-                        reader.Dispose();
-
-                        activeSounds.Remove(soundName);
-                    };
+                    if (!loop)
+                    {
+                        waveOut.PlaybackStopped += (sender, e) =>
+                        {                 
+                            // Dispose if not null, crash-preventing
+                            waveOut?.Dispose();
+                            waveStream?.Dispose();
+                            memoryStream?.Dispose();
+                            reader?.Dispose();
+                            activeSounds?.Remove(soundName);
+                        };
+                    }
+                }
+                else
+                {
+                    throw new Exception("Sound not found: " + soundName + ". POSSIBLE SOLUTION: " +
+                    "1. Ensure soundData contains the sound-file. " +
+                    "2. Check for spelling errors at relevant locations and methods in used code. " +
+                    "3. Set sound-property 'Build Action' => 'Embedded Resources'");
                 }
             });
         }
@@ -1230,20 +1379,115 @@ namespace Pacman_Projection
 
         private void StopSound(string soundName)
         {
-            if (soundData.ContainsKey(soundName))
+            if (soundData.ContainsKey(soundName) && activeSounds.ContainsKey(soundName))
             {
-                activeSounds[soundName]?.Stop();
+                activeSounds[soundName].waveOut.Stop();
+                activeSounds[soundName].memoryStream.Dispose();
+                activeSounds[soundName].reader.Dispose();
+                activeSounds[soundName].waveStream.Dispose();
                 activeSounds.Remove(soundName);
             }
         }
 
-        private void PauseSound(string soundName)
+        private void StopAllSounds()
         {
-            if (soundData.ContainsKey(soundName))
+            int index = activeSounds.Count - 1;
+            while (index >= 0) 
             {
-                activeSounds[soundName]?.Pause();
-                pausedSounds.Add(soundName, activeSounds[soundName]);
-                activeSounds.Remove(soundName);
+                activeSounds.ElementAt(index).Value.waveOut.Stop();
+                activeSounds.ElementAt(index).Value.memoryStream.Dispose();
+                activeSounds.ElementAt(index).Value.reader.Dispose();
+                activeSounds.ElementAt(index).Value.waveStream?.Dispose();
+                activeSounds.Remove(activeSounds.ElementAt(index).Key);
+                index--;
+            }
+        }
+
+        private async Task GhostSoundLoop()
+        {
+            bool scaredPlaying = false;
+            bool scatterPlaying = false;
+            bool chasePlaying = false;
+
+            while (true)
+            {
+                if (gamePaused)
+                {
+                    scaredPlaying = false;
+                    scatterPlaying = false;
+                    chasePlaying = false;
+                }
+                else
+                {
+                    if (currentEatGhostDuration > 0)
+                    {
+                        if (!scaredPlaying)
+                        {
+                            SetSound_Scared();
+                            {
+                                scaredPlaying = true;
+                                scatterPlaying = false;
+                                chasePlaying = false;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (!scatterPlaying)
+                        {
+                            SetSound_Scatter();
+                            {
+                                scaredPlaying = false;
+                                scatterPlaying = true;
+                                chasePlaying = false;
+                            }
+
+                            //
+                            // OR SetSound_Chase();
+                            //
+                        }
+                    }
+                }
+                await Task.Delay(10); // Wait 10ms before looping again
+            }
+        }
+
+        private void SetSound_Scared()
+        {
+            StopSound("ghost_scatter");
+            StopSound("ghost_chase1");
+            StopSound("ghost_chase2");
+            StopSound("ghost_chase3");
+            
+            PlaySound("ghost_scared", true);
+        }
+
+        private void SetSound_Scatter()
+        {
+            StopSound("ghost_scared");
+            StopSound("ghost_chase1");
+            StopSound("ghost_chase2");
+            StopSound("ghost_chase3");
+
+            PlaySound("ghost_scatter", true);
+        }
+
+        private void SetSound_Chase()
+        {
+            StopSound("ghost_scared");
+            StopSound("ghost_scatter");
+
+            if (level < 4)
+            {
+                PlaySound("ghost_chase" + 1.ToString(), true);
+            }
+            else if (level > 4 && level < 7)
+            {
+                PlaySound("ghost_chase" + 2.ToString(), true);
+            }
+            else if (level > 7)
+            {
+                PlaySound("ghost_chase" + 3.ToString(), true);
             }
         }
 
@@ -1308,9 +1552,15 @@ namespace Pacman_Projection
         {
             if (!ghostScared)
             {
-                for (int index = 0; index < ghosts.Count; index++)
+                foreach (Ghost ghost in ghosts)
                 {
-                    if (pacman.box.Bounds.IntersectsWith(ghosts[index].box.Bounds))
+                    if (ghost.dead)
+                    {
+                        pacman.box.BringToFront();
+                        return;
+                    }
+
+                    if (pacman.box.Bounds.IntersectsWith(ghost.box.Bounds))
                     {
                         Game(false);
                     }
@@ -1318,42 +1568,40 @@ namespace Pacman_Projection
             }
             else
             {
-                for (int index = 0; index < ghosts.Count; index++)
+                foreach (Ghost ghost in ghosts)
                 {
-                    if (pacman.box.Bounds.IntersectsWith(ghosts[index].box.Bounds))
+                    if (pacman.box.Bounds.IntersectsWith(ghost.box.Bounds))
                     {
-                        if (ghosts[index].Equals(Blinky))
+                        if (ghost.dead)
+                        {
+                            pacman.box.BringToFront();
+                            return;
+                        }
+
+                        if (ghost.Equals(Blinky))
                         {
                             GhostEaten(Blinky);
                         }
-                        else if (ghosts[index].Equals(Pinky))
+                        else if (ghost.Equals(Pinky))
                         {
                             GhostEaten(Pinky);
                         }
-                        else if (ghosts[index].Equals(Inky))
+                        else if (ghost.Equals(Inky))
                         {
                             GhostEaten(Inky);
-                        }
-                        else if (ghosts[index].Equals(Clyde))
+                        } 
+                        else if (ghost.Equals(Clyde))
                         {
+                            GhostEaten(Clyde);
                             GhostEaten(Clyde);
                         }
                     }
                 }
             }
-
-            // If pacman intersects with a dead ghost, move pacman infront of it
-            for (int index = 0; index < ghosts.Count; index++)
-            {
-                if (pacman.box.Bounds.IntersectsWith(ghosts[index].box.Bounds) && ghosts[index].dead)
-                {
-                    pacman.box.BringToFront();
-                }
-            }
         }
 
-        string currentKey = "";
-        string latestKey = "";
+        internal string currentKey = "";
+        internal string latestKey = "";
 
         private void View_KeyDown(object sender, KeyEventArgs e)
         {
@@ -1369,13 +1617,9 @@ namespace Pacman_Projection
             else if (e.KeyCode == Keys.Down) {
                 currentKey = "Down";
             }
-            else if (e.KeyCode == Keys.Q)
-            {
-                MessageBox.Show(foodsOnMap.ToString());
-            }
         }
 
-        PictureBox boxFood = new PictureBox();
+        internal PictureBox boxFood = new PictureBox();
         private void pacTickTimer_Tick(object sender, EventArgs e)
         {
             bool canChangeDirection = false;
@@ -1618,95 +1862,66 @@ namespace Pacman_Projection
             }
         }
 
+        private void ResetPacmanKey()
+        {
+            latestKey = "";
+            currentKey = "";
+        }
+
         const int ghostBlinkDuration = 250;
         const int timesToBlink = 6;
         internal bool ghostBlink = false;
         internal int currentEatGhostDuration = 0;
         private async Task UpdateEatGhostDurationLoop()
-        {
-            if (currentEatGhostDuration > 0)
-            {
-                currentEatGhostDuration -= ghostBlinkDuration;
-            }
-
-            if (currentEatGhostDuration <= (ghostBlinkDuration * timesToBlink) || ghostBlink)
-            {
-                ghostBlink = true;
-                if (currentEatGhostDuration / ghostBlinkDuration % 2 == 0)
-                {
-                    Blinky.white = false;
-                    Pinky.white = false;
-                    Inky.white = false;
-                    Clyde.white = false;
-                }
-                else
-                {
-                    Blinky.white = true;
-                    Pinky.white = true;
-                    Inky.white = true;
-                    Clyde.white = true;
-                }
-            }
-
-            await Task.Delay(ghostBlinkDuration);
-        }
-
-        private async Task GhostSoundLoop()
-        {
+        {   
             while (true)
             {
+                bool toStopScared = false;
+                if (currentEatGhostDuration == ghostBlinkDuration) // currentEatGhostDruation ends this tick
+                {
+                    toStopScared = true;
+                }
+                
                 if (currentEatGhostDuration > 0)
                 {
-                    SetSound_Scared();
+                    SetGhosts_Scared();
+
+                    currentEatGhostDuration -= ghostBlinkDuration;
+                    if (toStopScared && currentEatGhostDuration == 0)
+                    {
+                        ghostScared = false;
+                        ghostsEatenDuringPeriod = 0;
+                        if (true)
+                        {
+                            //
+                            // SCATTER OR CHASE
+                            //
+
+                            SetGhosts_Scatter();
+                        }
+                    }
                 }
-                else
+
+                if (currentEatGhostDuration <= (ghostBlinkDuration * timesToBlink) || ghostBlink)
                 {
-                    //
-                    // OR SetSound_Chase();
-                    //
-
-                    SetSound_Scatter();
+                    ghostBlink = true;
+                    if (currentEatGhostDuration / ghostBlinkDuration % 2 == 0)
+                    {
+                        Blinky.white = false;
+                        Pinky.white = false;
+                        Inky.white = false;
+                        Clyde.white = false;
+                    }
+                    else
+                    {
+                        Blinky.white = true;
+                        Pinky.white = true;
+                        Inky.white = true;
+                        Clyde.white = true;
+                    }
                 }
-                await Task.Delay(5);
-            } 
-        }
 
-        private void SetSound_Scared()
-        {
-            PauseSound("ghost_scatter");
-            PauseSound("ghost_chase1");
-            PauseSound("ghost_chase2");
-            PauseSound("ghost_chase3");
-
-            PlaySound("ghost_scated", true, true);
-        }
-
-        private void SetSound_Scatter()
-        {
-            PauseSound("ghost_scared");
-            PauseSound("ghost_chase1");
-            PauseSound("ghost_chase2");
-            PauseSound("ghost_chase3");
-
-            PlaySound("ghost_scatter", true, true);
-        }
-
-        private void SetSound_Chase()
-        {
-            PauseSound("ghost_scared");
-            PauseSound("ghost_scatter");
-
-            if (level < 4)
-            {
-                PlaySound("ghost_chase" + 1.ToString(), true, true);
-            }
-            else if (level > 4 && level < 7 )
-            {
-                PlaySound("ghost_chase" + 2.ToString(), true, true);
-            }
-            else if (level > 7)
-            {
-                PlaySound("ghost_chase" + 3.ToString(), true, true);
+                await Task.Delay(ghostBlinkDuration);
             }
         }
 
@@ -1779,7 +1994,7 @@ namespace Pacman_Projection
 
 
         //
-        // Food-related methods
+        // Food & fruit-related methods
         //
 
 
@@ -1840,12 +2055,12 @@ namespace Pacman_Projection
 
         bool ghostScared;
 
-        private async Task FoodEaten(int indexX, int indexY, bool bigFood)
+        private void FoodEaten(int indexX, int indexY, bool bigFood)
         {
             if (!bigFood)
             {
-                PlaySound("pacman_chomp", false, false);
-                UpdateScore(foodScore);
+                PlaySound("pacman_chomp", false);
+                UpdateScore(foodScore, true);
                 Controls.Remove(food[indexX, indexY].pictureBox);
                 food[indexX, indexY] = null;
                 foodsOnMap--;
@@ -1853,11 +2068,6 @@ namespace Pacman_Projection
             else
             {
                 currentEatGhostDuration += msToAddAfterBigFood;
-                // Loop ghost_scared if it's not already playing
-                if (!await CheckForSound("ghost_scared"))
-                {
-                    PlaySound("ghost_scared", true, true);
-                }
                 // If the ghosts are blinking, make them stop as
                 // currentGhostEatDuration is now over the threshold,
                 // regardless of its previous value
@@ -1868,13 +2078,10 @@ namespace Pacman_Projection
                 ghostBlink = false;
 
                 // Ensure all ghosts are frightened
-                Blinky.SetFrightened();
-                Pinky.SetFrightened();
-                Inky.SetFrightened();
-                Clyde.SetFrightened();
-
+                SetGhosts_Scared();
                 ghostScared = true;
-                UpdateScore(foodScoreBig);
+
+                UpdateScore(foodScoreBig, true);
                 Controls.Remove(food[indexX, indexY].pictureBox);
                 food[indexX, indexY] = null;
                 foodsOnMap--;
@@ -1919,10 +2126,20 @@ namespace Pacman_Projection
             }
         }
 
-        private void UpdateScore(int scoreToAdd)
+        private void UpdateScore(int scoreToAdd, bool food)
         {
-            score += scoreToAdd;
-            labelScore.Text = (score + scoreToAdd).ToString();
+            if (food)
+            {
+                score += scoreToAdd;
+                labelScore.Text = (score + scoreToAdd).ToString();
+            }
+        }
+
+        internal Box fruitBox = new Box(new PictureBox(), false, false, false, false);
+
+        private void AbleToPlaceFruit()
+        {
+
         }
 
         //
@@ -1968,13 +2185,10 @@ namespace Pacman_Projection
                         NewDirection(Blinky);
                     }
                 }
-                else if (!Blinky.frightened)
+                else if (!Blinky.scared && !Blinky.dead)
                 {
-                    if (CheckForPacman(Blinky) && !Blinky.dead)
-                    {
-                        Blinky.box.Left -= step;
-                        Game(false);
-                    }
+                    Blinky.box.Left -= step;
+                    Game(false);
                 } 
             }
             else if (Blinky.direction_right)
@@ -2017,13 +2231,10 @@ namespace Pacman_Projection
                     }
 
                 }
-                else if (!Blinky.frightened)
+                else if (!Blinky.scared && !Blinky.dead)
                 {
-                    if (CheckForPacman(Blinky) && !Blinky.dead)
-                    {
-                        Blinky.box.Left += step;
-                        Game(false);
-                    }
+                    Blinky.box.Left += step;
+                    Game(false);
                 }
             }
             else if (Blinky.direction_up) 
@@ -2048,13 +2259,10 @@ namespace Pacman_Projection
                         NewDirection(Blinky);
                     }
                 }
-                else if (!Blinky.frightened)
+                else if (!Blinky.scared && !Blinky.dead)
                 {
-                    if (CheckForPacman(Blinky) && !Blinky.dead)
-                    {
-                        Blinky.box.Top -= step;
-                        Game(false);
-                    }
+                    Blinky.box.Top -= step;
+                    Game(false);
                 }
             }
             else if (Blinky.direction_down)
@@ -2076,13 +2284,10 @@ namespace Pacman_Projection
                         NewDirection(Blinky);
                     }
                 }
-                else if (!Blinky.frightened)
+                else if (!Blinky.scared && !Blinky.dead)
                 {
-                    if (CheckForPacman(Blinky) && !Blinky.dead)
-                    {
-                        Blinky.box.Top += step;
-                        Game(false);
-                    }
+                    Blinky.box.Top += step;
+                    Game(false);
                 }
             }
 
@@ -2124,13 +2329,10 @@ namespace Pacman_Projection
                         NewDirection(Pinky);
                     }
                 }
-                else if (!Pinky.frightened)
+                else if (!Pinky.scared && !Pinky.dead)
                 {
-                    if (CheckForPacman(Pinky) && !Pinky.dead)
-                    {
-                        Pinky.box.Left -= step;
-                        Game(false);
-                    }
+                    Pinky.box.Left -= step;
+                    Game(false);
                 }
             }
             else if (Pinky.direction_right)
@@ -2172,13 +2374,10 @@ namespace Pacman_Projection
                         NewDirection(Pinky);
                     }
                 }
-                else if (!Pinky.frightened)
+                else if (!Pinky.scared && !Pinky.dead)
                 {
-                    if (CheckForPacman(Pinky) && !Pinky.dead)
-                    {
-                        Pinky.box.Left += step;
-                        Game(false);
-                    }
+                    Pinky.box.Left += step;
+                    Game(false);
                 }
             }
             else if (Pinky.direction_up)
@@ -2203,13 +2402,10 @@ namespace Pacman_Projection
                         NewDirection(Pinky);
                     }
                 }
-                else if (!Pinky.frightened)
+                else if (!Pinky.scared && !Pinky.dead)
                 {
-                    if (CheckForPacman(Pinky) && !Pinky.dead)
-                    {
-                        Pinky.box.Top -= step;
-                        Game(false);
-                    }
+                    Pinky.box.Top -= step;
+                    Game(false);
                 }
             }
             else if (Pinky.direction_down)
@@ -2231,13 +2427,10 @@ namespace Pacman_Projection
                         NewDirection(Pinky);
                     }
                 }
-                else if (!Pinky.frightened)
+                else if (!Pinky.scared && !Pinky.dead)
                 {
-                    if (CheckForPacman(Pinky) && !Pinky.dead)
-                    {
-                        Pinky.box.Top += step;
-                        Game(false);
-                    }
+                    Pinky.box.Top += step;
+                    Game(false);
                 }
             }
 
@@ -2279,13 +2472,10 @@ namespace Pacman_Projection
                         NewDirection(Inky);
                     }
                 }
-                else if (!Inky.frightened)
+                else if (!Inky.scared && !Inky.dead)
                 {
-                    if (CheckForPacman(Inky) && !Inky.dead)
-                    {
-                        Inky.box.Left -= step;
-                        Game(false);
-                    }
+                    Inky.box.Left -= step;
+                    Game(false);
                 }
             }
             else if (Inky.direction_right)
@@ -2327,13 +2517,10 @@ namespace Pacman_Projection
                         NewDirection(Inky);
                     }
                 }
-                else if (!Inky.frightened)
+                else if (!Inky.scared && !Inky.dead)
                 {
-                    if (CheckForPacman(Inky) && !Inky.dead)
-                    {
-                        Inky.box.Left += step;
-                        Game(false);
-                    }
+                    Inky.box.Left += step;
+                    Game(false);
                 }
             }
             else if (Inky.direction_up)
@@ -2358,13 +2545,10 @@ namespace Pacman_Projection
                         NewDirection(Inky);
                     }
                 }
-                else if (!Inky.frightened)
+                else if (!Inky.scared && !Inky.dead)
                 {
-                    if (CheckForPacman(Inky) && !Inky.dead)
-                    {
-                        Inky.box.Top -= step;
-                        Game(false);
-                    }
+                    Inky.box.Top -= step;
+                    Game(false);
                 }
             }
             else if (Inky.direction_down)
@@ -2386,13 +2570,10 @@ namespace Pacman_Projection
                         NewDirection(Inky);
                     }
                 }
-                else if (!Inky.frightened)
+                else if (!Inky.scared && !Inky.dead)
                 {
-                    if (CheckForPacman(Inky) && !Inky.dead)
-                    {
-                        Inky.box.Top += step;
-                        Game(false);
-                    }
+                    Inky.box.Top += step;
+                    Game(false);
                 }
             }
 
@@ -2434,13 +2615,10 @@ namespace Pacman_Projection
                         NewDirection(Clyde);
                     }
                 }
-                else if (!Clyde.frightened)
+                else if (!Clyde.scared && !Clyde.dead)
                 {
-                    if (CheckForPacman(Clyde) && !Clyde.dead)
-                    {
-                        Clyde.box.Left -= step;
-                        Game(false);
-                    }
+                    Clyde.box.Left -= step;
+                    Game(false);
                 }
             }
             else if (Clyde.direction_right)
@@ -2482,13 +2660,10 @@ namespace Pacman_Projection
                         NewDirection(Clyde);
                     }
                 }
-                else if (!Clyde.frightened)
+                else if (!Clyde.scared && !Clyde.dead)
                 {
-                    if (CheckForPacman(Clyde) && !Clyde.dead)
-                    {
-                        Clyde.box.Left += step;
-                        Game(false);
-                    }
+                    Clyde.box.Left += step;
+                    Game(false);
                 }
             }
             else if (Clyde.direction_up)
@@ -2513,13 +2688,10 @@ namespace Pacman_Projection
                         NewDirection(Clyde);
                     }
                 }
-                else if (!Clyde.frightened)
+                else if (!Clyde.scared && !Clyde.dead)
                 {
-                    if (CheckForPacman(Clyde) && !Clyde.dead)
-                    {
-                        Clyde.box.Top -= step;
-                        Game(false);
-                    }
+                    Clyde.box.Top -= step;
+                    Game(false);
                 }
             }
             else if (Clyde.direction_down)
@@ -2541,17 +2713,43 @@ namespace Pacman_Projection
                         NewDirection(Clyde);
                     }
                 }
-                else if (!Clyde.frightened)
+                else if (!Clyde.scared && !Clyde.dead)
                 {
-                    if (CheckForPacman(Clyde) && !Clyde.dead)
-                    {
-                        Clyde.box.Top += step;
-                        Game(false);
-                    }
+                    Clyde.box.Top += step;
+                    Game(false);
                 }
             }
         }
 
+        private void SetGhosts_Scared()
+        {
+            Blinky.SetFrightened();
+            Pinky.SetFrightened();
+            Inky.SetFrightened();
+            Clyde.SetFrightened();
+
+            ghostTickTimer.Interval = ghostSpeedForLevelScared[level];
+        }
+
+        private void SetGhosts_Scatter()
+        {
+            Blinky.SetScatter();
+            Pinky.SetScatter();
+            Inky.SetScatter();
+            Clyde.SetScatter();
+
+            ghostTickTimer.Interval = ghostSpeedForLevel[level];
+        }
+
+        private void SetGhosts_Chase()
+        {
+            Blinky.SetChase();
+            Pinky.SetChase();
+            Inky.SetChase();
+            Clyde.SetChase();
+
+            ghostTickTimer.Interval = ghostSpeedForLevel[level]; 
+        }
         private bool CheckForPacman(Ghost ghost)
         {
             // true == pacman
@@ -2653,25 +2851,50 @@ namespace Pacman_Projection
             StopTimers();
 
             ghost.dead = true;
-            score += ghostScore;
+            ghost.box.Image = Resources.Ghost_Eyes_up;
+            ghostsEatenDuringPeriod++;
 
-            // SHOW SCORE LABEL ABOVE GHOST
+            score += ghostScore * ghostsEatenDuringPeriod;
+
+            System.Windows.Forms.Label labelGhostEaten = new System.Windows.Forms.Label();
+            labelGhostEaten.Location = new Point(ghost.box.Location.X, ghost.box.Location.Y);
+            labelGhostEaten.Size = new Size(30, 20);
+            labelGhostEaten.FlatStyle = FlatStyle.Popup;
+            labelGhostEaten.BorderStyle = BorderStyle.FixedSingle;
+            labelGhostEaten.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            labelGhostEaten.Font = new Font("Arial", 9, FontStyle.Bold);
+            labelGhostEaten.ForeColor = Color.DarkGreen;
+            labelGhostEaten.Text = (ghostScore * ghostsEatenDuringPeriod).ToString();
+            Controls.Add(labelGhostEaten);
+            labelGhostEaten.BringToFront();
+
+            ghost.box.Hide();
+            pacman.box.Hide();
+
+            PlaySound("pacman_eatGhost", false);
 
             await Task.Delay(msToWaitAfterGhostEaten);
+
+            ghost.box.Show();
+            pacman.box.Show();
+            Controls.Remove(labelGhostEaten);
+
             StartTimers();
         }
 
-        bool ghostPic_ver__2;
+        bool ghostPic_ver2;
         private void ghostImageTimer_Tick(object sender, EventArgs e)
         {
-            ghostPic_ver__2 = !ghostPic_ver__2;
+            ghostPic_ver2 = !ghostPic_ver2;
 
+            //
             // Blinky
-            if (!ghostPic_ver__2)
+            //
+            if (!ghostPic_ver2)
             {
                 if (!Blinky.dead)
                 {
-                    if (Blinky.frightened)
+                    if (Blinky.scared)
                     {
                         if (Blinky.white)
                         {
@@ -2722,10 +2945,12 @@ namespace Pacman_Projection
                     }
                 }
 
+                //
                 // Pinky
+                //
                 if (!Pinky.dead)
                 {
-                    if (Pinky.frightened)
+                    if (Pinky.scared)
                     {
                         if (Pinky.white)
                         {
@@ -2775,11 +3000,12 @@ namespace Pacman_Projection
                         Pinky.box.Image = Resources.Ghost_Eyes_right;
                     }
                 }
-
+                //
                 // Inky
+                //
                 if (!Inky.dead)
                 {
-                    if (Inky.frightened)
+                    if (Inky.scared)
                     {
                         if (Inky.white)
                         {
@@ -2830,10 +3056,12 @@ namespace Pacman_Projection
                     }
                 }
 
+                //
                 // Clyde
+                //
                 if (!Clyde.dead)
                 {
-                    if (Clyde.frightened)
+                    if (Clyde.scared)
                     {
                         if (Clyde.white)
                         {
@@ -2886,10 +3114,12 @@ namespace Pacman_Projection
             }
             else
             {
+                //
                 // Blinky
+                //
                 if (!Blinky.dead)
                 {
-                    if (Blinky.frightened)
+                    if (Blinky.scared)
                     {
                         if (Blinky.white)
                         {
@@ -2939,11 +3169,12 @@ namespace Pacman_Projection
                         Blinky.box.Image = Resources.Ghost_Eyes_right;
                     }
                 }
-
+                //
                 // Pinky
+                //
                 if (!Pinky.dead)
                 {
-                    if (Pinky.frightened)
+                    if (Pinky.scared)
                     {
                         if (Pinky.white)
                         {
@@ -2993,11 +3224,12 @@ namespace Pacman_Projection
                         Pinky.box.Image = Resources.Ghost_Eyes_right;
                     }
                 }
-
+                //
                 // Inky
+                //
                 if (!Inky.dead)
                 {
-                    if (Inky.frightened)
+                    if (Inky.scared)
                     {
                         if (Inky.white)
                         {
@@ -3047,11 +3279,12 @@ namespace Pacman_Projection
                         Inky.box.Image = Resources.Ghost_Eyes_right;
                     }
                 }
-
+                //
                 // Clyde
+                //
                 if (!Clyde.dead)
                 {
-                    if (Clyde.frightened)
+                    if (Clyde.scared)
                     {
                         if (Clyde.white)
                         {

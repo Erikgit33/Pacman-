@@ -13,7 +13,7 @@ namespace Pacman_Projection
         internal PictureBox box;
         internal bool scatter;
         internal bool chase;
-        internal bool frightened;
+        internal bool scared;
         internal bool white;
         internal bool dead;
 
@@ -26,12 +26,12 @@ namespace Pacman_Projection
         internal bool direction_up;
         internal bool direction_down;
 
-        public Ghost(PictureBox pictureBox, bool scatter, bool chase, bool frightened)
+        public Ghost(PictureBox pictureBox, bool scatter, bool chase, bool scared)
         {
             box = pictureBox;
             this.scatter = scatter;
             this.chase = chase;
-            this.frightened = frightened;
+            this.scared = scared;
         }
 
         internal void SetDirection(string direction)
@@ -73,11 +73,16 @@ namespace Pacman_Projection
             }
         }
 
+        internal void SetTarget(int targetXPixels, int targetYPixels)
+        {
+            
+        }
+        
         internal void SetScatter()
         {
             scatter = true;
             chase = false;
-            frightened = false;
+            scared = false;
             if (white)
             {
                 white = false;
@@ -88,7 +93,7 @@ namespace Pacman_Projection
         {
             scatter = false;
             chase = true;
-            frightened = false;
+            scared = false;
             if (white)
             {
                 white = false;
@@ -99,7 +104,7 @@ namespace Pacman_Projection
         {
             scatter = false;
             chase = false;
-            frightened = true;
+            scared = true;
         }
     }
 }
