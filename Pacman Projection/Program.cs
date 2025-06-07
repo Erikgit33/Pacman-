@@ -16,7 +16,7 @@ namespace Pacman_Projection
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new FormMenu());
+            Application.Run(new Form_Menu());
         }
     }
 }

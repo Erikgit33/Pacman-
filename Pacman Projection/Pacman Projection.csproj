@@ -79,17 +79,29 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Box.cs" />
-    <Compile Include="Form1.cs">
+    <Compile Include="Form_Main.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="Form_Main.Designer.cs">
+      <DependentUpon>Form_Main.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormMenu.cs">
+    <Compile Include="Form_Menu.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FormMenu.Designer.cs">
-      <DependentUpon>FormMenu.cs</DependentUpon>
+    <Compile Include="Form_Menu.Designer.cs">
+      <DependentUpon>Form_Menu.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form_Highscore.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_Highscore.Designer.cs">
+      <DependentUpon>Form_Highscore.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form_Name.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_Name.Designer.cs">
+      <DependentUpon>Form_Name.cs</DependentUpon>
     </Compile>
     <Compile Include="Ghost.cs" />
     <Compile Include="LoopStream.cs" />
@@ -97,11 +109,18 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sound.cs" />
-    <EmbeddedResource Include="Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="SoundManager.cs" />
+    <EmbeddedResource Include="Form_Highscore.resx">
+      <DependentUpon>Form_Highscore.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FormMenu.resx">
-      <DependentUpon>FormMenu.cs</DependentUpon>
+    <EmbeddedResource Include="Form_Main.resx">
+      <DependentUpon>Form_Main.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form_Menu.resx">
+      <DependentUpon>Form_Menu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form_Name.resx">
+      <DependentUpon>Form_Name.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -156,9 +175,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\pacman_beginning.wav" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\pacman_intermission.wav" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\pacman_eatghost.wav" />
@@ -293,7 +309,7 @@
     <None Include="Resources\Pinky up.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\buttonReady_sound.wav" />
+    <EmbeddedResource Include="Resources\buttonReady.wav" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Pacman start.png" />
@@ -393,6 +409,24 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\ghost_scatter.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Melon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\menuMusic.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Ghost Eyes stationary.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Save icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Pacman Icon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

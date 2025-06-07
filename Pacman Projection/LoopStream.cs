@@ -16,7 +16,7 @@ namespace Pacman_Projection
             this.sourceStream = sourceStream;
         }
 
-        internal bool EnableLooping { get; set; } = true; // Ensures value of EnableLooping can be specifically set and get
+        internal bool EnableLooping { get; set; } = true;
         public override WaveFormat WaveFormat => sourceStream.WaveFormat;
         public override long Length => sourceStream.Length;
 

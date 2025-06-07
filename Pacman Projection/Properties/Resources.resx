@@ -154,8 +154,8 @@
   <data name="Blinky_up_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Blinky up ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="buttonReady_sound" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\buttonReady_sound.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="buttonReady" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\buttonReady.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="Cherry" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Cherry.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -190,9 +190,6 @@
   <data name="Clyde_up_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Clyde up ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Dragonfruit" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Dragonfruit.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="Food" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Food.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -217,6 +214,9 @@
   <data name="Ghost_Eyes_right" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Ghost Eyes right.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Ghost_Eyes_stationary" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Ghost Eyes stationary.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Ghost_Eyes_up" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Ghost Eyes up.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -240,6 +240,9 @@
   </data>
   <data name="ghost_scatter" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ghost_scatter.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Inky_down" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Inky down.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -271,8 +274,17 @@
   <data name="Inky_up_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Inky up ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Melon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Melon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="menuMusic" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\menuMusic.WAV;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="Menu_background" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Menu background.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Pacman Icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Pacman Icon.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="pacman_beginning" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\pacman_beginning.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -321,9 +333,6 @@
   </data>
   <data name="pacman_eatghost" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\pacman_eatghost.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="pacman_intermission" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\pacman_intermission.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="Pacman_left" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Pacman left.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>

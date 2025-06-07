@@ -183,9 +183,9 @@ namespace Pacman_Projection.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
         /// </summary>
-        internal static System.IO.UnmanagedMemoryStream buttonReady_sound {
+        internal static System.IO.UnmanagedMemoryStream buttonReady {
             get {
-                return ResourceManager.GetStream("buttonReady_sound", resourceCulture);
+                return ResourceManager.GetStream("buttonReady", resourceCulture);
             }
         }
         
@@ -302,16 +302,6 @@ namespace Pacman_Projection.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Dragonfruit {
-            get {
-                object obj = ResourceManager.GetObject("Dragonfruit", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap Food {
             get {
                 object obj = ResourceManager.GetObject("Food", resourceCulture);
@@ -382,6 +372,16 @@ namespace Pacman_Projection.Properties {
         internal static System.Drawing.Bitmap Ghost_Eyes_right {
             get {
                 object obj = ResourceManager.GetObject("Ghost_Eyes_right", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Ghost_Eyes_stationary {
+            get {
+                object obj = ResourceManager.GetObject("Ghost_Eyes_stationary", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -460,6 +460,16 @@ namespace Pacman_Projection.Properties {
         internal static System.IO.UnmanagedMemoryStream ghost_scatter {
             get {
                 return ResourceManager.GetStream("ghost_scatter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Icon {
+            get {
+                object obj = ResourceManager.GetObject("Icon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
@@ -566,10 +576,29 @@ namespace Pacman_Projection.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Melon {
+            get {
+                object obj = ResourceManager.GetObject("Melon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Menu_background {
             get {
                 object obj = ResourceManager.GetObject("Menu_background", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream menuMusic {
+            get {
+                return ResourceManager.GetStream("menuMusic", resourceCulture);
             }
         }
         
@@ -729,11 +758,12 @@ namespace Pacman_Projection.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.IO.UnmanagedMemoryStream pacman_intermission {
+        internal static System.Drawing.Icon Pacman_Icon {
             get {
-                return ResourceManager.GetStream("pacman_intermission", resourceCulture);
+                object obj = ResourceManager.GetObject("Pacman Icon", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
             }
         }
         
