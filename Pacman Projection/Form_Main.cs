@@ -46,7 +46,7 @@ namespace Pacman_Projection
         // Declare new instance of soundManager for managing form1's sounds
         SoundManager soundManager = new SoundManager();
 
-        const int step = 14; // Pixels per step and size of blocks (one block per step)
+        const int step = 14; // Pixels per step and size of blocks, one block per step
         // Declare boxesHorizontally and boxesVertically
         const int boxesHorizontally = 30; 
         const int boxesVertically = 39;
@@ -63,7 +63,10 @@ namespace Pacman_Projection
         const int pacTickTimerIntervalStandard = 180;
         const int ghostTickTimerIntervalStandard = 180;
 
-        // Declare ghosts and pacman speeds for all levels
+        /// <summary>
+        /// Contains the speed of the ghosts for each level when they are scared, in milliseconds.
+        /// Key is the level number, value is the speed in milliseconds.
+        /// </summary>
         internal Dictionary<int, int> ghostSpeedForLevelScared = new Dictionary<int, int>
         {
             {1, ghostTickTimerIntervalStandard + 5*24}, // 300
@@ -78,6 +81,10 @@ namespace Pacman_Projection
             {10, ghostTickTimerIntervalStandard + 5*15} // 255
         };
 
+        /// <summary>
+        /// Contains the speed of the ghosts for each level, in milliseconds.
+        /// Key is the level number, value is the speed in milliseconds.
+        /// </summary>
         internal Dictionary<int, int> ghostSpeedForLevel = new Dictionary<int, int>
         {
             {1, ghostTickTimerIntervalStandard}, // 180
@@ -92,6 +99,10 @@ namespace Pacman_Projection
             {10, ghostTickTimerIntervalStandard - 3*9} // 153
         };
 
+        /// <summary>
+        /// Contains the speed of Pacman for each level, in milliseconds.
+        /// Key is the level number, value is the speed in milliseconds.
+        /// </summary>
         internal Dictionary<int, int> pacmanSpeedForLevel = new Dictionary<int, int>
         {
             {1, pacTickTimerIntervalStandard}, // 180
@@ -167,6 +178,9 @@ namespace Pacman_Projection
         const int ghostBlinkDuration = 250;
         const int timesToBlink = 6;
         internal bool ghostScared;
+        internal bool ghostScatter;
+        internal bool ghostChase;
+
         internal bool ghostPic_ver2;
 
         const string BlinkyStartDirection = "Left";
@@ -177,6 +191,31 @@ namespace Pacman_Projection
         internal Image InkyStartImage = Resources.Inky_up;
         const string ClydeStartDirection = "Up";
         internal Image ClydeStartImage = Resources.Clyde_up;
+
+        internal string mostRecentBehaviour;
+        internal string currentBehaviour;
+
+        /// <summary>
+        /// Contains the time for ghosts to scatter and chase in the format "scatter,chase" for each level, in whole seconds.
+        /// Key is the level number, value is a string which contains each speed seperated by a comma.
+        /// </summary>
+        internal Dictionary<int, string> ghostScatterChaseTimesForLevel = new Dictionary<int, string>
+        {
+            // scatter,chase 
+            {1, "7,15"},
+            {2, "7,15"},
+            {3, "7,15"},
+            {4, "7,17"},
+            {5, "5,17"},
+            {6, "5,17"},
+            {7, "5,17"},
+            {8, "5,17"},
+            {9, "5,17"},
+            {10,"5,17"}
+        };
+
+        internal bool toChangeBehaviourSound = true; // Start as true so sound plays at the start of the game, before any behaviour changes
+        internal int secondsOfSameBehaviour; 
 
         // Declare foodsHorizontally and foodsVertically 
         const int foodsHorizontally = 29;
@@ -204,7 +243,6 @@ namespace Pacman_Projection
         internal int fruitSpawned;
         internal string currentFruit;
 
-
         internal Dictionary<string, int> fruitScore = new Dictionary<string, int>
         {
             { "cherry", 200 },
@@ -213,7 +251,6 @@ namespace Pacman_Projection
             { "banana", 1200 },
             { "melon", 1500 }
         };
-
 
         const int msToAddAfterBigFood = 8000;
         const int msDeathSequence = 160;
@@ -344,6 +381,7 @@ namespace Pacman_Projection
             Blinky.box.Size = new Size(entitySize, entitySize);
             Blinky.box.Image = Resources.Blinky_left;
             Blinky.box.Location = new Point(Blinky_StartX, Blinky_StartY);
+            Blinky.cornerDuringScatter = "TopRight";
 
             Controls.Add(Blinky.box);
             Blinky.box.BringToFront();
@@ -355,6 +393,8 @@ namespace Pacman_Projection
             Pinky.box.Size = new Size(entitySize, entitySize);
             Pinky.box.Image = Resources.Pinky_down;
             Pinky.box.Location = new Point(Pinky_StartX, Pinky_StartY);
+            Pinky.cornerDuringScatter = "TopLeft";
+
             Controls.Add(Pinky.box);
             Pinky.box.BringToFront();
             Pinky.box.Hide();
@@ -365,6 +405,8 @@ namespace Pacman_Projection
             Inky.box.Size = new Size(entitySize, entitySize);
             Inky.box.Image = Resources.Inky_up;
             Inky.box.Location = new Point(Inky_StartX, Inky_StartY);
+            Inky.cornerDuringScatter = "BottomRight";
+
             Controls.Add(Inky.box);
             Inky.box.BringToFront();
             Inky.box.Hide();
@@ -375,6 +417,8 @@ namespace Pacman_Projection
             Clyde.box.Size = new Size(entitySize, entitySize);
             Clyde.box.Image = Resources.Clyde_up;
             Clyde.box.Location = new Point(Clyde_StartX, Clyde_StartY);
+            Clyde.cornerDuringScatter = "BottomLeft";
+
             Controls.Add(Clyde.box);
             Clyde.box.BringToFront();
             Clyde.box.Hide();
@@ -1064,7 +1108,7 @@ namespace Pacman_Projection
             PlaceAllFood();
 
             await Task.Delay(msToWaitBetweenGames);
-            Initialize();
+            InitializeGame();
         }
 
         private void Form_Main_FormClosing(object sender, FormClosingEventArgs e)
@@ -1091,6 +1135,7 @@ namespace Pacman_Projection
             }
         }
 
+        /*
         private void Form1_VisibleChanged(object sender, EventArgs e)
         {
             if (this.Visible)
@@ -1098,8 +1143,9 @@ namespace Pacman_Projection
                 soundManager.toPlaySounds = true;
             }
         }
+        */
 
-        private async void Initialize()
+        private async void InitializeGame()
         {
             // Show pacman and bring him to the front
             pacman.box.Show();
@@ -1141,6 +1187,14 @@ namespace Pacman_Projection
             Inky.SetDirection(InkyStartDirection);
             Clyde.SetDirection(ClydeStartDirection);
 
+            Blinky.SetScatter();
+            Pinky.SetScatter();
+            Inky.SetScatter();
+            Clyde.SetScatter();
+            currentBehaviour = "scatter";
+
+            ghostTickTimer.Interval = ghostSpeedForLevel[level];
+
             Blinky.box.Show();
             Blinky.box.BringToFront();
             Pinky.box.Show();
@@ -1161,7 +1215,8 @@ namespace Pacman_Projection
             labelReady.Hide();
             StartTimers();
 
-            GhostSoundLoop();
+
+            SetSound_Scatter();
             PlaceFruitLoop();
         }
 
@@ -1444,6 +1499,7 @@ namespace Pacman_Projection
             ghostImageTimer.Stop();
             bigFoodBlinkTimer.Stop();
             updateEatGhostDurationTimer.Stop();
+            ghostBehaviourTimeTimer.Stop();
         }
 
         private void StartTimers()
@@ -1456,55 +1512,13 @@ namespace Pacman_Projection
                 ghostImageTimer.Start();
                 bigFoodBlinkTimer.Start();
                 updateEatGhostDurationTimer.Start();
+                ghostBehaviourTimeTimer.Start();
             }
         }
 
         //                                                                                         //
         //  ******************************  sound-related methods  ******************************  //
         //                                                                                         //
-
-        private async Task GhostSoundLoop()
-        {
-            bool scaredPlaying = false;
-            bool scatterPlaying = false;
-            bool chasePlaying = false;
-
-            while (true)
-            {
-                if (!gamePaused)
-                {
-                    if (currentEatGhostDuration > 0)
-                    {
-                        if (!scaredPlaying)
-                        {
-                            SetSound_Scared();
-                            {
-                                scaredPlaying = true;
-                                scatterPlaying = false;
-                                chasePlaying = false;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (!scatterPlaying)
-                        {
-                            SetSound_Scatter();
-                            {
-                                scaredPlaying = false;
-                                scatterPlaying = true;
-                                chasePlaying = false;
-                            }
-
-                            //
-                            // OR SetSound_Chase();
-                            //
-                        }
-                    }
-                }
-                await Task.Delay(10); 
-            }
-        }
 
         private void SetSound_Scared()
         {
@@ -2109,7 +2123,7 @@ namespace Pacman_Projection
                 Controls.Remove(food[indexX, indexY].pictureBox);
                 food[indexX, indexY] = null;
             }
-            else
+            else 
             {
                 currentEatGhostDuration += msToAddAfterBigFood;
                 // If the ghosts are blinking, make them stop as
@@ -2122,8 +2136,11 @@ namespace Pacman_Projection
                 ghostBlink = false;
 
                 // Ensure all ghosts are frightened
-                SetGhosts_Scared();
-                ghostScared = true;
+                if (!ghostScared)
+                {
+                    SetGhosts_Scared();
+                }
+                ghostBehaviourTimeTimer.Stop();
 
                 UpdateScore(foodScoreBig, true);
                 Controls.Remove(food[indexX, indexY].pictureBox);
@@ -2320,6 +2337,34 @@ namespace Pacman_Projection
         //  ******************************  ghost-related methods  ******************************  //
         //                                                                                         //
 
+        private void ghostBehaviourTimeTimer_Tick(object sender, EventArgs e)
+        {
+            bool behaviourChangeThisTick = false;
+
+            if (Blinky.scatter) 
+            {
+                if (secondsOfSameBehaviour == Convert.ToInt32(ghostScatterChaseTimesForLevel[level].Split(',')[0])) {
+                    SetGhosts_Chase();
+                    secondsOfSameBehaviour = 0;
+                    behaviourChangeThisTick = true;
+                }
+            }
+            else if (Blinky.chase)
+            {
+                if (secondsOfSameBehaviour == Convert.ToInt32(ghostScatterChaseTimesForLevel[level].Split(',')[1]))
+                {
+                    SetGhosts_Scatter();
+                    secondsOfSameBehaviour = 0;
+                    behaviourChangeThisTick = true;
+                }
+            }
+
+            if (!behaviourChangeThisTick)
+            {
+                secondsOfSameBehaviour++;
+            }
+        }
+
         private void updateEatGhostDurationTimer_Tick(object sender, EventArgs e)
         {
             bool toStopScared = false;
@@ -2330,40 +2375,49 @@ namespace Pacman_Projection
 
             if (currentEatGhostDuration > 0)
             {
-                SetGhosts_Scared();
+                if (!ghostScared)
+                {
+                    SetGhosts_Scared();
+                }
 
                 currentEatGhostDuration -= ghostBlinkDuration;
                 if (toStopScared && currentEatGhostDuration == 0)
                 {
                     ghostScared = false;
                     ghostsEatenDuringPeriod = 0;
-                    if (true)
-                    {
-                        //
-                        // SCATTER OR CHASE
-                        //
 
+                    if (mostRecentBehaviour == "scatter")
+                    {
                         SetGhosts_Scatter();
                     }
+                    else if (mostRecentBehaviour == "chase")
+                    {
+                        SetGhosts_Chase();
+                    }
+
+                    ghostBehaviourTimeTimer.Start();
                 }
             }
 
-            if (currentEatGhostDuration <= (ghostBlinkDuration * timesToBlink) || ghostBlink)
+            if (ghostScared)
             {
-                ghostBlink = true;
-                if (currentEatGhostDuration / ghostBlinkDuration % 2 == 0)
+                if (currentEatGhostDuration <= (ghostBlinkDuration * timesToBlink) || ghostBlink)
                 {
-                    Blinky.white = false;
-                    Pinky.white = false;
-                    Inky.white = false;
-                    Clyde.white = false;
-                }
-                else
-                {
-                    Blinky.white = true;
-                    Pinky.white = true;
-                    Inky.white = true;
-                    Clyde.white = true;
+                    ghostBlink = true;
+                    if (currentEatGhostDuration / ghostBlinkDuration % 2 == 0)
+                    {
+                        Blinky.white = false;
+                        Pinky.white = false;
+                        Inky.white = false;
+                        Clyde.white = false;
+                    }
+                    else
+                    {
+                        Blinky.white = true;
+                        Pinky.white = true;
+                        Inky.white = true;
+                        Clyde.white = true;
+                    }
                 }
             }
         }
@@ -2945,16 +2999,26 @@ namespace Pacman_Projection
 
         private void SetGhosts_Scared()
         {
-            Blinky.SetFrightened();
-            Pinky.SetFrightened();
-            Inky.SetFrightened();
-            Clyde.SetFrightened();
+            // Switch current behaviour to most recent behaviour before its updated
+            mostRecentBehaviour = currentBehaviour;
+            currentBehaviour = "scared";
+            ghostScared = true;
+            SetSound_Scared();
+
+            Blinky.SetScared();
+            Pinky.SetScared();
+            Inky.SetScared();
+            Clyde.SetScared();
 
             ghostTickTimer.Interval = ghostSpeedForLevelScared[level];
         }
 
         private void SetGhosts_Scatter()
         {
+            mostRecentBehaviour = currentBehaviour;
+            currentBehaviour = "scatter";
+            SetSound_Scatter();
+
             Blinky.SetScatter();
             Pinky.SetScatter();
             Inky.SetScatter();
@@ -2965,12 +3029,16 @@ namespace Pacman_Projection
 
         private void SetGhosts_Chase()
         {
+            mostRecentBehaviour = currentBehaviour;
+            currentBehaviour = "chase";
+            SetSound_Chase();
+
             Blinky.SetChase();
             Pinky.SetChase();
             Inky.SetChase();
             Clyde.SetChase();
 
-            ghostTickTimer.Interval = ghostSpeedForLevel[level]; 
+            ghostTickTimer.Interval = ghostSpeedForLevel[level];
         }
 
         private bool CheckForPacman(Ghost ghost)
@@ -3049,6 +3117,10 @@ namespace Pacman_Projection
 
         private void NewDirection(Ghost ghost)
         {
+           
+
+
+            /*
             Random rng = new Random();
             int direction = rng.Next(0, 4);
             if (direction == 0)
@@ -3067,6 +3139,7 @@ namespace Pacman_Projection
             {
                 ghost.SetDirection("Down");
             }
+            */
         }
 
         private async void GhostEaten(Ghost ghost)

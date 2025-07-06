@@ -36,6 +36,7 @@
             this.ghostImageTimer = new System.Windows.Forms.Timer(this.components);
             this.bigFoodBlinkTimer = new System.Windows.Forms.Timer(this.components);
             this.updateEatGhostDurationTimer = new System.Windows.Forms.Timer(this.components);
+            this.ghostBehaviourTimeTimer = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // pacTickTimer
@@ -65,19 +66,24 @@
             // 
             this.updateEatGhostDurationTimer.Tick += new System.EventHandler(this.updateEatGhostDurationTimer_Tick);
             // 
+            // ghostBehaviourTimeTimer
+            // 
+            this.ghostBehaviourTimeTimer.Interval = 1000;
+            this.ghostBehaviourTimeTimer.Tick += new System.EventHandler(this.ghostBehaviourTimeTimer_Tick);
+            // 
             // Form_Main
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(804, 697);
+            this.ClientSize = new System.Drawing.Size(536, 453);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Form_Main";
             this.Text = "Pacman";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form_Main_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
-            this.VisibleChanged += new System.EventHandler(this.Form1_VisibleChanged);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.View_KeyDown);
             this.ResumeLayout(false);
 
@@ -91,6 +97,7 @@
         private System.Windows.Forms.Timer ghostImageTimer;
         private System.Windows.Forms.Timer bigFoodBlinkTimer;
         private System.Windows.Forms.Timer updateEatGhostDurationTimer;
+        private System.Windows.Forms.Timer ghostBehaviourTimeTimer;
     }
 }
 

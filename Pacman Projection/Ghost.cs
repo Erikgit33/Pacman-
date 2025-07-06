@@ -17,6 +17,9 @@ namespace Pacman_Projection
         internal bool white;
         internal bool dead;
 
+        internal int x;
+        internal int y;
+
         internal bool teleportedLastTick;
         internal bool teleporting;
         internal int blocksIntoTeleporter;
@@ -25,6 +28,8 @@ namespace Pacman_Projection
         internal bool direction_right;
         internal bool direction_up;
         internal bool direction_down;
+
+        internal string cornerDuringScatter; // "TopLeft", "TopRight", "BottomLeft", "BottomRight"
 
         public Ghost(PictureBox pictureBox)
         {
@@ -69,12 +74,12 @@ namespace Pacman_Projection
                 direction_down = false;
             }
         }
-
-        internal void SetTarget(int target_X, int target_Y)
-        {
-            
-        }
         
+        internal void SetTarget(int x, int y)
+        {
+
+        }
+
         internal void SetScatter()
         {
             scatter = true;
@@ -97,7 +102,7 @@ namespace Pacman_Projection
             }
         }
 
-        internal void SetFrightened()
+        internal void SetScared()
         {
             scatter = false;
             chase = false;
