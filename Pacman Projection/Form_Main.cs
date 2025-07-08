@@ -31,6 +31,7 @@ using System.Runtime.Serialization.Formatters;
 using System.Drawing.Drawing2D;
 using System.Net.Http.Headers;
 using System.Timers;
+using System.Management.Instrumentation;
 
 namespace Pacman_Projection
 {
@@ -128,18 +129,17 @@ namespace Pacman_Projection
         internal Box[,] boxes = new Box[boxesHorizontally, boxesVertically];
         internal List<Box> walls = new List<Box>(); 
         // Declare Pacman, his start coordinates, and his life list containing three lives
-        internal Pacman pacman = new Pacman(new PictureBox());
+        internal Pacman pacman = new Pacman(new PictureBox(), new PictureBox());
         const int pacman_StartX = boxSize*14;
         const int pacman_StartY = boxSize*25;
 
         internal bool pacPic_open;
-        internal PictureBox eatBox = new PictureBox();
 
-        internal List<Box> pacmanLives = new List<Box> 
-        { 
-            new Box(new PictureBox(), false, false, false, false),
-            new Box(new PictureBox(), false, false, false, false),
-            new Box(new PictureBox(), false, false, false, false)
+        internal List<PictureBox> pacmanLives = new List<PictureBox>
+        {
+            new PictureBox(),
+            new PictureBox(),
+            new PictureBox()
         };
 
         // Declare list with all pacmans death images in to loop through on death
@@ -192,8 +192,8 @@ namespace Pacman_Projection
         const string ClydeStartDirection = "Up";
         internal Image ClydeStartImage = Resources.Clyde_up;
 
-        internal string mostRecentBehaviour;
-        internal string currentBehaviour;
+        internal string mostRecentGlobalBehaviour;
+        internal string currentGlobalBehaviour;
 
         /// <summary>
         /// Contains the time for ghosts to scatter and chase in the format "scatter,chase" for each level, in whole seconds.
@@ -220,12 +220,12 @@ namespace Pacman_Projection
         // Declare foodsHorizontally and foodsVertically 
         const int foodsHorizontally = 29;
         const int foodsVertically = 37;
-        // Declare food array
-        internal Box[,] food = new Box[foodsHorizontally, foodsVertically];
+        // Declare foodGrid for all food boxes
+        internal Box[,] foodGrid = new Box[foodsHorizontally, foodsVertically];
         // Declare list for all big food indexes
         internal List<string> bigFoodIndexes = new List<string>();
 
-        // Declare food offset variables
+        // Declare food offset
         const int horizontalFoodOffset = boxSize + boxSize / 2;
         const int verticalFoodOffset = boxSize * 3 + boxSize / 2;
 
@@ -238,7 +238,7 @@ namespace Pacman_Projection
         internal bool filled;
         internal int foodOnMap;
 
-        internal Box fruitBox = new Box(new PictureBox(), false, false, false, false);
+        internal PictureBox fruitBox = new PictureBox();
         internal int fruitEaten;
         internal int fruitSpawned;
         internal string currentFruit;
@@ -300,7 +300,7 @@ namespace Pacman_Projection
                 for (int verticalIndex = 0; verticalIndex < boxesVertically; verticalIndex++)
                 {
                     // Create the box
-                    Box box = new Box(new PictureBox(), false, false, true, false);
+                    Box box = new Box(new PictureBox(), false, false, false, true, false);
                     // Box properties
                     box.pictureBox.Size = new Size(boxSize, boxSize);
                     box.pictureBox.Location = new Point(horizontalIndex * boxSize, verticalIndex * boxSize + verticalOffset);
@@ -314,7 +314,6 @@ namespace Pacman_Projection
                     }
 
                     // Put box into the array at designated index
-                    // E.g. the third box to be generated will have the index [0, 2]
                     boxes[horizontalIndex, verticalIndex] = box;
                 }
             }
@@ -350,36 +349,37 @@ namespace Pacman_Projection
             labelFruitSpawnChance.BringToFront();
 
             // Pacman properties
+            pacman.box.LocationChanged += pacman_LocationChanged;
             pacman.box.Location = new Point(pacman_StartX, pacman_StartY);
             pacman.box.Size = new Size(entitySize, entitySize);
             pacman.box.Image = Resources.Pacman_stationary;
             pacman.box.SizeMode = PictureBoxSizeMode.StretchImage;
-            pacman.box.LocationChanged += pacman_LocationChanged;
             Controls.Add(pacman.box);
             pacman.box.BringToFront();
             pacman.box.Hide();
 
             // eatBox properties
-            eatBox.Size = new Size(boxSize, boxSize);
-            Controls.Add(eatBox);
-            eatBox.Hide();
+            pacman.eatBox.Size = new Size(boxSize, boxSize);
+            Controls.Add(pacman.eatBox);
+            pacman.UpdateLocation(pacman.box.Left, pacman.box.Top);
 
             // fruitBox properties
-            fruitBox.pictureBox.BackColor = Color.Transparent;
-            fruitBox.pictureBox.Size = new Size(entitySize, entitySize);
-            fruitBox.pictureBox.Location = new Point(pacman_StartX, pacman_StartY);
-            fruitBox.pictureBox.SizeMode = PictureBoxSizeMode.StretchImage;
-            Controls.Add(fruitBox.pictureBox);
-            fruitBox.pictureBox.BringToFront();
+            fruitBox.BackColor = Color.Transparent;
+            fruitBox.Size = new Size(entitySize, entitySize);
+            fruitBox.Location = new Point(pacman_StartX, pacman_StartY);
+            fruitBox.SizeMode = PictureBoxSizeMode.StretchImage;
+            Controls.Add(fruitBox);
+            fruitBox.BringToFront();
 
             //
             // Ghosts properties
             //
 
             // Blinky
-            Blinky = new Ghost(new PictureBox());
+            Blinky = new Ghost(new PictureBox(), new PictureBox(), "blinky");
             Blinky.box.Size = new Size(entitySize, entitySize);
             Blinky.box.Image = Resources.Blinky_left;
+            Blinky.box.LocationChanged += Blinky_LocationChanged;
             Blinky.box.Location = new Point(Blinky_StartX, Blinky_StartY);
             Blinky.cornerDuringScatter = "TopRight";
 
@@ -388,10 +388,17 @@ namespace Pacman_Projection
             Blinky.box.Hide();
             ghosts.Add(Blinky);
 
+            // Blinky.navBox
+            Blinky.navBox.Size = new Size(boxSize, boxSize);
+            Controls.Add(Blinky.navBox);
+            Blinky.UpdateLocation(Blinky.box.Left, Blinky.box.Top);
+
+
             // Pinky
-            Pinky = new Ghost(new PictureBox());
+            Pinky = new Ghost(new PictureBox(), new PictureBox(), "pinky");
             Pinky.box.Size = new Size(entitySize, entitySize);
             Pinky.box.Image = Resources.Pinky_down;
+            Pinky.box.LocationChanged += Pinky_LocationChanged;
             Pinky.box.Location = new Point(Pinky_StartX, Pinky_StartY);
             Pinky.cornerDuringScatter = "TopLeft";
 
@@ -400,10 +407,17 @@ namespace Pacman_Projection
             Pinky.box.Hide();
             ghosts.Add(Pinky);
 
+            // Pinky.navBox
+            Pinky.navBox.Size = new Size(boxSize, boxSize);
+            Controls.Add(Pinky.navBox);
+            Pinky.UpdateLocation(Pinky.box.Left, Pinky.box.Top);
+
+
             // Inky
-            Inky = new Ghost(new PictureBox());
+            Inky = new Ghost(new PictureBox(), new PictureBox(), "inky");
             Inky.box.Size = new Size(entitySize, entitySize);
             Inky.box.Image = Resources.Inky_up;
+            Inky.box.LocationChanged += Inky_LocationChanged;
             Inky.box.Location = new Point(Inky_StartX, Inky_StartY);
             Inky.cornerDuringScatter = "BottomRight";
 
@@ -412,10 +426,17 @@ namespace Pacman_Projection
             Inky.box.Hide();
             ghosts.Add(Inky);
 
+            // Inky.navBox
+            Inky.navBox.Size = new Size(boxSize, boxSize);
+            Controls.Add(Inky.navBox);
+            Inky.UpdateLocation(Inky.box.Left, Inky.box.Top);
+
+
             // Clyde
-            Clyde = new Ghost(new PictureBox());
+            Clyde = new Ghost(new PictureBox(), new PictureBox(), "clyde");
             Clyde.box.Size = new Size(entitySize, entitySize);
             Clyde.box.Image = Resources.Clyde_up;
+            Clyde.box.LocationChanged += Clyde_LocationChanged;
             Clyde.box.Location = new Point(Clyde_StartX, Clyde_StartY);
             Clyde.cornerDuringScatter = "BottomLeft";
 
@@ -423,6 +444,11 @@ namespace Pacman_Projection
             Clyde.box.BringToFront();
             Clyde.box.Hide();
             ghosts.Add(Clyde);
+
+            // Clyde.navBox
+            Clyde.navBox.Size = new Size(boxSize, boxSize);
+            Controls.Add(Clyde.navBox);
+            Clyde.UpdateLocation(Clyde.box.Left, Clyde.box.Top);
 
             //
             // Add all the walls according to the map
@@ -996,113 +1022,113 @@ namespace Pacman_Projection
 
             foreach (Box wall in walls)
             {
-                wall.toContainFood = false;
+                wall.isFood = false;
             }
 
             // Others
-            boxes[1, 3].toContainFood = false;
-            boxes[2, 3].toContainFood = false;
-            boxes[5, 4].toContainFood = false;
-            boxes[7, 4].toContainFood = false;
-            boxes[11, 4].toContainFood = false;
-            boxes[21, 4].toContainFood = false;
-            boxes[21, 7].toContainFood = false;
-            boxes[21, 3].toContainFood = false;
-            boxes[4, 8].toContainFood = false;
-            boxes[3, 8].toContainFood = false;
-            boxes[8, 7].toContainFood = false;
-            boxes[9, 11].toContainFood = false;
-            boxes[10, 11].toContainFood = false;
-            boxes[9, 13].toContainFood = false;
-            boxes[10, 13].toContainFood = false;
-            boxes[13, 9].toContainFood = false;
-            boxes[13, 11].toContainFood = false;
-            boxes[13, 13].toContainFood = false;
-            boxes[14, 13].toContainFood = false;
-            boxes[15, 13].toContainFood = false;
-            boxes[16, 13].toContainFood = false;
-            boxes[16, 11].toContainFood = false;
-            boxes[16, 9].toContainFood = false;
-            boxes[19, 11].toContainFood = false;
-            boxes[20, 11].toContainFood = false;
-            boxes[19, 13].toContainFood = false;
-            boxes[20, 13].toContainFood = false;
-            boxes[19, 4].toContainFood = false;
-            boxes[18, 4].toContainFood = false;
-            boxes[0, 13].toContainFood = false;
-            boxes[0, 14].toContainFood = false;
-            boxes[0, 16].toContainFood = false;
-            boxes[2, 13].toContainFood = false;
-            boxes[2, 14].toContainFood = false;
-            boxes[2, 16].toContainFood = false;
-            boxes[4, 13].toContainFood = false;
-            boxes[4, 14].toContainFood = false;
-            boxes[4, 16].toContainFood = false;
-            boxes[0, 18].toContainFood = false;
-            boxes[0, 20].toContainFood = false;
-            boxes[2, 18].toContainFood = false;
-            boxes[2, 20].toContainFood = false;
-            boxes[3, 18].toContainFood = false;
-            boxes[3, 20].toContainFood = false;
-            boxes[5, 18].toContainFood = false;
-            boxes[5, 20].toContainFood = false;
-            boxes[0, 22].toContainFood = false;
-            boxes[0, 23].toContainFood = false;
-            boxes[0, 25].toContainFood = false;
-            boxes[2, 22].toContainFood = false;
-            boxes[2, 23].toContainFood = false;
-            boxes[2, 25].toContainFood = false;
-            boxes[4, 22].toContainFood = false;
-            boxes[4, 23].toContainFood = false;
-            boxes[4, 25].toContainFood = false;
-            boxes[8, 18].toContainFood = false;
+            boxes[1, 3].isFood = false;
+            boxes[2, 3].isFood = false;
+            boxes[5, 4].isFood = false;
+            boxes[7, 4].isFood = false;
+            boxes[11, 4].isFood = false;
+            boxes[21, 4].isFood = false;
+            boxes[21, 7].isFood = false;
+            boxes[21, 3].isFood = false;
+            boxes[4, 8].isFood = false;
+            boxes[3, 8].isFood = false;
+            boxes[8, 7].isFood = false;
+            boxes[9, 11].isFood = false;
+            boxes[10, 11].isFood = false;
+            boxes[9, 13].isFood = false;
+            boxes[10, 13].isFood = false;
+            boxes[13, 9].isFood = false;
+            boxes[13, 11].isFood = false;
+            boxes[13, 13].isFood = false;
+            boxes[14, 13].isFood = false;
+            boxes[15, 13].isFood = false;
+            boxes[16, 13].isFood = false;
+            boxes[16, 11].isFood = false;
+            boxes[16, 9].isFood = false;
+            boxes[19, 11].isFood = false;
+            boxes[20, 11].isFood = false;
+            boxes[19, 13].isFood = false;
+            boxes[20, 13].isFood = false;
+            boxes[19, 4].isFood = false;
+            boxes[18, 4].isFood = false;
+            boxes[0, 13].isFood = false;
+            boxes[0, 14].isFood = false;
+            boxes[0, 16].isFood = false;
+            boxes[2, 13].isFood = false;
+            boxes[2, 14].isFood = false;
+            boxes[2, 16].isFood = false;
+            boxes[4, 13].isFood = false;
+            boxes[4, 14].isFood = false;
+            boxes[4, 16].isFood = false;
+            boxes[0, 18].isFood = false;
+            boxes[0, 20].isFood = false;
+            boxes[2, 18].isFood = false;
+            boxes[2, 20].isFood = false;
+            boxes[3, 18].isFood = false;
+            boxes[3, 20].isFood = false;
+            boxes[5, 18].isFood = false;
+            boxes[5, 20].isFood = false;
+            boxes[0, 22].isFood = false;
+            boxes[0, 23].isFood = false;
+            boxes[0, 25].isFood = false;
+            boxes[2, 22].isFood = false;
+            boxes[2, 23].isFood = false;
+            boxes[2, 25].isFood = false;
+            boxes[4, 22].isFood = false;
+            boxes[4, 23].isFood = false;
+            boxes[4, 25].isFood = false;
+            boxes[8, 18].isFood = false;
 
-            boxes[12, 17].toContainFood = false;
-            boxes[14, 17].toContainFood = false;
-            boxes[14, 16].toContainFood = false;
-            boxes[16, 16].toContainFood = false;
-            boxes[7, 4].toContainFood = false;
-            boxes[16, 17].toContainFood = false;
-            boxes[12, 19].toContainFood = false;
-            boxes[14, 19].toContainFood = false;
-            boxes[16, 19].toContainFood = false;
-            boxes[12, 21].toContainFood = false;
-            boxes[14, 21].toContainFood = false;
-            boxes[16, 21].toContainFood = false;
+            boxes[12, 17].isFood = false;
+            boxes[14, 17].isFood = false;
+            boxes[14, 16].isFood = false;
+            boxes[16, 16].isFood = false;
+            boxes[7, 4].isFood = false;
+            boxes[16, 17].isFood = false;
+            boxes[12, 19].isFood = false;
+            boxes[14, 19].isFood = false;
+            boxes[16, 19].isFood = false;
+            boxes[12, 21].isFood = false;
+            boxes[14, 21].isFood = false;
+            boxes[16, 21].isFood = false;
 
-            boxes[21, 18].toContainFood = false;
-            boxes[25, 13].toContainFood = false;
-            boxes[25, 14].toContainFood = false;
-            boxes[25, 16].toContainFood = false;
-            boxes[27, 13].toContainFood = false;
-            boxes[27, 14].toContainFood = false;
-            boxes[27, 16].toContainFood = false;
-            boxes[29, 13].toContainFood = false;
-            boxes[29, 14].toContainFood = false;
-            boxes[29, 16].toContainFood = false;
-            boxes[24, 18].toContainFood = false;
-            boxes[24, 20].toContainFood = false;
-            boxes[26, 18].toContainFood = false;
-            boxes[26, 20].toContainFood = false;
-            boxes[27, 18].toContainFood = false;
-            boxes[27, 20].toContainFood = false;
-            boxes[29, 18].toContainFood = false;
-            boxes[29, 20].toContainFood = false;
-            boxes[25, 22].toContainFood = false;
-            boxes[25, 23].toContainFood = false;
-            boxes[25, 25].toContainFood = false;
-            boxes[27, 22].toContainFood = false;
-            boxes[27, 23].toContainFood = false;
-            boxes[27, 25].toContainFood = false;
-            boxes[29, 22].toContainFood = false;
-            boxes[29, 23].toContainFood = false;
-            boxes[29, 25].toContainFood = false;
-            boxes[25, 30].toContainFood = false;
-            boxes[25, 31].toContainFood = false;
-            boxes[28, 33].toContainFood = false;
-            boxes[28, 34].toContainFood = false;
-            boxes[16, 33].toContainFood = false;
-            boxes[17, 34].toContainFood = false;
+            boxes[21, 18].isFood = false;
+            boxes[25, 13].isFood = false;
+            boxes[25, 14].isFood = false;
+            boxes[25, 16].isFood = false;
+            boxes[27, 13].isFood = false;
+            boxes[27, 14].isFood = false;
+            boxes[27, 16].isFood = false;
+            boxes[29, 13].isFood = false;
+            boxes[29, 14].isFood = false;
+            boxes[29, 16].isFood = false;
+            boxes[24, 18].isFood = false;
+            boxes[24, 20].isFood = false;
+            boxes[26, 18].isFood = false;
+            boxes[26, 20].isFood = false;
+            boxes[27, 18].isFood = false;
+            boxes[27, 20].isFood = false;
+            boxes[29, 18].isFood = false;
+            boxes[29, 20].isFood = false;
+            boxes[25, 22].isFood = false;
+            boxes[25, 23].isFood = false;
+            boxes[25, 25].isFood = false;
+            boxes[27, 22].isFood = false;
+            boxes[27, 23].isFood = false;
+            boxes[27, 25].isFood = false;
+            boxes[29, 22].isFood = false;
+            boxes[29, 23].isFood = false;
+            boxes[29, 25].isFood = false;
+            boxes[25, 30].isFood = false;
+            boxes[25, 31].isFood = false;
+            boxes[28, 33].isFood = false;
+            boxes[28, 34].isFood = false;
+            boxes[16, 33].isFood = false;
+            boxes[17, 34].isFood = false;
 
             // Place all food on the map
             PlaceAllFood();
@@ -1154,7 +1180,7 @@ namespace Pacman_Projection
             // labelReady properties
             labelReady.Location = new Point(boxSize * 11, boxSize * 11);
             labelReady.Size = new Size(boxSize * 8, boxSize * 3);
-            labelReady.Font = new Font("Pixelify Sans", 22, FontStyle.Bold);
+            labelReady.Font = new Font("Pixelify Sans", 20, FontStyle.Bold);
             labelReady.Text = "Ready!";
             labelReady.ForeColor = Color.Yellow;
             labelReady.BackColor = Color.Transparent;
@@ -1191,7 +1217,7 @@ namespace Pacman_Projection
             Pinky.SetScatter();
             Inky.SetScatter();
             Clyde.SetScatter();
-            currentBehaviour = "scatter";
+            currentGlobalBehaviour = "scatter";
 
             ghostTickTimer.Interval = ghostSpeedForLevel[level];
 
@@ -1205,7 +1231,7 @@ namespace Pacman_Projection
             Clyde.box.BringToFront();
 
             // Remove one life from pacman
-            Controls.Remove(pacmanLives[pacmanLives.Count - 1].pictureBox);
+            Controls.Remove(pacmanLives[pacmanLives.Count - 1]);
             pacmanLives.RemoveAt(pacmanLives.Count - 1);
 
             // Timed to be complete when pacman_beginning has finished playing
@@ -1214,7 +1240,6 @@ namespace Pacman_Projection
             // Hide labelReady and start timers
             labelReady.Hide();
             StartTimers();
-
 
             SetSound_Scatter();
             PlaceFruitLoop();
@@ -1269,7 +1294,7 @@ namespace Pacman_Projection
             Pinky.box.Hide();
             Inky.box.Hide();
             Clyde.box.Hide();
-            fruitBox.pictureBox.Hide();
+            fruitBox.Hide();
 
             if (win)
             {
@@ -1326,7 +1351,7 @@ namespace Pacman_Projection
             {
                 try
                 {
-                    Controls.Remove(pacmanLives[pacmanLives.Count - 1].pictureBox);
+                    Controls.Remove(pacmanLives[pacmanLives.Count - 1]);
                     pacmanLives.RemoveAt(pacmanLives.Count - 1);
                     restart = true;
                 }
@@ -1367,16 +1392,20 @@ namespace Pacman_Projection
                 Inky.dead = false;
                 Clyde.dead = false;
 
-                // Reset all variables  
-                foodEaten = 0;
-                foodEatenBig = 0;
                 currentEatGhostDuration = 0;
-                fruitEaten = 0;
-                fruitSpawned = 0;
 
                 if (win)
                 {
+                    // Reset all variables  
+                    foodEaten = 0;
+                    foodEatenBig = 0;
+                    currentEatGhostDuration = 0;
+                    fruitEaten = 0;
+                    fruitSpawned = 0;
+
                     PlaceAllFood();
+
+                    labelLevel.Text = "Level " + level.ToString();
                 }
 
                 Blinky.box.Show();
@@ -1389,9 +1418,7 @@ namespace Pacman_Projection
                 Clyde.box.BringToFront();
                 pacman.box.Show();
                 pacman.box.BringToFront();
-                fruitBox.pictureBox.Show();
-
-                labelLevel.Text = "Level " + level.ToString();
+                fruitBox.Show();
 
                 labelReady.Show();
                 labelReady.BringToFront();
@@ -1514,7 +1541,7 @@ namespace Pacman_Projection
                 updateEatGhostDurationTimer.Start();
                 ghostBehaviourTimeTimer.Start();
             }
-        }
+        }                                               
 
         //                                                                                         //
         //  ******************************  sound-related methods  ******************************  //
@@ -1664,7 +1691,7 @@ namespace Pacman_Projection
                     }
                 }
             }
-
+            pacman.UpdateLocation(pacman.box.Left, pacman.box.Top);
             pacman.box.BringToFront();
         }
 
@@ -1898,30 +1925,14 @@ namespace Pacman_Projection
                     latestKey = "";
                 }
             }
+            
+            FoodEaten(GetFoodCollide(pacman.eatBox), CheckForFoodCollide(pacman.eatBox).bigFood);
 
-            // Move eatBox to pacmans center after moving and before checking for food
-            eatBox.Location = new Point(pacman.box.Left + boxSize / 2, pacman.box.Top + boxSize / 2);
-
-            if (latestKey != "")
+            if (CheckForFruitCollide(pacman.eatBox))
             {
-                // Send the index of the food that boxFood is colliding
-                // with (the food that is eaten) to FoodEaten to be removed accordingly 
-                if (CheckForFoodCollide(eatBox) == (true, false))
-                {
-                    FoodEaten((pacman.box.Left + boxSize / 2) / boxSize - horizontalFoodOffset / boxSize, 
-                             (pacman.box.Top + boxSize / 2) / boxSize - verticalFoodOffset / boxSize, false);
-                }
-                else if (CheckForFoodCollide(eatBox) == (true, true))
-                {
-                    FoodEaten((pacman.box.Left + boxSize / 2) / boxSize - horizontalFoodOffset / boxSize, 
-                             (pacman.box.Top + boxSize / 2) / boxSize - verticalFoodOffset / boxSize, true);
-                }
-
-                if (CheckForFruitCollide(eatBox))
-                {
-                    FruitEaten();
-                }
+                FruitEaten();
             }
+            
 
 
             // If pacman can change direction, latestKey is updated
@@ -2017,47 +2028,61 @@ namespace Pacman_Projection
                 // Don't add a food to where pacman starts
                 for (int indexX = 0; indexX < foodsHorizontally; indexX++)
                 {
-                    if (indexX == 0 && indexY == 0
-                         || indexX == 26 && indexY == 0
-                         || indexX == 0 && indexY == 34
-                         || indexX == 26 && indexY == 34)
+                    // Only declare the foods the first time PlaceAllFood is run
+                    if (foodGrid[indexX, indexY] == null)
                     {
-                        food[indexX, indexY] = new Box(new PictureBox(), false, false, true, true);
-                        food[indexX, indexY].pictureBox.Image = Resources.FoodBig;
-                        // Add big food index to the list for use "pacTickTimer" method
-                        bigFoodIndexes.Add(indexX.ToString() + "_" + indexY.ToString());
+                        if (indexX == 0 && indexY == 0
+                        || indexX == 26 && indexY == 0
+                        || indexX == 0 && indexY == 34
+                        || indexX == 26 && indexY == 34)
+                        {
+                            foodGrid[indexX, indexY] = new Box(new PictureBox(), false, false, false, true, true);
+                            foodGrid[indexX, indexY].pictureBox.Image = Resources.FoodBig;
+                            foodGrid[indexX, indexY].eaten = false;
+                            // Add big food index to the list for use "pacTickTimer" method
+                            bigFoodIndexes.Add(indexX.ToString() + "_" + indexY.ToString());
+                        }
+                        else
+                        {
+                            foodGrid[indexX, indexY] = new Box(new PictureBox(), false, false, false, true, false);
+                            foodGrid[indexX, indexY].pictureBox.Image = Resources.Food;
+                            foodGrid[indexX, indexY].eaten = false;
+                        }
+
+                        foodGrid[indexX, indexY].pictureBox.Size = new Size(boxSize, boxSize);
+                        Controls.Add(foodGrid[indexX, indexY].pictureBox);
+
+                        // Place all foods in a grid-pattern over the map
+                        // If a food collides with a wall, it will be removed
+                        // The same applies to foods that are placed beside others foods,
+                        // creating areas of dense foods, as well as foods placed outside the map or generally where they are not supposed to be
+                        foodGrid[indexX, indexY].pictureBox.Location = new Point(indexX * boxSize + horizontalFoodOffset, indexY * boxSize + verticalFoodOffset);
+
+                        if (AbleToPlaceFood(indexX, indexY))
+                        {   
+                            foodGrid[indexX, indexY].pictureBox.BringToFront();
+                            foodOnMap++;  
+                        }
+                        else
+                        {
+                            foodGrid[indexX, indexY].pictureBox.Hide();
+                        }
                     }
                     else
                     {
-                        food[indexX, indexY] = new Box(new PictureBox(), false, false, true, false);
-                        food[indexX, indexY].pictureBox.Image = Resources.Food;
-                    }
-
-                    food[indexX, indexY].pictureBox.Size = new Size(boxSize, boxSize);
-
-                    // Place all foods in a grid-pattern over the map
-                    // If a food collides with a wall, it will be removed
-                    // The same applies to foods that are placed beside others foods,
-                    // creating areas of dense foods, as well as foods placed outside the map or generally where they are not supposed to be
-                    food[indexX, indexY].pictureBox.Location = new Point(indexX * boxSize + horizontalFoodOffset, indexY * boxSize + verticalFoodOffset);
-
-                    // Don't add a food to where pacman starts
-                    if (AbleToPlaceFood(indexX, indexY))
-                    {
-                        if (indexX == 13 && indexY == 22)
+                        if (indexX == 0 && indexY == 0
+                        || indexX == 26 && indexY == 0
+                        || indexX == 0 && indexY == 34
+                        || indexX == 26 && indexY == 34)
                         {
-                            food[indexX, indexY] = null;
+                            foodGrid[indexX, indexY].pictureBox.Image = Resources.FoodBig;
+                            foodGrid[indexX, indexY].eaten = false;
                         }
-                        else 
+                        else
                         {
-                            Controls.Add(food[indexX, indexY].pictureBox);
-                            food[indexX, indexY].pictureBox.BringToFront();
-                            foodOnMap++;
+                            foodGrid[indexX, indexY].pictureBox.Image = Resources.Food;
+                            foodGrid[indexX, indexY].eaten = false;
                         }
-                    }
-                    else
-                    {
-                        food[indexX, indexY] = null;
                     }
                 }
             }
@@ -2065,41 +2090,56 @@ namespace Pacman_Projection
 
         private bool AbleToPlaceFood(int indexXfood, int indexYfood)
         {
-            var specifiedFood = food[indexXfood, indexYfood];
-
             foreach (Box box in boxes)
             {
-                if (specifiedFood.pictureBox.Bounds.IntersectsWith(box.pictureBox.Bounds))
+                if (foodGrid[indexXfood, indexYfood].pictureBox.Bounds.IntersectsWith(box.pictureBox.Bounds) && (box.isWall || !box.isFood))
                 {
-                    if (box.isWall || !box.toContainFood)
-                    {
-                        return false;
-                    }
+                    return false;
                 }
             }
             return true;
         }
 
-        private (bool food, bool bigFood) CheckForFoodCollide(PictureBox eatBox) 
+        private Box GetFoodCollide (PictureBox eatBox) 
         {
-            // true, false == food
-            // true, true == bigFood
             try
             {
                 for (int indexX = 0; indexX < foodsHorizontally; indexX++)
                 {
                     for (int indexY = 0; indexY < foodsVertically; indexY++)
                     {
-                        if (food[indexX, indexY] != null)
+                        if (foodGrid[indexX, indexY].pictureBox.Bounds.IntersectsWith(eatBox.Bounds) && !foodGrid[indexX, indexY].eaten)
                         {
-                            if (food[indexX, indexY].pictureBox.Bounds.IntersectsWith(eatBox.Bounds))
+                            return foodGrid[indexX, indexY];
+                        }
+                    }
+                }
+                return null;
+            }
+            catch (Exception) 
+            {
+                return null;
+            }
+        }
+
+        private (bool food, bool bigFood) CheckForFoodCollide(PictureBox eatBox)
+        {
+            try
+            {
+                for (int indexX = 0; indexX < foodsHorizontally; indexX++)
+                {
+                    for (int indexY = 0; indexY < foodsVertically; indexY++)
+                    {
+                        if (foodGrid[indexX, indexY] != null)
+                        {
+                            if (foodGrid[indexX, indexY].pictureBox.Bounds.IntersectsWith(eatBox.Bounds) && foodGrid[indexX, indexY].pictureBox.Image != null)
                             {
-                                if (food[indexX, indexY].isBigFood == false)
+                                if (foodGrid[indexX, indexY].isBigFood == false)
                                 {
                                     return (true, false);
                                 }
                                 else
-                                { 
+                                {
                                     return (true, true);
                                 }
                             }
@@ -2108,53 +2148,59 @@ namespace Pacman_Projection
                 }
                 return (false, false);
             }
-            catch (Exception) 
+            catch (Exception)
             {
                 return (false, false);
             }
         }
 
-        private void FoodEaten(int indexX, int indexY, bool bigFood)
+        private void FoodEaten(Box foodBox, bool bigFood)
         {
-            if (!bigFood)
+            if (foodBox != null)
             {
-                soundManager.PlaySound("pacman_chomp", false);
-                UpdateScore(foodScore, true);
-                Controls.Remove(food[indexX, indexY].pictureBox);
-                food[indexX, indexY] = null;
-            }
-            else 
-            {
-                currentEatGhostDuration += msToAddAfterBigFood;
-                // If the ghosts are blinking, make them stop as
-                // currentGhostEatDuration is now over the threshold,
-                // regardless of its previous value
-                Blinky.white = false;
-                Pinky.white = false;
-                Inky.white = false;
-                Clyde.white = false;
-                ghostBlink = false;
-
-                // Ensure all ghosts are frightened
-                if (!ghostScared)
+                if (!foodBox.eaten)
                 {
-                    SetGhosts_Scared();
+                    if (!bigFood)
+                    {
+                        soundManager.PlaySound("pacman_chomp", false);
+                        UpdateScore(foodScore, true);
+                        foodBox.pictureBox.Image = null;
+                        foodBox.eaten = true;
+                    }
+                    else if (bigFood)
+                    {
+                        currentEatGhostDuration += msToAddAfterBigFood;
+                        // If the ghosts are blinking, make them stop as
+                        // currentGhostEatDuration is now over the threshold,
+                        // regardless of its previous value
+                        Blinky.white = false;
+                        Pinky.white = false;
+                        Inky.white = false;
+                        Clyde.white = false;
+                        ghostBlink = false;
+
+                        // Ensure all ghosts are frightened
+                        if (!ghostScared)
+                        {
+                            SetGhosts_Scared();
+                        }
+                        ghostBehaviourTimeTimer.Stop();
+
+                        UpdateScore(foodScoreBig, true);
+                        foodBox.pictureBox.Image = null;
+                        foodBox.eaten = true;
+
+                        foodEatenBig++;
+                    }
                 }
-                ghostBehaviourTimeTimer.Stop();
+                foodEaten++;
+                foodOnMap--;
 
-                UpdateScore(foodScoreBig, true);
-                Controls.Remove(food[indexX, indexY].pictureBox);
-                food[indexX, indexY] = null;
-
-                foodEatenBig++;
-            }
-            foodEaten++;
-            foodOnMap--;
-
-            // If all foods are eaten, the player wins
-            if (foodOnMap == 0)
-            {
-                Game(true);
+                // If all foods are eaten, the player wins
+                if (foodOnMap == 0)
+                {
+                    Game(true);
+                }
             }
         }
 
@@ -2169,9 +2215,9 @@ namespace Pacman_Projection
                     string[] indexes = bigFoodIndexes[index].Split('_');
                     int indexX = Convert.ToInt32(indexes[0]);
                     int indexY = Convert.ToInt32(indexes[1]);
-                    if (food[indexX, indexY] != null)
+                    if (foodGrid[indexX, indexY].pictureBox.Image != null)
                     {
-                        food[Convert.ToInt32(indexes[0]), Convert.ToInt32(indexes[1])].pictureBox.Show();
+                        foodGrid[Convert.ToInt32(indexes[0]), Convert.ToInt32(indexes[1])].pictureBox.Show();
                     }
                 }
             }
@@ -2182,9 +2228,9 @@ namespace Pacman_Projection
                     string[] indexes = bigFoodIndexes[index].Split('_');
                     int indexX = Convert.ToInt32(indexes[0]);
                     int indexY = Convert.ToInt32(indexes[1]);
-                    if (food[indexX, indexY] != null)
+                    if (foodGrid[indexX, indexY].pictureBox.Image != null)
                     {
-                        food[Convert.ToInt32(indexes[0]), Convert.ToInt32(indexes[1])].pictureBox.Hide();
+                        foodGrid[Convert.ToInt32(indexes[0]), Convert.ToInt32(indexes[1])].pictureBox.Hide();
                     }
                 }
             }
@@ -2192,7 +2238,7 @@ namespace Pacman_Projection
 
         private bool AbleToPlaceFruit()
         {
-            if (fruitBox.pictureBox.Image == null) 
+            if (fruitBox.Image == null) 
             { 
                 return true; 
             } 
@@ -2206,7 +2252,7 @@ namespace Pacman_Projection
         {
             // true == fruit
             // false == no fruit
-            if (fruitBox.pictureBox.Bounds.IntersectsWith(eatBox.Bounds) && fruitBox.pictureBox.Image != null)
+            if (fruitBox.Bounds.IntersectsWith(eatBox.Bounds) && fruitBox.Image != null)
             {
                 return true;
             }
@@ -2224,7 +2270,7 @@ namespace Pacman_Projection
                 if (fruitName == currentFruit)
                 {
                     UpdateScore(fruitScore[fruitName], true);
-                    fruitBox.pictureBox.Image = null;
+                    fruitBox.Image = null;
                     break;
                 }
             }
@@ -2248,17 +2294,17 @@ namespace Pacman_Projection
                         int fruit = new Random().Next(0, 5);
                         if (fruit <= 1)
                         {
-                            fruitBox.pictureBox.Image = Resources.Cherry; // 40%
+                            fruitBox.Image = Resources.Cherry; // 40%
                             currentFruit = "cherry";
                         }
                         else if (fruit <= 3)
                         {
-                            fruitBox.pictureBox.Image = Resources.Strawberry; // 40%
+                            fruitBox.Image = Resources.Strawberry; // 40%
                             currentFruit = "strawberry";
                         }
                         else if (fruit >= 4)
                         {
-                            fruitBox.pictureBox.Image = Resources.Apple; // 20%
+                            fruitBox.Image = Resources.Apple; // 20%
                             currentFruit = "apple";
                         }
                     }
@@ -2267,22 +2313,22 @@ namespace Pacman_Projection
                         int fruit = new Random().Next(0, 20);
                         if (fruit <= 3)
                         {
-                            fruitBox.pictureBox.Image = Resources.Cherry; // 20% 
+                            fruitBox.Image = Resources.Cherry; // 20% 
                             currentFruit = "cherry";
                         }
                         else if (fruit <= 10)
                         {
-                            fruitBox.pictureBox.Image = Resources.Strawberry; // 35%
+                            fruitBox.Image = Resources.Strawberry; // 35%
                             currentFruit = "strawberry";
                         }
                         else if (fruit <= 15)
                         {
-                            fruitBox.pictureBox.Image = Resources.Apple; // 25%
+                            fruitBox.Image = Resources.Apple; // 25%
                             currentFruit = "apple";
                         }
                         else if (fruit >= 16)
                         {
-                            fruitBox.pictureBox.Image = Resources.Banana; // 20%
+                            fruitBox.Image = Resources.Banana; // 20%
                             currentFruit = "banana";
                         }
                     }
@@ -2291,36 +2337,36 @@ namespace Pacman_Projection
                         int fruit = new Random().Next(0, 20);
                         if (fruit == 0)
                         {
-                            fruitBox.pictureBox.Image = Resources.Cherry; // 5% 
+                            fruitBox.Image = Resources.Cherry; // 5% 
                             currentFruit = "cherry";
                         }
                         else if (fruit <= 3)
                         {
-                            fruitBox.pictureBox.Image = Resources.Strawberry; // 15%
+                            fruitBox.Image = Resources.Strawberry; // 15%
                             currentFruit = "strawberry";
                         }
                         else if (fruit <= 8)
                         {
-                            fruitBox.pictureBox.Image = Resources.Apple; // 25%
+                            fruitBox.Image = Resources.Apple; // 25%
                             currentFruit = "apple";
                         }
                         else if (fruit <= 14)
                         {
-                            fruitBox.pictureBox.Image = Resources.Banana; // 30%
+                            fruitBox.Image = Resources.Banana; // 30%
                             currentFruit = "banana";
                         }
                         else if (fruit >= 15)
                         {
-                            fruitBox.pictureBox.Image = Resources.Melon; // 25%
+                            fruitBox.Image = Resources.Melon; // 25%
                             currentFruit = "melon";
                         }
                     }
 
-                    fruitBox.pictureBox.BringToFront();
+                    fruitBox.BringToFront();
                     fruitSpawned++;
                 }
 
-                if (fruitBox.pictureBox.Image == null)
+                if (fruitBox.Image == null)
                 {
                     labelFruitSpawnChance.Text = Convert.ToInt32(fruitSpawnChancePercent * 100).ToString() + "%";
                 }
@@ -2386,11 +2432,11 @@ namespace Pacman_Projection
                     ghostScared = false;
                     ghostsEatenDuringPeriod = 0;
 
-                    if (mostRecentBehaviour == "scatter")
+                    if (mostRecentGlobalBehaviour == "scatter")
                     {
                         SetGhosts_Scatter();
                     }
-                    else if (mostRecentBehaviour == "chase")
+                    else if (mostRecentGlobalBehaviour == "chase")
                     {
                         SetGhosts_Chase();
                     }
@@ -2420,6 +2466,26 @@ namespace Pacman_Projection
                     }
                 }
             }
+        }
+
+        private void Blinky_LocationChanged(object sender, EventArgs e)
+        {
+            Blinky.UpdateLocation(Blinky.box.Left, Blinky.box.Top);
+        }
+
+        private void Pinky_LocationChanged(object sender, EventArgs e)
+        {
+            Pinky.UpdateLocation(Pinky.box.Left, Pinky.box.Top);
+        }
+
+        private void Inky_LocationChanged(object sender, EventArgs e)
+        {
+            Inky.UpdateLocation(Inky.box.Left, Inky.box.Top);
+        }
+
+        private void Clyde_LocationChanged(object sender, EventArgs e)
+        {
+            Clyde.UpdateLocation(Clyde.box.Left, Clyde.box.Top);
         }
 
         private void ghostTickTimer_Tick(object sender, EventArgs e)
@@ -2458,7 +2524,7 @@ namespace Pacman_Projection
                     }
                     else
                     {
-                        NewDirection(Blinky);
+                        UpdateGhostTarget(Blinky);
                     }
                 }
                 else if (!Blinky.scared && !Blinky.dead)
@@ -2503,7 +2569,7 @@ namespace Pacman_Projection
                     }
                     else
                     {
-                        NewDirection(Blinky);
+                        UpdateGhostTarget(Blinky);
                     }
 
                 }
@@ -2532,7 +2598,7 @@ namespace Pacman_Projection
                     }
                     else
                     {
-                        NewDirection(Blinky);
+                        UpdateGhostTarget(Blinky);
                     }
                 }
                 else if (!Blinky.scared && !Blinky.dead)
@@ -2557,7 +2623,7 @@ namespace Pacman_Projection
                     }
                     else
                     {
-                        NewDirection(Blinky);
+                        UpdateGhostTarget(Blinky);
                     }
                 }
                 else if (!Blinky.scared && !Blinky.dead)
@@ -2602,7 +2668,7 @@ namespace Pacman_Projection
                     }
                     else
                     {
-                        NewDirection(Pinky);
+                        UpdateGhostTarget(Pinky);
                     }
                 }
                 else if (!Pinky.scared && !Pinky.dead)
@@ -2647,7 +2713,7 @@ namespace Pacman_Projection
                     }
                     else
                     {
-                        NewDirection(Pinky);
+                        UpdateGhostTarget(Pinky);
                     }
                 }
                 else if (!Pinky.scared && !Pinky.dead)
@@ -2675,7 +2741,7 @@ namespace Pacman_Projection
                     }
                     else
                     {
-                        NewDirection(Pinky);
+                        UpdateGhostTarget(Pinky);
                     }
                 }
                 else if (!Pinky.scared && !Pinky.dead)
@@ -2700,7 +2766,7 @@ namespace Pacman_Projection
                     }
                     else
                     {
-                        NewDirection(Pinky);
+                        UpdateGhostTarget(Pinky);
                     }
                 }
                 else if (!Pinky.scared && !Pinky.dead)
@@ -2745,7 +2811,7 @@ namespace Pacman_Projection
                     }
                     else
                     {
-                        NewDirection(Inky);
+                        UpdateGhostTarget(Inky);
                     }
                 }
                 else if (!Inky.scared && !Inky.dead)
@@ -2790,7 +2856,7 @@ namespace Pacman_Projection
                     }
                     else
                     {
-                        NewDirection(Inky);
+                        UpdateGhostTarget(Inky);
                     }
                 }
                 else if (!Inky.scared && !Inky.dead)
@@ -2818,7 +2884,7 @@ namespace Pacman_Projection
                     }
                     else
                     {
-                        NewDirection(Inky);
+                        UpdateGhostTarget(Inky);
                     }
                 }
                 else if (!Inky.scared && !Inky.dead)
@@ -2843,7 +2909,7 @@ namespace Pacman_Projection
                     }
                     else
                     {
-                        NewDirection(Inky);
+                        UpdateGhostTarget(Inky);
                     }
                 }
                 else if (!Inky.scared && !Inky.dead)
@@ -2888,7 +2954,7 @@ namespace Pacman_Projection
                     }
                     else
                     {
-                        NewDirection(Clyde);
+                        UpdateGhostTarget(Clyde);
                     }
                 }
                 else if (!Clyde.scared && !Clyde.dead)
@@ -2933,7 +2999,7 @@ namespace Pacman_Projection
                     }
                     else
                     {
-                        NewDirection(Clyde);
+                        UpdateGhostTarget(Clyde);
                     }
                 }
                 else if (!Clyde.scared && !Clyde.dead)
@@ -2961,7 +3027,7 @@ namespace Pacman_Projection
                     }
                     else
                     {
-                        NewDirection(Clyde);
+                        UpdateGhostTarget(Clyde);
                     }
                 }
                 else if (!Clyde.scared && !Clyde.dead)
@@ -2986,7 +3052,7 @@ namespace Pacman_Projection
                     }
                     else
                     {
-                        NewDirection(Clyde);
+                        UpdateGhostTarget(Clyde);
                     }
                 }
                 else if (!Clyde.scared && !Clyde.dead)
@@ -3000,8 +3066,8 @@ namespace Pacman_Projection
         private void SetGhosts_Scared()
         {
             // Switch current behaviour to most recent behaviour before its updated
-            mostRecentBehaviour = currentBehaviour;
-            currentBehaviour = "scared";
+            mostRecentGlobalBehaviour = currentGlobalBehaviour;
+            currentGlobalBehaviour = "scared";
             ghostScared = true;
             SetSound_Scared();
 
@@ -3015,8 +3081,8 @@ namespace Pacman_Projection
 
         private void SetGhosts_Scatter()
         {
-            mostRecentBehaviour = currentBehaviour;
-            currentBehaviour = "scatter";
+            mostRecentGlobalBehaviour = currentGlobalBehaviour;
+            currentGlobalBehaviour = "scatter";
             SetSound_Scatter();
 
             Blinky.SetScatter();
@@ -3029,8 +3095,8 @@ namespace Pacman_Projection
 
         private void SetGhosts_Chase()
         {
-            mostRecentBehaviour = currentBehaviour;
-            currentBehaviour = "chase";
+            mostRecentGlobalBehaviour = currentGlobalBehaviour;
+            currentGlobalBehaviour = "chase";
             SetSound_Chase();
 
             Blinky.SetChase();
@@ -3115,31 +3181,81 @@ namespace Pacman_Projection
             }
         }
 
-        private void NewDirection(Ghost ghost)
+        private void UpdateGhostTarget(Ghost ghost)
         {
-           
+            // Hierarchy: Up > Down > Left > Right  
+            // Blinky: Chase pacman directly
+            // Pinky: Chase pacman 4 boxes ahead in his direction
+            // Inky: Chase pacman 4 boxes ahead in his direction + Blinky's position mirrored (180 degrees) 
+            // Clyde: Chase pacman directly, but if within 8 boxes of pacman, enter scatter mode
 
+            if (ghost.name == "blinky")
+            {
+                bool directionUp = false;
+                bool directionDown = false;
+                bool directionLeft = false;
+                bool directionRight = false; 
 
-            /*
-            Random rng = new Random();
-            int direction = rng.Next(0, 4);
-            if (direction == 0)
-            {
-                ghost.SetDirection("Left");
+                Blinky.SetTarget(pacman.currentPosX, pacman.currentPosY);
+                PictureBox testGhost = new PictureBox(); 
+                testGhost.Size = ghost.box.Size;
+                testGhost.Location = ghost.box.Location;
+
+                for (int direction = 0; direction < 4; direction++)
+                {
+                    if (direction == 0)
+                    {
+                        testGhost.Top -= step;
+                    }
+                    else if (direction == 1)
+                    {
+                        testGhost.Top += step;
+                    }
+                    else if (direction == 2)
+                    {
+                        testGhost.Left -= step;
+                    }
+                    else
+                    {
+                        testGhost.Left += step;
+                    }
+
+                    foreach (Box wall in walls)
+                    {
+                        if (!testGhost.Bounds.IntersectsWith(wall.pictureBox.Bounds))
+                        {
+                            if (direction == 0)
+                            {
+                                directionUp = true;
+                            }
+                            else if (direction == 1)
+                            {
+                                directionDown = true;
+                            }
+                            else if (direction == 2)
+                            {
+                                directionLeft = true;
+                            }
+                            else
+                            {
+                                directionRight = true;
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                int positionDifferenceX = pacman.currentPosX - ghost.currentPosX;
+                if (positionDifferenceX < 0) 
+                { 
+                    positionDifferenceX = -positionDifferenceX; 
+                }
+                int positionDifferenceY = pacman.currentPosY - ghost.currentPosY;
+                if (positionDifferenceY < 0)
+                {
+                    positionDifferenceY = -positionDifferenceY;
+                }
             }
-            else if (direction == 1)
-            {
-                ghost.SetDirection("Right");
-            }
-            else if (direction == 2)
-            {
-                ghost.SetDirection("Up");
-            }
-            else if (direction == 3)
-            {
-                ghost.SetDirection("Down");
-            }
-            */
         }
 
         private async void GhostEaten(Ghost ghost)

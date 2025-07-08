@@ -1,24 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Runtime.Remoting.Channels;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Pacman_Projection
 {
     class Ghost
     {
+        internal string name; // Name for identification 
+
         internal PictureBox box;
+        internal PictureBox navBox;
+
         internal bool scatter;
         internal bool chase;
         internal bool scared;
         internal bool white;
         internal bool dead;
 
-        internal int x;
-        internal int y;
+        internal int targetPosX;
+        internal int targetPosY;
+
+        internal int currentPosX;
+        internal int currentPosY;
 
         internal bool teleportedLastTick;
         internal bool teleporting;
@@ -31,9 +41,21 @@ namespace Pacman_Projection
 
         internal string cornerDuringScatter; // "TopLeft", "TopRight", "BottomLeft", "BottomRight"
 
-        public Ghost(PictureBox pictureBox)
+        public Ghost(PictureBox box, PictureBox navBox, string name)
         {
-            box = pictureBox;
+            this.box = box;
+            this.navBox = navBox;
+            this.name = name;
+        }
+
+        internal void UpdateLocation(int x, int y)
+        {
+            currentPosX = x;
+            currentPosY = y;
+
+            navBox.Location = new Point(currentPosX + navBox.Width / 2, currentPosY + navBox.Width / 2);
+
+            navBox.BackColor = Color.Green;
         }
 
         internal void SetDirection(string direction)
@@ -77,7 +99,8 @@ namespace Pacman_Projection
         
         internal void SetTarget(int x, int y)
         {
-
+            targetPosX = x;
+            targetPosY = y;
         }
 
         internal void SetScatter()

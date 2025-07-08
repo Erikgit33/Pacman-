@@ -86,6 +86,7 @@ namespace Pacman_Projection
 
         private void Form_Name_FormClosing(object sender, FormClosingEventArgs e)
         {
+            e.Cancel = true;
             form_menu.SwitchToForm(form_menu, this);
         }
     }
