@@ -139,6 +139,7 @@ namespace Pacman_Projection
             }
             formToClose.Hide();
             formToShow.Show();
+
         }
 
         public void SwitchToMenuAndSaveScore(int score, int beganAtLevel, string player_name)

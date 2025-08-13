@@ -18,11 +18,21 @@ namespace Pacman_Projection
         internal PictureBox box;
         internal PictureBox navBox;
 
-        internal bool scatter;
-        internal bool chase;
-        internal bool scared;
-        internal bool white;
-        internal bool dead;
+        internal bool scatter { get; set; } 
+        internal bool chase { get; set; }
+        internal bool frightened { get; set; }
+
+        internal bool white { get; set; } 
+        internal bool dead { get;  set; }
+
+        internal bool teleportedLastTick { get; set; } // Used to prevent teleporting twice in a row
+        internal bool teleporting { get; set; } // Used to indicate that the ghost is currently teleporting
+        internal int blocksIntoTeleporter { get; set; }
+
+        internal bool direction_left { get; set; }
+        internal bool direction_right { get; set; }
+        internal bool direction_up { get; set; }
+        internal bool direction_down { get; set; }
 
         internal int targetPosX;
         internal int targetPosY;
@@ -30,16 +40,7 @@ namespace Pacman_Projection
         internal int currentPosX;
         internal int currentPosY;
 
-        internal bool teleportedLastTick;
-        internal bool teleporting;
-        internal int blocksIntoTeleporter;
-
-        internal bool direction_left;
-        internal bool direction_right;
-        internal bool direction_up;
-        internal bool direction_down;
-
-        internal string cornerDuringScatter; // "TopLeft", "TopRight", "BottomLeft", "BottomRight"
+        internal MapCorner cornerDuringScatter;
 
         public Ghost(PictureBox box, PictureBox navBox, string name)
         {
@@ -58,37 +59,37 @@ namespace Pacman_Projection
             navBox.BackColor = Color.Green;
         }
 
-        internal void SetDirection(string direction)
+        internal void SetDirection(Direction direction)
         {
-            if (direction == "Left")
+            if (direction.Equals(Direction.Left))
             {
                 direction_left = true;
                 direction_right = false;
                 direction_up = false;
                 direction_down = false;
             }
-            else if (direction == "Right")
+            else if (direction.Equals(Direction.Right))
             {
                 direction_left = false;
                 direction_right = true;
                 direction_up = false;
                 direction_down = false;
             }
-            else if (direction == "Up")
+            else if (direction.Equals(Direction.Up))
             {
                 direction_left = false;
                 direction_right = false;
                 direction_up = true;
                 direction_down = false;
             }
-            else if (direction == "Down")
+            else if (direction.Equals(Direction.Down))
             {
                 direction_left = false;
                 direction_right = false;
                 direction_up = false;
                 direction_down = true;
             }
-            else if (direction == "Stationary")
+            else if (direction.Equals(Direction.Stationary))
             {
                 direction_left = false;
                 direction_right = false;
@@ -107,7 +108,7 @@ namespace Pacman_Projection
         {
             scatter = true;
             chase = false;
-            scared = false;
+            frightened = false;
             if (white)
             {
                 white = false;
@@ -118,18 +119,18 @@ namespace Pacman_Projection
         {
             scatter = false;
             chase = true;
-            scared = false;
+            frightened = false;
             if (white)
             {
                 white = false;
             }
         }
 
-        internal void SetScared()
+        internal void SetFrightened()
         {
             scatter = false;
             chase = false;
-            scared = true;
+            frightened = true;
         }
     }
 }
