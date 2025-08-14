@@ -940,6 +940,16 @@ namespace Pacman_Projection.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap PowerPellet {
+            get {
+                object obj = ResourceManager.GetObject("PowerPellet", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Strawberry {
             get {
                 object obj = ResourceManager.GetObject("Strawberry", resourceCulture);

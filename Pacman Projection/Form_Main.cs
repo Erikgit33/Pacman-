@@ -1973,7 +1973,7 @@ namespace Pacman_Projection
                         {
                             foodElement.pictureBox.Image = Resources.PowerPellet;
                             foodElement.isEaten = false;
-                        }
+                        }   
                         else
                         {
                             foodElement.pictureBox.Image = Resources.Food;

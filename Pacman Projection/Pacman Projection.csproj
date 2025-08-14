@@ -342,9 +342,6 @@
     <None Include="Resources\Blinky stationary ver. 2.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\PowerPellet.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Apple.png" />
   </ItemGroup>
   <ItemGroup>
@@ -430,6 +427,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Pacman Icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PowerPellet.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
