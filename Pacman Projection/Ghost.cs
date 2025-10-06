@@ -11,97 +11,60 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Pacman_Projection
 {
-    class Ghost
+    class Ghost : Entity
     {
-        internal string name; // Name for identification 
-
-        internal PictureBox box;
-        internal PictureBox navBox;
+        internal PictureBox navBox = new PictureBox();
 
         internal bool scatter { get; set; } 
         internal bool chase { get; set; }
         internal bool frightened { get; set; }
 
-        internal bool white { get; set; } 
-        internal bool dead { get;  set; }
-
+        internal bool white { get; set; }
         internal bool teleportedLastTick { get; set; } // Used to prevent teleporting twice in a row
-        internal bool teleporting { get; set; } // Used to indicate that the ghost is currently teleporting
         internal int blocksIntoTeleporter { get; set; }
 
-        internal bool direction_left { get; set; }
-        internal bool direction_right { get; set; }
-        internal bool direction_up { get; set; }
-        internal bool direction_down { get; set; }
+        internal int targetPosX { get; set; }
+        internal int targetPosY { get; set; }
 
-        internal int targetPosX;
-        internal int targetPosY;
+        internal int currentPosX { get; set; }
+        internal int currentPosY { get; set; }
 
-        internal int currentPosX;
-        internal int currentPosY;
+        internal MapCorner cornerDuringScatter { get; set; }
 
-        internal MapCorner cornerDuringScatter;
-
-        public Ghost(PictureBox box, PictureBox navBox, string name)
+        public Ghost(GhostName name) 
         {
-            this.box = box;
-            this.navBox = navBox;
-            this.name = name;
+            switch (name)
+            {
+                case GhostName.Blinky:
+                    cornerDuringScatter = MapCorner.TopRight;
+                    break;
+                case GhostName.Pinky:
+                    cornerDuringScatter = MapCorner.TopLeft;
+                    break;
+                case GhostName.Inky:
+                    cornerDuringScatter = MapCorner.BottomRight;
+                    break;
+                case GhostName.Clyde:
+                    cornerDuringScatter = MapCorner.BottomLeft;
+                    break;
+                default:
+                    cornerDuringScatter = MapCorner.None;
+                    break;
+            }
         }
 
-        internal void UpdateLocation(int x, int y)
+        internal void UpdateLocation(int left, int top)
         {
-            currentPosX = x;
-            currentPosY = y;
+            currentPosX = left;
+            currentPosY = top;
 
             navBox.Location = new Point(currentPosX + navBox.Width / 2, currentPosY + navBox.Width / 2);
-
-            navBox.BackColor = Color.Green;
-        }
-
-        internal void SetDirection(Direction direction)
-        {
-            if (direction.Equals(Direction.Left))
-            {
-                direction_left = true;
-                direction_right = false;
-                direction_up = false;
-                direction_down = false;
-            }
-            else if (direction.Equals(Direction.Right))
-            {
-                direction_left = false;
-                direction_right = true;
-                direction_up = false;
-                direction_down = false;
-            }
-            else if (direction.Equals(Direction.Up))
-            {
-                direction_left = false;
-                direction_right = false;
-                direction_up = true;
-                direction_down = false;
-            }
-            else if (direction.Equals(Direction.Down))
-            {
-                direction_left = false;
-                direction_right = false;
-                direction_up = false;
-                direction_down = true;
-            }
-            else if (direction.Equals(Direction.Stationary))
-            {
-                direction_left = false;
-                direction_right = false;
-                direction_up = false;
-                direction_down = false;
-            }
         }
         
-        internal void SetTarget(int x, int y)
+        internal void SetTarget(int left, int top)
         {
-            targetPosX = x;
-            targetPosY = y;
+            targetPosX = left;
+            targetPosY = top;
         }
 
         internal void SetScatter()

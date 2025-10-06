@@ -13,13 +13,29 @@ using System.Windows.Forms;
 
 namespace Pacman_Projection
 {
-
-    internal class SoundManager
+    public enum Sounds
+    {
+        menuMusic,
+        buttonPress,
+        pacman_beginning,
+        pacman_chomp,
+        pacman_eatFruit,
+        pacman_eatGhost,
+        pacman_death,
+        pacman_win,
+        ghost_scared,
+        ghost_return,
+        ghost_scatter,
+        ghost_chase1,
+        ghost_chase2,
+        ghost_chase3
+    }
+    public class SoundManager
     {
         // Declare dictionaries to keep track of all sounds and their current states
-        internal Dictionary<string, Sound> activeSounds = new Dictionary<string, Sound>();
-        internal Dictionary<string, Sound> pausedSounds = new Dictionary<string, Sound>();
-        internal Dictionary<string, byte[]> soundData = new Dictionary<string, byte[]>();
+        internal Dictionary<Sounds, Sound> activeSounds = new Dictionary<Sounds, Sound>();
+        internal Dictionary<Sounds, Sound> pausedSounds = new Dictionary<Sounds, Sound>();
+        internal Dictionary<Sounds, byte[]> soundData = new Dictionary<Sounds, byte[]>();
 
         public bool toPlaySounds { get; set; } = true;
 
@@ -28,39 +44,41 @@ namespace Pacman_Projection
         public SoundManager()
         {
             // Add all sound resources to soundData and load them
-            soundData.Add("menuMusic", null);   
-            soundData.Add("buttonReady", null);
-            soundData.Add("pacman_beginning", null);
-            soundData.Add("pacman_chomp", null);
-            soundData.Add("pacman_eatFruit", null);
-            soundData.Add("pacman_eatGhost", null);
-            soundData.Add("pacman_death", null);
-            soundData.Add("ghost_scared", null);
-            soundData.Add("ghost_return", null);
-            soundData.Add("ghost_scatter", null);
-            soundData.Add("ghost_chase1", null);
-            soundData.Add("ghost_chase2", null);
-            soundData.Add("ghost_chase3", null);
+            // Every instance of soundManager will have access to these sounds
+            soundData.Add(Sounds.menuMusic, null);   
+            soundData.Add(Sounds.buttonPress, null);
+            soundData.Add(Sounds.pacman_beginning, null);
+            soundData.Add(Sounds.pacman_chomp, null);
+            soundData.Add(Sounds.pacman_eatFruit, null);
+            soundData.Add(Sounds.pacman_eatGhost, null);
+            soundData.Add(Sounds.pacman_death, null);
+            soundData.Add(Sounds.ghost_scared, null);
+            soundData.Add(Sounds.ghost_return, null);
+            soundData.Add(Sounds.ghost_scatter, null);
+            soundData.Add(Sounds.ghost_chase1, null);
+            soundData.Add(Sounds.ghost_chase2, null);
+            soundData.Add(Sounds.ghost_chase3, null);
 
 
             /*   ENSURE ALL SOUNDS TO BE LODADED HAVE 'Build Action' SET TO 'Embedded Resources'   */
 
-            LoadSound("menuMusic", "Pacman_Projection.Resources.menuMusic.wav");
-            LoadSound("buttonReady", "Pacman_Projection.Resources.buttonReady.wav");
-            LoadSound("pacman_beginning", "Pacman_Projection.Resources.pacman_beginning.wav");
-            LoadSound("pacman_chomp", "Pacman_Projection.Resources.pacman_chomp.wav");
-            LoadSound("pacman_eatFruit", "Pacman_Projection.Resources.pacman_eatfruit.wav");
-            LoadSound("pacman_eatGhost", "Pacman_Projection.Resources.pacman_eatghost.wav");
-            LoadSound("pacman_death", "Pacman_Projection.Resources.pacman_death.wav");
-            LoadSound("ghost_scared", "Pacman_Projection.Resources.ghost_scared.wav");
-            LoadSound("ghost_return", "Pacman_Projection.Resources.ghost_return.wav");
-            LoadSound("ghost_scatter", "Pacman_Projection.Resources.ghost_scatter.wav");
-            LoadSound("ghost_chase1", "Pacman_Projection.Resources.ghost_chase1.wav");
-            LoadSound("ghost_chase2", "Pacman_Projection.Resources.ghost_chase2.wav");
-            LoadSound("ghost_chase3", "Pacman_Projection.Resources.ghost_chase3.wav");
+            LoadSound(Sounds.menuMusic, "Pacman_Projection.Resources.menuMusic.wav");
+            LoadSound(Sounds.buttonPress, "Pacman_Projection.Resources.buttonPress.wav");
+            LoadSound(Sounds.pacman_beginning, "Pacman_Projection.Resources.pacman_beginning.wav");
+            LoadSound(Sounds.pacman_chomp, "Pacman_Projection.Resources.pacman_chomp.wav");
+            LoadSound(Sounds.pacman_eatFruit, "Pacman_Projection.Resources.pacman_eatFruit.wav");
+            LoadSound(Sounds.pacman_eatGhost, "Pacman_Projection.Resources.pacman_eatGhost.wav");
+            LoadSound(Sounds.pacman_death, "Pacman_Projection.Resources.pacman_death.wav");
+            LoadSound(Sounds.pacman_win, "Pacman_Projection.Resources.pacman_win.wav");
+            LoadSound(Sounds.ghost_scared, "Pacman_Projection.Resources.ghost_scared.wav");
+            LoadSound(Sounds.ghost_return, "Pacman_Projection.Resources.ghost_return.wav");
+            LoadSound(Sounds.ghost_scatter, "Pacman_Projection.Resources.ghost_scatter.wav");
+            LoadSound(Sounds.ghost_chase1, "Pacman_Projection.Resources.ghost_chase1.wav");
+            LoadSound(Sounds.ghost_chase2, "Pacman_Projection.Resources.ghost_chase2.wav");
+            LoadSound(Sounds.ghost_chase3, "Pacman_Projection.Resources.ghost_chase3.wav");
         }
 
-        private void LoadSound(string soundName, string resourcePath)
+        private void LoadSound(Sounds soundEnum, string resourcePath)
         {
             var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourcePath);
 
@@ -68,107 +86,112 @@ namespace Pacman_Projection
             {
                 byte[] buffer = new byte[stream.Length];
                 stream.Read(buffer, 0, buffer.Length);
-                soundData[soundName] = buffer;
+                soundData[soundEnum] = buffer;
             }
         }
 
-        public void PlaySound(string soundName, bool loop)
+        public async Task PlaySound(Sounds soundEnum, bool loop)
         {
             if (toPlaySounds)
             {
-                Task.Run(async () =>
-                { 
-                    if (soundData.ContainsKey(soundName))
+                if (soundData.ContainsKey(soundEnum))
+                {
+                    if (pausedSounds.ContainsKey(soundEnum))
                     {
-                        MemoryStream memoryStream = new MemoryStream(soundData[soundName]);
-                        WaveFileReader reader = new WaveFileReader(memoryStream);
-                        WaveOutEvent waveOut = null;
-                        WaveStream waveStream = null;
+                        pausedSounds.Remove(soundEnum); // Remove from paused sounds if it exists there
+                    }
 
-                        if (loop && !await CheckForSound(soundName)) // Don't loop sound again if it's already looping
-                        {
-                            waveStream = loop ? new LoopStream(reader) : (WaveStream)reader;
-                            waveOut = new WaveOutEvent();
-                            // if looping, set the desired latency to loopingLatency (70ms)
-                            waveOut.DesiredLatency = loopingLatency;
+                    MemoryStream memoryStream = new MemoryStream(soundData[soundEnum]);
+                    WaveFileReader reader = new WaveFileReader(memoryStream);
+                    WaveOutEvent waveOut = null;
+                    WaveStream waveStream = null;
 
-                            waveOut.Init(waveStream);
-                            waveOut.Play();
-                        }
-                        else
-                        {
-                            waveOut = new WaveOutEvent();
+                    if (loop && !await CheckForSound(soundEnum)) // Don't loop sound again if it's already looping
+                    {
+                        waveStream = loop ? new LoopStream(reader) : (WaveStream)reader;
+                        waveOut = new WaveOutEvent();
+                        // if looping, set the desired latency to loopingLatency (70ms)
+                        waveOut.DesiredLatency = loopingLatency;
 
-                            waveOut.Init(reader);
-                            waveOut.Play();
-                        }
-
-                        if (!await CheckForSound(soundName))
-                        {
-                            activeSounds.Add(soundName, new Sound(soundName, loop, memoryStream, reader, waveOut, waveStream));
-                        }
-
-                        if (!loop)
-                        {
-                            waveOut.PlaybackStopped += (sender, e) =>
-                            {
-                                // Dispose if not null, crash-preventing
-                                waveOut?.Dispose();
-                                waveStream?.Dispose();
-                                memoryStream?.Dispose();
-                                reader?.Dispose();
-                                activeSounds?.Remove(soundName);
-                            };
-                        }
+                        waveOut.Init(waveStream);
+                        waveOut.Play();
                     }
                     else
                     {
-                        MessageBox.Show("Sound not found and/or cannot be played: \n" + soundName + ".\n POSSIBLE SOLUTION: " +
-                        "\n1. Ensure soundData contains the sound-file. " +
-                        "\n2. Check for spelling errors at relevant locations and methods in used code. " +
-                        "\n3. Set sound-property 'Build Action' => 'Embedded Resources'");
-                    }
-                });
-            }
-        }
+                        waveOut = new WaveOutEvent();
 
-        public void UnpauseSound(string soundName)
-        {
-            if (pausedSounds.ContainsKey(soundName))
-            {
-                if (pausedSounds[soundName].looping)
-                {
-                    var sound = pausedSounds[soundName];
-                    sound.waveStream.Position = sound.pausedPosition; // Restore the position to its last paused position
-                    sound.waveOut.Play();
-                    activeSounds.Add(soundName, sound);
-                    pausedSounds.Remove(soundName);
+                        waveOut.Init(reader);
+                        waveOut.Play();
+                    }
+
+                    if (!await CheckForSound(soundEnum))
+                    {
+                        activeSounds.Add(soundEnum, new Sound(nameof(soundEnum), loop, memoryStream, reader, waveOut, waveStream));
+                    }
+
+                    if (!loop)
+                    {
+                        waveOut.PlaybackStopped += (sender, e) =>
+                        {
+                            // Dispose if not null, crash-preventing
+                            waveOut?.Dispose();
+                            waveStream?.Dispose();
+                            memoryStream?.Dispose();
+                            reader?.Dispose();
+                            activeSounds?.Remove(soundEnum);
+                        };
+                    }
                 }
                 else
                 {
-                    var sound = pausedSounds[soundName];
-                    sound.memoryStream.Position = sound.pausedPosition; // Restore the position to its last paused position
-                    sound.waveOut.Play();
-                    activeSounds.Add(soundName, sound);
-                    pausedSounds.Remove(soundName);
+                    MessageBox.Show("Sound not found and/or cannot be played: \n" + nameof(soundEnum) + ".\n POSSIBLE SOLUTION: " +
+                    "\n1. Ensure soundData contains the sound-file. " +
+                    "\n2. Check for spelling errors at relevant locations and methods in used code. " +
+                    "\n3. Set sound-property 'Build Action' => 'Embedded Resources'");
                 }
             }
-        }   
-
-        private Task<bool> CheckForSound(string soundName)
-        {
-            return Task.FromResult(activeSounds.ContainsKey(soundName));
         }
 
-        public void StopSound(string soundName)
+        public void UnpauseSound(Sounds soundEnum)
         {
-            if (soundData.ContainsKey(soundName) && activeSounds.ContainsKey(soundName))
+            if (pausedSounds.ContainsKey(soundEnum))
             {
-                activeSounds[soundName].waveOut.Stop();
-                activeSounds[soundName].memoryStream.Dispose();
-                activeSounds[soundName].reader.Dispose();
-                activeSounds[soundName].waveStream?.Dispose();
-                activeSounds.Remove(soundName);
+                if (pausedSounds[soundEnum].Looping)
+                {
+                    var sound = pausedSounds[soundEnum];
+                    sound.WaveStream.Position = sound.PausedPosition; // Restore the position to its last paused position
+                    sound.WaveOut.Play();
+                    activeSounds.Add(soundEnum, sound);
+                    pausedSounds.Remove(soundEnum);
+                }
+                else
+                {
+                    var sound = pausedSounds[soundEnum];
+                    sound.MemoryStream.Position = sound.PausedPosition; // Restore the position to its last paused position
+                    sound.WaveOut.Play();
+                    activeSounds.Add(soundEnum, sound);
+                    pausedSounds.Remove(soundEnum);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Checks if a sound is currently active (playing) 
+        /// </summary>
+        private Task<bool> CheckForSound(Sounds sound)
+        {
+            return Task.FromResult(activeSounds.ContainsKey(sound));
+        }
+
+        public void StopSound(Sounds soundEnum)
+        {
+            if (soundData.ContainsKey(soundEnum) && activeSounds.ContainsKey(soundEnum))
+            {
+                activeSounds[soundEnum].WaveOut.Stop();
+                activeSounds[soundEnum].MemoryStream.Dispose();
+                activeSounds[soundEnum].Reader.Dispose();
+                activeSounds[soundEnum].WaveStream?.Dispose();
+                activeSounds.Remove(soundEnum);
             }
         }
 
@@ -181,10 +204,10 @@ namespace Pacman_Projection
                 {
                     try
                     {
-                        activeSounds.ElementAt(index).Value.waveOut.Stop();
-                        activeSounds.ElementAt(index).Value.memoryStream.Dispose();
-                        activeSounds.ElementAt(index).Value.reader.Dispose();
-                        activeSounds.ElementAt(index).Value.waveStream?.Dispose();
+                        activeSounds.ElementAt(index).Value.WaveOut.Stop();
+                        activeSounds.ElementAt(index).Value.MemoryStream.Dispose();
+                        activeSounds.ElementAt(index).Value.Reader.Dispose();
+                        activeSounds.ElementAt(index).Value.WaveStream?.Dispose();
                         activeSounds.Remove(activeSounds.ElementAt(index).Key);
                         index--;
                     }
@@ -196,27 +219,27 @@ namespace Pacman_Projection
             }
         }
 
-        public void PauseSound(string soundName)
+        public void PauseSound(Sounds soundEnum)
         {
-            if (activeSounds.ContainsKey(soundName))
+            if (activeSounds.ContainsKey(soundEnum))
             {
-                var sound = activeSounds[soundName];
-                sound.waveOut.Pause();
-                sound.pausedPosition = sound.memoryStream.Position; // Save the current position of the sound
-                pausedSounds.Add(soundName, sound);
-                activeSounds.Remove(soundName);
+                var sound = activeSounds[soundEnum];
+                sound.WaveOut.Pause();
+                sound.PausedPosition = sound.MemoryStream.Position; // Save the current position of the sound
+                pausedSounds.Add(soundEnum, sound);
+                activeSounds.Remove(soundEnum);
             }
         }
 
-        public void PauseLoopedSound(string soundName)
+        public void PauseLoopedSound(Sounds soundEnum)
         {
-            if (activeSounds.ContainsKey(soundName))
+            if (activeSounds.ContainsKey(soundEnum))
             {
-                var sound = activeSounds[soundName];
-                sound.waveOut.Pause();
-                sound.pausedPosition = sound.waveStream.Position; // Save the current position of the sound
-                pausedSounds.Add(soundName, sound);
-                activeSounds.Remove(soundName);
+                var sound = activeSounds[soundEnum];
+                sound.WaveOut.Pause();
+                sound.PausedPosition = sound.WaveStream.Position; // Save the current position of the sound
+                pausedSounds.Add(soundEnum, sound);
+                activeSounds.Remove(soundEnum);
             }
         }
     }

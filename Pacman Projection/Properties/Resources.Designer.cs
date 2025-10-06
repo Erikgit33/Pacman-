@@ -183,9 +183,9 @@ namespace Pacman_Projection.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
         /// </summary>
-        internal static System.IO.UnmanagedMemoryStream buttonReady {
+        internal static System.IO.UnmanagedMemoryStream buttonPress {
             get {
-                return ResourceManager.GetStream("buttonReady", resourceCulture);
+                return ResourceManager.GetStream("buttonPress", resourceCulture);
             }
         }
         
@@ -838,6 +838,15 @@ namespace Pacman_Projection.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream pacman_win {
+            get {
+                return ResourceManager.GetStream("pacman_win", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap Pinky_down {
@@ -953,6 +962,16 @@ namespace Pacman_Projection.Properties {
         internal static System.Drawing.Bitmap Strawberry {
             get {
                 object obj = ResourceManager.GetObject("Strawberry", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Trashcan {
+            get {
+                object obj = ResourceManager.GetObject("Trashcan", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

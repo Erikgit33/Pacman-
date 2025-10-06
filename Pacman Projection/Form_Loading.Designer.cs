@@ -1,6 +1,6 @@
 ﻿namespace Pacman_Projection
 {
-    partial class Form_Menu
+    partial class Form_Loading
     {
         /// <summary>
         /// Required designer variable.
@@ -28,27 +28,29 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form_Menu));
+            this.components = new System.ComponentModel.Container();
+            this.startGameTimer = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
-            // Form_Menu
+            // startGameTimer
+            // 
+            this.startGameTimer.Enabled = true;
+            this.startGameTimer.Interval = 4000;
+            this.startGameTimer.Tick += new System.EventHandler(this.startGameTimer_Tick);
+            // 
+            // Form_Loading
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackgroundImage = global::Pacman_Projection.Properties.Resources.Menu_background;
-            this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.ClientSize = new System.Drawing.Size(502, 625);
-            this.DoubleBuffered = true;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "Form_Menu";
-            this.Text = "Menu";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form_Menu_FormClosing);
-            this.Load += new System.EventHandler(this.FormMenu_Load);
-            this.VisibleChanged += new System.EventHandler(this.Form_Menu_VisibleChanged);
+            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Name = "Form_Loading";
+            this.Text = "Form_Loading";
             this.ResumeLayout(false);
 
         }
 
         #endregion
+
+        private System.Windows.Forms.Timer startGameTimer;
     }
 }

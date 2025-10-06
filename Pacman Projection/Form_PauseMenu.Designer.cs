@@ -1,6 +1,6 @@
 ﻿namespace Pacman_Projection
 {
-    partial class Form_Name
+    partial class Form_PauseMenu
     {
         /// <summary>
         /// Required designer variable.
@@ -28,19 +28,18 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form_Name));
             this.SuspendLayout();
             // 
-            // Form_Name
+            // Form_PauseMenu
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "Form_Name";
-            this.Text = "Name";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form_Name_FormClosing);
-            this.Load += new System.EventHandler(this.Form_Name_Load);
+            this.Name = "Form_PauseMenu";
+            this.Text = "Form_PauseMenu";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form_PauseMenu_FormClosing);
+            this.Load += new System.EventHandler(this.Form_PauseMenu_Load);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form_PauseMenu_KeyDown);
             this.ResumeLayout(false);
 
         }

@@ -154,8 +154,8 @@
   <data name="Blinky_up_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Blinky up ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="buttonReady" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\buttonReady.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="buttonPress" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\buttonPress.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="Cherry" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Cherry.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -355,6 +355,9 @@
   <data name="Pacman_up_closed" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Pacman up closed.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="pacman_win" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\pacman_win.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="Pinky_down" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Pinky down.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -390,5 +393,8 @@
   </data>
   <data name="Strawberry" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Strawberry.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Trashcan" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Trashcan.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

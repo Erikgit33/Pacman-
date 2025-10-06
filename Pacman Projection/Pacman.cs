@@ -9,28 +9,16 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Pacman_Projection
 {
-    class Pacman
+    class Pacman : Entity
     {
-        internal PictureBox box;
-        internal PictureBox eatBox;
+        internal PictureBox eatBox = new PictureBox();
 
-        internal bool teleportedLastTick;
-        internal bool teleporting;
-        internal int blocksIntoTeleporter;
+        public Pacman() { }
 
-        internal int currentPosX;
-        internal int currentPosY;
-
-        public Pacman(PictureBox box, PictureBox eatBox)
+        public void UpdateLocation(int left, int top)
         {
-            this.box = box;
-            this.eatBox = eatBox;
-        }
-
-        public void UpdateLocation(int x, int y)
-        {
-            currentPosX = x;
-            currentPosY = y;
+            currentPosX = left;
+            currentPosY = top;
 
             eatBox.Location = new Point(currentPosX + eatBox.Width / 2, currentPosY + eatBox.Width / 2);
         }

@@ -2,10 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.Design;
 using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Media;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -15,20 +17,26 @@ namespace Pacman_Projection
 {
     public partial class Form_Menu : Form
     {
-        public Form_Menu()
-        {
-            InitializeComponent();
-        }
+        SoundManager soundManager = new SoundManager();
 
-        const int boxSize = 14;
+        FormManager formManager;
+        EventManager eventManager;
+        GlobalVariables globalVariables; 
 
-        public Form_Main form_main;
-        internal Form_Name form_name;
-        internal Form_Highscore form_highscore;
+        const int boxSize = GameConstants.boxSize;
 
+        Button buttonPlay;
+        Button buttonHighscore;
+        TextBox nameBox;
         ComboBox levelToBeginAtDropdown;
 
-        internal SoundManager soundManager = new SoundManager();
+        public Form_Menu(FormManager formManager, EventManager eventManager, GlobalVariables globalVariables)
+        {
+            InitializeComponent();
+            this.formManager = formManager;
+            this.eventManager = eventManager;
+            this.globalVariables = globalVariables;
+        }
 
         private void FormMenu_Load(object sender, EventArgs e)
         {
@@ -39,29 +47,52 @@ namespace Pacman_Projection
             this.MaximizeBox = false;
             this.MinimizeBox = false;
 
-            // Create the play button
-            Button buttonPlay = new Button();
             // playButton properties
-            buttonPlay.Location = new Point(boxSize * 12, boxSize * 17);
-            buttonPlay.Size = new Size(boxSize * 6, boxSize * 5);
-            buttonPlay.Font = new Font("Arial", 22, FontStyle.Bold);
-            buttonPlay.Text = "Play";
-            buttonPlay.ForeColor = Color.Yellow;
+            buttonPlay = new Button
+            {
+                Location = new Point(boxSize * 12, boxSize * 17),
+                Size = new Size(boxSize * 6, boxSize * 5),
+                Font = new Font("Arial", 22, FontStyle.Bold),
+                Text = "Play",
+                ForeColor = Color.Yellow,
+            };
             buttonPlay.Click += playButton_Click;
             Controls.Add(buttonPlay);
             buttonPlay.BringToFront();
 
-            // Create the highscore button
-            Button buttonHighscore = new Button();
             // playButton properties
-            buttonHighscore.Location = new Point(boxSize * 12, boxSize * 12);
-            buttonHighscore.Size = new Size(boxSize * 6, boxSize * 5);
-            buttonHighscore.Font = new Font("Arial", 22, FontStyle.Bold);
-            buttonHighscore.Text = "Highscore";
-            buttonHighscore.ForeColor = Color.Yellow;
+            buttonHighscore = new Button
+            {
+                Location = new Point(boxSize * 12, boxSize * 12),
+                Size = new Size(boxSize * 6, boxSize * 5),
+                Font = new Font("Arial", 22, FontStyle.Bold),
+                Text = "Highscore",
+                ForeColor = Color.Yellow
+            };
             buttonHighscore.Click += buttonHighscore_Click;
             Controls.Add(buttonHighscore);
             buttonHighscore.BringToFront();
+
+            // nameBox properties 
+            nameBox = new TextBox
+            {
+                Location = new Point(boxSize * 10, boxSize * 7),
+                Size = new Size(boxSize * 10, boxSize * 3),
+                Font = new Font("Arial", 22, FontStyle.Bold),
+                Text = "Enter Name",
+                ForeColor = Color.Gray,
+                TextAlign = HorizontalAlignment.Center
+            };
+            Controls.Add(nameBox);
+
+            nameBox.GotFocus += (s, E) =>
+            {
+                if (nameBox.Text == "Enter Name")
+                {
+                    nameBox.Text = "";
+                    nameBox.ForeColor = Color.Black;
+                }
+            };
 
             // Create the levelToBeginAt dropdown
             levelToBeginAtDropdown = new ComboBox();
@@ -83,75 +114,65 @@ namespace Pacman_Projection
             Controls.Add(levelToBeginAtDropdown);
             levelToBeginAtDropdown.BringToFront();
 
-            soundManager.toPlaySounds = true;
-            soundManager.PlaySound("menuMusic", true);
+            //soundManager.PlaySound(Sounds.menuMusic, true);
         }
 
-        private async void playButton_Click(object sender, EventArgs e)
+        private void playButton_Click(object sender, EventArgs e)
         {
-            if (form_name == null)
+            eventManager.ButtonPress();
+            
+            if (globalVariables.NameList.Contains(nameBox.Text))
             {
-                if (levelToBeginAtDropdown.SelectedIndex == 0) // level 1
-                {
-                    form_name = new Form_Name(this, 1);
-                }
-                else
-                {
-                    form_name = new Form_Name(this, levelToBeginAtDropdown.SelectedIndex + 1);
-                }
-                    SwitchToForm(form_name, this);
+                MessageBox.Show("Name already taken, please choose another one.");
+                return;
+            }
+            else if (nameBox.Text.Length > 20)
+            {
+                MessageBox.Show("Name cannot be longer than 20 characters.");
+                return;
+            }
+            else if (string.IsNullOrWhiteSpace(nameBox.Text))
+            {
+                MessageBox.Show("Please enter a valid name.");
+                return;
+            }
+            else if (nameBox.Text == "Enter Name")
+            {
+                globalVariables.PlayerName = "Player";
             }
             else
             {
-                soundManager.PlaySound("buttonReady", false);
-                await Task.Delay(250);
-
-                SwitchToForm(form_name, this);
+                globalVariables.PlayerName = nameBox.Text;
             }
+
+            int startLevel = levelToBeginAtDropdown.SelectedIndex + 1; // +1 because index starts at 0
+            globalVariables.StartLevel = startLevel;    
+            formManager.SwitchToForm(this, formManager.FormMain);
+
+            soundManager.PauseSound(Sounds.menuMusic);
         }
 
-        private async void buttonHighscore_Click(object sender, EventArgs e)
+        private void buttonHighscore_Click(object sender, EventArgs e)
         {
-            if (form_highscore == null)
+            eventManager.ButtonPress();
+            formManager.OpenForm(formManager.FormHighscore);
+        }
+
+        private void Form_Menu_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Application.Exit();      
+        }
+
+        private void Form_Menu_VisibleChanged(object sender, EventArgs e)
+        {
+            if (this.Visible)
             {
-                form_highscore = new Form_Highscore(this);
-                SwitchToForm(form_highscore, this);
+                soundManager.PlaySound(Sounds.menuMusic, true);
             }
             else
             {
-                soundManager.PlaySound("buttonReady", false);
-                await Task.Delay(250);
-
-                SwitchToForm(form_highscore, this);
-            } 
-        }
-        
-        public void SwitchToForm(Form formToShow, Form formToClose)
-        {
-            if (formToClose == this && formToShow == form_main || formToClose == form_name && formToShow == form_main)
-            {
-                soundManager.StopSound("menuMusic");
-            } 
-            else if (formToShow == this && formToClose == form_main)
-            {
-                soundManager.PlaySound("menuMusic", true);
-                levelToBeginAtDropdown.SelectedIndex = 0;
+                soundManager.PauseSound(Sounds.menuMusic);
             }
-            formToClose.Hide();
-            formToShow.Show();
-
-        }
-
-        public void SwitchToMenuAndSaveScore(int score, int beganAtLevel, string player_name)
-        {
-            // SAVE HIGHSCORE WITH LEVEL THE PLAYER BEGAN AT
-
-            soundManager.PlaySound("menuMusic", true);
-
-            form_main.Dispose();
-            form_main = null;
-            levelToBeginAtDropdown.SelectedIndex = 0;
-            this.Show();
         }
     }
 }

@@ -117,42 +117,4 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <metadata name="pacTickTimer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 17</value>
-  </metadata>
-  <metadata name="pacImageTimer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>155, 17</value>
-  </metadata>
-  <metadata name="ghostTickTimer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>344, 17</value>
-  </metadata>
-  <metadata name="ghostImageTimer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>531, 17</value>
-  </metadata>
-  <metadata name="powerPelletBlinkTimer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>738, 17</value>
-  </metadata>
-  <metadata name="updateEatGhostDurationTimer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>954, 17</value>
-  </metadata>
-  <metadata name="ghostBehaviourTimeTimer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1169, 17</value>
-  </metadata>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        AAABAAEAHBwQAAEABACYAgAAFgAAACgAAAAcAAAAOAAAAAEABAAAAAAAwAEAAMMOAADDDgAAEAAAABAA
-        AAAAAAAAAAAAAADy/wD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAREREQAAAAAAAAAAAAAAERERERERAAAAAAAAAAAAERER
-        EREREREAAAAAAAAAAREREREREREREAAAAAAAABERERIiIiEREREAAAAAAAERERIiIiIiIREREAAAAAAB
-        EREiIiIiIiIRERAAAAAAERESIiIiIiIiIRERAAAAABERIiIiIiIiIiIREQAAAAERESIiIiIiIiIiEREA
-        AAABERESIiIiIiIiIiEREAAAARERERIiIiIiIiIhERAAAAEREiIRESIiIiIiIREQAAABERIiERESIiIi
-        IiEREAAAARESIhERIiIiIiIhERAAAAERERESIiIiIiIiIREQAAABERESIiIiIiIiIiEREAAAABERIiIi
-        IiIiIiIREQAAAAARESIiIRIiIiIiEREAAAAAARESIiESIiIiIREQAAAAAAERESIiIiIiIhEREAAAAAAA
-        ERESIiIiIiEREQAAAAAAAAERERIiIiERERAAAAAAAAAAEREREREREREAAAAAAAAAAAAREREREREAAAAA
-        AAAAAAAAABEREREAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP////D/4D/w/wAP8PwAA/D4AAHw8AAA8OAA
-        AHDgAABwwAAAMMAAADCAAAAwgAAAEIAAABCAAAAQgAAAEIAAABCAAAAQgAAAEMAAADDAAAAw4AAAcOAA
-        AHDwAADw+AAB8PwAA/D/AA/w/8A/8P////A=
-</value>
-  </data>
 </root>

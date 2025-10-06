@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,6 +15,8 @@ namespace Pacman_Projection
         public const int step = 14; 
         public const int boxSize = step;
         public const int entitySize = boxSize * 2;
+
+        public const int maxStepsIntoTeleporter = 3;
 
         public const int boxes_Horizontally = 30;
         public const int boxes_Vertically = 39;
@@ -62,14 +65,17 @@ namespace Pacman_Projection
         /// </summary>
         internal class EventTimes
         {
-            public const int powerPellet = 8000;
+            public const int powerPellet = 11000;
             public const int perDeathSequence = 160;
             public const int afterGhostsAppear = 2800;
             public const int betweenGames = 1500;
             public const int beforeRestart = 2500;
             public const int afterDeath = 800;
             public const int afterGhostEaten = 1000;
-            public const int wallBlink = 180;
+            public const int wallBlink = 220;
+            public const int gameOverDisplayed = 2000;
+
+            public const int buttonDelay = 200;
         }
     }
 }

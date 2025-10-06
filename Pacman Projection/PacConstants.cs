@@ -14,7 +14,9 @@ namespace Pacman_Projection
     public static class PacConstants
     {
         public const int StartX = GameConstants.boxSize * 14;
-        public const int StartY = GameConstants.boxSize * 25;
+        public const int StartY = GameConstants.boxSize * 23 + GameConstants.boxOffset_Vertical;
+
+        public const Direction StartDirection = Direction.Stationary;
 
         const int pacTickTimerIntervalStandard = 180;
 

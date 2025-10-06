@@ -34,7 +34,7 @@
             this.pacImageTimer = new System.Windows.Forms.Timer(this.components);
             this.ghostTickTimer = new System.Windows.Forms.Timer(this.components);
             this.ghostImageTimer = new System.Windows.Forms.Timer(this.components);
-            this.bigFoodBlinkTimer = new System.Windows.Forms.Timer(this.components);
+            this.powerPelletBlinkTimer = new System.Windows.Forms.Timer(this.components);
             this.updateEatGhostDurationTimer = new System.Windows.Forms.Timer(this.components);
             this.ghostBehaviourTimeTimer = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
@@ -57,10 +57,10 @@
             // 
             this.ghostImageTimer.Tick += new System.EventHandler(this.ghostImageTimer_Tick);
             // 
-            // bigFoodBlinkTimer
+            // powerPelletBlinkTimer
             // 
-            this.bigFoodBlinkTimer.Interval = 200;
-            this.bigFoodBlinkTimer.Tick += new System.EventHandler(this.bigFoodBlinkTimer_Tick);
+            this.powerPelletBlinkTimer.Interval = 200;
+            this.powerPelletBlinkTimer.Tick += new System.EventHandler(this.powerPelletBlinkTimer_Tick);
             // 
             // updateEatGhostDurationTimer
             // 
@@ -73,13 +73,12 @@
             // 
             // Form_Main
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(536, 453);
+            this.ClientSize = new System.Drawing.Size(804, 697);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Form_Main";
             this.Text = "Pacman";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form_Main_FormClosing);
@@ -95,7 +94,7 @@
         private System.Windows.Forms.Timer pacImageTimer;
         private System.Windows.Forms.Timer ghostTickTimer;
         private System.Windows.Forms.Timer ghostImageTimer;
-        private System.Windows.Forms.Timer bigFoodBlinkTimer;
+        private System.Windows.Forms.Timer powerPelletBlinkTimer;
         private System.Windows.Forms.Timer updateEatGhostDurationTimer;
         private System.Windows.Forms.Timer ghostBehaviourTimeTimer;
     }

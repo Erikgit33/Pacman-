@@ -10,23 +10,23 @@ namespace Pacman_Projection
 {
     internal class Sound
     {
-        internal string soundName;
-        internal bool looping;
-        internal MemoryStream memoryStream;
-        internal WaveFileReader reader;
-        internal WaveOutEvent waveOut;
-        internal WaveStream waveStream;
+        internal string SoundName { get; set; }
+        internal bool Looping { get; set; }
+        internal MemoryStream MemoryStream { get; set; }
+        internal WaveFileReader Reader { get; set; }
+        internal WaveOutEvent WaveOut { get; set; }
+        internal WaveStream WaveStream { get; set; }
 
-        internal long pausedPosition = 0; // Position in the sound, used for looping
+        public long PausedPosition = 0; // Position in the sound, used for looping
 
         public Sound(string soundName, bool looping, MemoryStream memoryStream, WaveFileReader reader, WaveOutEvent waveOut, WaveStream waveStream)
         {
-            this.soundName = soundName;
-            this.looping = looping;
-            this.memoryStream = memoryStream;
-            this.reader = reader;
-            this.waveOut = waveOut;
-            this.waveStream = waveStream;
+            SoundName = soundName;
+            Looping = looping;
+            MemoryStream = memoryStream;
+            Reader = reader;
+            WaveOut = waveOut;
+            WaveStream = waveStream;
         }
     }
 }

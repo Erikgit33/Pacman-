@@ -73,7 +73,86 @@ namespace Pacman_Projection
             {10,"5,17"}
         };
 
-        internal static class Blinky
+        public static class Images
+        {
+            public static Image frightenedBlue = Resources.Ghost_Scared_Blue;
+            public static Image frightenedBlue2 = Resources.Ghost_Scared_Blue_ver__2;
+
+            public static Image frightenedWhite = Resources.Ghost_Scared_White;
+            public static Image frightenedWhite2 = Resources.Ghost_Scared_White_ver__2;
+
+            public static Image eyesLeft = Resources.Ghost_Eyes_left;
+            public static Image eyesRight = Resources.Ghost_Eyes_right;
+            public static Image eyesUp = Resources.Ghost_Eyes_up;
+            public static Image eyesDown = Resources.Ghost_Eyes_down;
+            public static Image eyesStationary = Resources.Ghost_Eyes_stationary;
+
+            public static class Blinky
+            {
+                public static Image left = Resources.Blinky_left;
+                public static Image right = Resources.Blinky_left;
+                public static Image up = Resources.Blinky_left;
+                public static Image down = Resources.Blinky_left;
+                
+                public static Image left2 = Resources.Blinky_left_ver__2;
+                public static Image right2 = Resources.Blinky_right_ver__2;
+                public static Image up2 = Resources.Blinky_up_ver__2;
+                public static Image down2 = Resources.Blinky_down_ver__2;
+
+                public static Image stationary = Resources.Blinky_stationary;
+                public static Image stationary2 = Resources.Blinky_stationary_ver__2;
+            }
+
+            public static class Pinky
+            {
+                public static Image left = Resources.Pinky_left;
+                public static Image right = Resources.Pinky_left;
+                public static Image up = Resources.Pinky_left;
+                public static Image down = Resources.Pinky_left;
+
+                public static Image left2 = Resources.Pinky_left_ver__2;
+                public static Image right2 = Resources.Pinky_right_ver__2;
+                public static Image up2 = Resources.Pinky_up_ver__2;
+                public static Image down2 = Resources.Pinky_down_ver__2;
+
+                public static Image stationary = Resources.Pinky_stationary;
+                public static Image stationary2 = Resources.Pinky_stationary_ver__2;
+            }
+
+            public static class Inky
+            {
+                public static Image left = Resources.Inky_left;
+                public static Image right = Resources.Inky_left;
+                public static Image up = Resources.Inky_left;
+                public static Image down = Resources.Inky_left;
+
+                public static Image left2 = Resources.Inky_left_ver__2;
+                public static Image right2 = Resources.Inky_right_ver__2;
+                public static Image up2 = Resources.Inky_up_ver__2;
+                public static Image down2 = Resources.Inky_down_ver__2;
+
+                public static Image stationary = Resources.Inky_stationary;
+                public static Image stationary2 = Resources.Inky_stationary_ver__2;
+            }
+
+            public static class Clyde
+            {
+                public static Image left = Resources.Clyde_left;
+                public static Image right = Resources.Clyde_left;
+                public static Image up = Resources.Clyde_left;
+                public static Image down = Resources.Clyde_left;
+
+                public static Image left2 = Resources.Clyde_left_ver__2;
+                public static Image right2 = Resources.Clyde_right_ver__2;
+                public static Image up2 = Resources.Clyde_up_ver__2;
+                public static Image down2 = Resources.Clyde_down_ver__2;
+
+                public static Image stationary = Resources.Clyde_stationary;
+                public static Image stationary2 = Resources.Clyde_stationary_ver__2;
+            }
+        }
+
+        public static class Blinky
         {
             public const int StartX = GameConstants.boxSize * 14;
             public const int StartY = GameConstants.boxSize * 16;
@@ -82,7 +161,7 @@ namespace Pacman_Projection
             public static Image StartImage = Resources.Blinky_left;
         }
 
-        internal static class Pinky
+        public static class Pinky
         {
             public const int StartX = GameConstants.boxSize * 14;
             public const int StartY = GameConstants.boxSize * 21;
@@ -91,7 +170,7 @@ namespace Pacman_Projection
             public static Image StartImage = Resources.Pinky_down;
         }
 
-        internal static class Inky
+       public static class Inky
         {
             public const int StartX = GameConstants.boxSize * 12;
             public const int StartY = GameConstants.boxSize * 20;
@@ -100,7 +179,7 @@ namespace Pacman_Projection
             public static Image StartImage = Resources.Inky_up;
         }
 
-        internal static class Clyde
+        public static class Clyde
         {
             public const int StartX = GameConstants.boxSize * 16;
             public const int StartY = GameConstants.boxSize * 20;
