@@ -16,25 +16,29 @@ namespace Pacman_Projection
         public const int boxSize = step;
         public const int entitySize = boxSize * 2;
 
+        /// <summary>
+        /// The amount of steps an entity can take into a teleporter before being teleported out the other side.
+        /// Also used when exiting a teleporter: when reaching zero, the teleporter has been fully exited.
+        /// </summary>
         public const int maxStepsIntoTeleporter = 3;
 
         public const int boxes_Horizontally = 30;
         public const int boxes_Vertically = 39;
 
         public const int food_Horizontally = 29;
-        public const int food_Vertically = 37;
+        public const int food_Vertically = 36;
 
         public const int boxOffset_Vertical = boxSize * 2;
 
-        public const int foodOffset_Horizontal = boxSize + boxSize / 2;
+        public const int foodOffset_Horizontal = boxSize / 2;
         public const int foodOffset_Vertical = boxSize * 3 + boxSize / 2;
 
         public static List<int[]> powerPelletIndexes = new List<int[]>
         {
-            new int[] { 0, 0 }, 
-            new int[] { 26, 0 }, 
-            new int[] { 0, 34 }, 
-            new int[] { 26, 34 } 
+            new int[] { 1, 0 }, 
+            new int[] { 27, 0 }, 
+            new int[] { 1, 34 }, 
+            new int[] { 27, 34 } 
         };
 
         /// <summary>

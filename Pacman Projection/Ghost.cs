@@ -15,85 +15,136 @@ namespace Pacman_Projection
     {
         internal PictureBox navBox = new PictureBox();
 
-        internal bool scatter { get; set; } 
-        internal bool chase { get; set; }
-        internal bool frightened { get; set; }
+        internal bool Scatter { get; set; } 
+        internal bool Chase { get; set; }
+        internal bool Frightened { get; set; }
 
-        internal bool white { get; set; }
-        internal bool teleportedLastTick { get; set; } // Used to prevent teleporting twice in a row
-        internal int blocksIntoTeleporter { get; set; }
+        internal bool White { get; set; }
+        internal bool TeleportedLastTick { get; set; } // Used to prevent teleporting twice in a row
+        internal int BlocksIntoTeleporter { get; set; }
 
-        internal int targetPosX { get; set; }
-        internal int targetPosY { get; set; }
+        /// <summary>
+        /// The target's X index.
+        /// </summary>
+        internal int TargetPosX { get; set; }
+        /// <summary>
+        /// The target's Y index.
+        /// </summary>
+        internal int TargetPosY { get; set; }
+        /// <summary>
+        /// The ghost's target position as [x, y] indexes.
+        /// </summary>
+        internal int[] TargetPos { get; set; }
+        /// <summary>
+        /// The ghost's current X index.
+        /// </summary>
+        internal int CurrentPosX { get; private set; }
+        /// <summary>
+        /// The ghost's current Y index.
+        /// </summary>
+        internal int CurrentPosY { get; private set; }
+        /// <summary>
+        /// The ghosts's current position as [x, y] indexes.    
+        /// </summary>
+        internal int[] CurrentPos { get;  set; }
 
-        internal int currentPosX { get; set; }
-        internal int currentPosY { get; set; }
-
-        internal MapCorner cornerDuringScatter { get; set; }
+        internal MapCorner ScatterCorner { get; private set; }
 
         public Ghost(GhostName name) 
         {
             switch (name)
             {
                 case GhostName.Blinky:
-                    cornerDuringScatter = MapCorner.TopRight;
+                    ScatterCorner = MapCorner.TopRight;
                     break;
                 case GhostName.Pinky:
-                    cornerDuringScatter = MapCorner.TopLeft;
+                    ScatterCorner = MapCorner.TopLeft;
                     break;
                 case GhostName.Inky:
-                    cornerDuringScatter = MapCorner.BottomRight;
+                    ScatterCorner = MapCorner.BottomRight;
                     break;
                 case GhostName.Clyde:
-                    cornerDuringScatter = MapCorner.BottomLeft;
+                    ScatterCorner = MapCorner.BottomLeft;
                     break;
                 default:
-                    cornerDuringScatter = MapCorner.None;
+                    ScatterCorner = MapCorner.None;
                     break;
             }
         }
 
         internal void UpdateLocation(int left, int top)
         {
-            currentPosX = left;
-            currentPosY = top;
+            navBox.Location = new Point(left + navBox.Width / 2, top + navBox.Width / 2);
 
-            navBox.Location = new Point(currentPosX + navBox.Width / 2, currentPosY + navBox.Width / 2);
+            CurrentPosX = left / GameConstants.boxSize;
+            CurrentPosY = top / GameConstants.boxSize;
+
+            CurrentPos = new int[] { CurrentPosX, CurrentPosY };
         }
-        
-        internal void SetTarget(int left, int top)
+
+        internal void SetTarget(int[] targetIndex)
         {
-            targetPosX = left;
-            targetPosY = top;
+            TargetPos = targetIndex;
+
+            TargetPosX = targetIndex[0];
+            TargetPosY = targetIndex[1];
+        }
+
+        internal void SetTarget(MapCorner corner)
+        {
+            int[] targetIndex = new int[2];
+            switch (corner)
+            {
+                case MapCorner.BottomLeft:
+                    targetIndex[0] = 0;
+                    targetIndex[1] = 0;
+                    break;
+                case MapCorner.TopLeft:
+                    targetIndex[0] = 0;
+                    targetIndex[1] = 0;
+                    break;
+                case MapCorner.TopRight:
+                    targetIndex[0] = 0;
+                    targetIndex[1] = 0;
+                    break;
+                case MapCorner.BottomRight:
+                    targetIndex[0] = 0;
+                    targetIndex[1] = 0;
+                    break;
+            }
+            TargetPos = targetIndex;
+
+            TargetPosX = targetIndex[0];
+            TargetPosY = targetIndex[1];
         }
 
         internal void SetScatter()
         {
-            scatter = true;
-            chase = false;
-            frightened = false;
-            if (white)
+            Scatter = true;
+            Chase = false;
+            Frightened = false;
+            if (White)
             {
-                white = false;
+                White = false;
             }
         }
 
         internal void SetChase()
         {
-            scatter = false;
-            chase = true;
-            frightened = false;
-            if (white)
+            Scatter = false;
+            Chase = true;
+            Frightened = false;
+            if (White)
             {
-                white = false;
+                White = false;
             }
         }
 
         internal void SetFrightened()
         {
-            scatter = false;
-            chase = false;
-            frightened = true;
+            Scatter = false;
+            Chase = false;
+            Frightened = true;
         }
     }
 }

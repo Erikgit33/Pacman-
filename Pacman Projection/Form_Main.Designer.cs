@@ -37,6 +37,7 @@
             this.powerPelletBlinkTimer = new System.Windows.Forms.Timer(this.components);
             this.updateEatGhostDurationTimer = new System.Windows.Forms.Timer(this.components);
             this.ghostBehaviourTimeTimer = new System.Windows.Forms.Timer(this.components);
+            this.ghostReturnTickTimer = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // pacTickTimer
@@ -71,6 +72,10 @@
             this.ghostBehaviourTimeTimer.Interval = 1000;
             this.ghostBehaviourTimeTimer.Tick += new System.EventHandler(this.ghostBehaviourTimeTimer_Tick);
             // 
+            // ghostReturnTickTimer
+            // 
+            this.ghostReturnTickTimer.Tick += new System.EventHandler(this.ghostReturnTickTimer_Tick);
+            // 
             // Form_Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -97,6 +102,7 @@
         private System.Windows.Forms.Timer powerPelletBlinkTimer;
         private System.Windows.Forms.Timer updateEatGhostDurationTimer;
         private System.Windows.Forms.Timer ghostBehaviourTimeTimer;
+        private System.Windows.Forms.Timer ghostReturnTickTimer;
     }
 }
 

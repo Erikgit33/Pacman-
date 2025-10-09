@@ -18,7 +18,7 @@ namespace Pacman_Projection
 
         public const Direction StartDirection = Direction.Stationary;
 
-        const int pacTickTimerIntervalStandard = 180;
+        const int pacTickTimerIntervalStandard = 190;
 
         /// <summary>
         /// Contains the speed of Pacman for each level, in milliseconds.
@@ -26,7 +26,7 @@ namespace Pacman_Projection
         /// </summary>
         public static Dictionary<int, int> SpeedForLevel = new Dictionary<int, int>
         {
-            {1, pacTickTimerIntervalStandard}, // 180ms
+            {1, pacTickTimerIntervalStandard}, // 190ms
             {2, pacTickTimerIntervalStandard - 2},
             {3, pacTickTimerIntervalStandard - 2*2},
             {4, pacTickTimerIntervalStandard - 2*3},
@@ -35,7 +35,7 @@ namespace Pacman_Projection
             {7, pacTickTimerIntervalStandard - 2*6},
             {8, pacTickTimerIntervalStandard - 2*7},
             {9, pacTickTimerIntervalStandard - 2*8},
-            {10, pacTickTimerIntervalStandard - 2*9} // 162ms
+            {10, pacTickTimerIntervalStandard - 2*9} // 172ms
         };
 
         public static List<Image> deathSequence = new List<Image>

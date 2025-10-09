@@ -17,10 +17,10 @@ namespace Pacman_Projection
 
         public void UpdateLocation(int left, int top)
         {
-            currentPosX = left;
-            currentPosY = top;
+            CurrentPosX = left;
+            CurrentPosY = top;
 
-            eatBox.Location = new Point(currentPosX + eatBox.Width / 2, currentPosY + eatBox.Width / 2);
+            eatBox.Location = new Point(CurrentPosX + eatBox.Width / 2, CurrentPosY + eatBox.Width / 2);
         }
     }
 }

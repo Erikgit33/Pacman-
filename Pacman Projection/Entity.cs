@@ -13,20 +13,20 @@ namespace Pacman_Projection
     {
         public PictureBox box = new PictureBox();
 
-        internal Direction currentDirection { get; private set; }
+        internal Direction CurrentDirection { get; private set; }
 
-        internal EntityState currentState { get; private set; }
+        internal EntityState CurrentState { get; private set; }
 
-        internal bool teleportedLastTick { get; set; }
-        internal int blocksIntoTeleporter { get; set; }
+        internal bool Teleported { get; set; }
+        internal int BlocksIntoTeleporter { get; set; }
 
-        internal int currentPosX { get; set; }
-        internal int currentPosY { get; set; }
+        internal int CurrentPosX { get; set; }
+        internal int CurrentPosY { get; set; }
 
-        private int[] lowerLeftStandardPos = new int[2];
-        private int[] upperLeftStandardPos = new int[2];
-        private int[] upperRightStandardPos = new int[2];
-        private int[] lowerRightStandardPos = new int[2];
+        private int[] LowerLeftStandardPos = new int[2];
+        private int[] UpperLeftStandardPos = new int[2];
+        private int[] UpperRightStandardPos = new int[2];
+        private int[] LowerRightStandardPos = new int[2];
 
         public Entity()
         {
@@ -39,13 +39,13 @@ namespace Pacman_Projection
             {
                 case EntityBox.LowerLeft:
                     // Only return the values as new integers to avoid external modification of the actual position values (aliasing)
-                    return new int[] { lowerLeftStandardPos[0], lowerLeftStandardPos[1] };
+                    return new int[] { LowerLeftStandardPos[0], LowerLeftStandardPos[1] };
                 case EntityBox.UpperLeft:  
-                    return new int[] { upperLeftStandardPos[0], upperLeftStandardPos[1] };
+                    return new int[] { UpperLeftStandardPos[0], UpperLeftStandardPos[1] };
                 case EntityBox.UpperRight:
-                    return new int[] { upperRightStandardPos[0], upperRightStandardPos[1] };
+                    return new int[] { UpperRightStandardPos[0], UpperRightStandardPos[1] };
                 case EntityBox.LowerRight:
-                    return new int[] { lowerRightStandardPos[0], lowerRightStandardPos[1] };
+                    return new int[] { LowerRightStandardPos[0], LowerRightStandardPos[1] };
                 default:
                     return null;
             }
@@ -53,17 +53,36 @@ namespace Pacman_Projection
 
         public void UpdateStandardPositions()
         {
-            lowerLeftStandardPos[0] = box.Left / GameConstants.boxSize;
-            lowerLeftStandardPos[1] = (box.Top + GameConstants.boxSize - GameConstants.boxOffset_Vertical) / GameConstants.boxSize;
+            // If the entity is teleporting, do not update the positions properly until it has fully teleporting
+            // During teleportaion an entity is "invincible", so the positions do not matter (boxes[0,0] is a wall)
+            if (CurrentState.Equals(EntityState.Teleporting))
+            {
+                LowerLeftStandardPos[0] = 0;
+                LowerLeftStandardPos[1] = 0;
 
-            upperLeftStandardPos[0] = lowerLeftStandardPos[0];
-            upperLeftStandardPos[1] = lowerLeftStandardPos[1] - 1;
+                UpperLeftStandardPos[0] = LowerLeftStandardPos[0];
+                UpperLeftStandardPos[1] = LowerLeftStandardPos[1];
 
-            upperRightStandardPos[0] = lowerLeftStandardPos[0] + 1;
-            upperRightStandardPos[1] = lowerLeftStandardPos[1] - 1;
+                UpperRightStandardPos[0] = LowerLeftStandardPos[0];
+                UpperRightStandardPos[1] = LowerLeftStandardPos[1];
 
-            lowerRightStandardPos[0] = lowerLeftStandardPos[0] + 1;
-            lowerRightStandardPos[1] = lowerLeftStandardPos[1];
+                LowerRightStandardPos[0] = LowerLeftStandardPos[0];
+                LowerRightStandardPos[1] = LowerLeftStandardPos[1];
+            }
+            else
+            {
+                LowerLeftStandardPos[0] = box.Left / GameConstants.boxSize;
+                LowerLeftStandardPos[1] = (box.Top + GameConstants.boxSize - GameConstants.boxOffset_Vertical) / GameConstants.boxSize;
+
+                UpperLeftStandardPos[0] = LowerLeftStandardPos[0];
+                UpperLeftStandardPos[1] = LowerLeftStandardPos[1] - 1;
+
+                UpperRightStandardPos[0] = LowerLeftStandardPos[0] + 1;
+                UpperRightStandardPos[1] = LowerLeftStandardPos[1] - 1;
+
+                LowerRightStandardPos[0] = LowerLeftStandardPos[0] + 1;
+                LowerRightStandardPos[1] = LowerLeftStandardPos[1];
+            }
         }
 
         public void EntityMoved(object sender, EventArgs e)
@@ -76,19 +95,19 @@ namespace Pacman_Projection
             switch (direction)
             {
                 case Direction.Left:
-                    currentDirection = Direction.Left;
+                    CurrentDirection = Direction.Left;
                     break;
                 case Direction.Right:
-                    currentDirection = Direction.Right;
+                    CurrentDirection = Direction.Right;
                     break;
                 case Direction.Up:
-                    currentDirection = Direction.Up;
+                    CurrentDirection = Direction.Up;
                     break;
                 case Direction.Down:
-                    currentDirection = Direction.Down;
+                    CurrentDirection = Direction.Down;
                     break;
                 case Direction.Stationary:
-                    currentDirection = Direction.Stationary;
+                    CurrentDirection = Direction.Stationary;
                     break;
             }
         }
@@ -98,13 +117,13 @@ namespace Pacman_Projection
             switch (state)
             {
                 case EntityState.Standard:
-                    currentState = EntityState.Standard;
+                    CurrentState = EntityState.Standard;
                     break;
                 case EntityState.Teleporting:
-                    currentState = EntityState.Teleporting;
+                    CurrentState = EntityState.Teleporting;
                     break;
                 case EntityState.Eaten:
-                    currentState = EntityState.Eaten;
+                    CurrentState = EntityState.Eaten;
                     break;
             }
         }
