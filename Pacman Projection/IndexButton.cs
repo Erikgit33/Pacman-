@@ -9,10 +9,10 @@ namespace Pacman_Projection
 {
     internal class IndexButton : Button
     {
-        public int index { get; private set; }
+        public int Index { get; private set; }
         public IndexButton(int index)
         {
-            this.index = index;
+            Index = index;
         }
     }
 }

@@ -43,6 +43,8 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "Form_Loading";
             this.Text = "Form_Loading";
             this.ResumeLayout(false);

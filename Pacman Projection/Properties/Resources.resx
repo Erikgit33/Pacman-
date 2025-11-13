@@ -301,24 +301,6 @@
   <data name="pacman_death_2_8_" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\pacman death 2(8).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="pacman_death_3_8_" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\pacman death 3()8.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="pacman_death_4_8_" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\pacman death 4(8).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="pacman_death_5_8_" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\pacman death 5(8).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="pacman_death_6_8_" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\pacman death 6(8).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="pacman_death_7_8_" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\pacman death 7(8).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="pacman_death_8_8_" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\pacman death 8(8).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="Pacman_down" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Pacman down.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -388,13 +370,157 @@
   <data name="Pinky_up_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Pinky up ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="PowerPellet" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\PowerPellet.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="PowerPellet_Filled" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PowerPellet_Filled.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PowerPellet_Empty" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PowerPellet_Empty.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Strawberry" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Strawberry.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Trashcan" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Trashcan.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="pacman_death_4_8_" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\pacman death 4(8).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="pacman_death_5_8_" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\pacman death 5(8).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="pacman_death_6_8_" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\pacman death 6(8).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="pacman_death_7_8_" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\pacman death 7(8).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="pacman_death_8_8_" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\pacman death 8(8).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="pacman_death_3_8_" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\pacman death 3(8).png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomBrown_down" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomBrown down.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomBrown_down_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomBrown down ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomBrown_left" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomBrown left.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomBrown_left_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomBrown left ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomBrown_right" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomBrown right.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomBrown_right_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomBrown right ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomBrown_stationary" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomBrown stationary.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomBrown_stationary_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomBrown stationary ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomBrown_up" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomBrown up.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomBrown_up_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomBrown up ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomGreen_down" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomGreen down.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomGreen_down_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomGreen down ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomGreen_left" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomGreen left.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomGreen_left_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomGreen left ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomGreen_right" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomGreen right.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomGreen_right_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomGreen right ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomGreen_stationary" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomGreen stationary.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomGreen_stationary_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomGreen stationary ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomGreen_up" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomGreen up.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomGreen_up_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomGreen up ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomPurple_down" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomPurple down.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomPurple_down_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomPurple down ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomPurple_left" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomPurple left.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomPurple_left_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomPurple left ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomPurple_right" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomPurple right.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomPurple_right_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomPurple right ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomPurple_stationary" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomPurple stationary.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomPurple_stationary_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomPurple stationary ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomPurple_up" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomPurple up.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomPurple_up_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomPurple up ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomYellow_down" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomYellow down.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomYellow_down_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomYellow down ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomYellow_left" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomYellow left.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomYellow_left_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomYellow left ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomYellow_right" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomYellow right.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomYellow_right_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomYellow right ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomYellow_stationary" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomYellow stationary.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomYellow_stationary_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomYellow stationary ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomYellow_up" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomYellow up.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CustomYellow_up_ver__2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CustomYellow up ver. 2.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="AddSign" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\AddSign.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

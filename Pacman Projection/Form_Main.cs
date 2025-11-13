@@ -1,8 +1,8 @@
-﻿using Pacman_Projection.Properties;
+﻿using NAudio.Dmo;
 using NAudio.Wave;
-using System.IO;
-using System.Resources;
+using Pacman_Projection.Properties;
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Design;
@@ -10,36 +10,40 @@ using System.Data;
 using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Management.Instrumentation;
 using System.Media;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Resources;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Runtime.Serialization.Formatters;
 using System.Security.Cryptography;
 using System.Security.Permissions;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
+using System.Xml.XPath;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Tab;
-using System.CodeDom;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization.Formatters;
-using System.Drawing.Drawing2D;
-using System.Net.Http.Headers;
-using System.Timers;
-using System.Management.Instrumentation;
 
 
-public enum GhostName
+public enum GhostTemplate
 {
     Blinky,
     Pinky,
     Inky,
-    Clyde
+    Clyde,
+    TestGhost,
+    Custom
 }
 
 
@@ -47,7 +51,21 @@ public enum GhostBehaviour
 {
     Scatter,
     Chase,
-    Frightened
+    Frightened,
+    Returning,
+    ExitingHouse
+}
+
+public enum PossiblePaths
+{
+    Up, 
+    Down,
+    Left,
+    Right,
+    UpThroughPortal,
+    DownThroughPortal,
+    LeftThroughPortal,
+    RightThroughPortal
 }
 
 public enum Direction
@@ -57,6 +75,24 @@ public enum Direction
     Down,
     Left,
     Right
+}
+
+public enum ImageType
+{
+    Stationary,
+    Stationary2,
+    Up,
+    Up2,
+    Down,
+    Down2,
+    Left,
+    Left2,
+    Right,
+    Right2,
+    FrightenedBlue,
+    FrightenedBlue2,
+    FrightenedWhite,
+    FrightenedWhite2
 }
 
 public enum Key
@@ -76,6 +112,13 @@ public enum MapCorner
     BottomLeft,
     BottomRight,
     None
+}
+
+public enum TeleportSide 
+{
+    None,
+    Left,
+    Right
 }
 
 public enum Fruit
@@ -111,82 +154,80 @@ namespace Pacman_Projection
         GlobalVariables globalVariables;
 
         // Often used constants from GameConstants
-        const int boxSize = GameConstants.boxSize;
-        const int step = GameConstants.step;
-        const int entitySize = GameConstants.entitySize;
-        const int boxOffset_Vertical = GameConstants.boxOffset_Vertical;
+        const int boxSize = GameConstants.BoxSize;
+        const int step = GameConstants.Step;
+        const int entitySize = GameConstants.EntitySize;
+        const int boxOffset_Vertical = GameConstants.BoxOffset_Vertical;
 
-        const int boxes_Horizontally = GameConstants.boxes_Horizontally; 
-        const int boxes_Vertically = GameConstants.boxes_Vertically;
+        const int boxes_Horizontally = GameConstants.Boxes_Horizontally; 
+        const int boxes_Vertically = GameConstants.Boxes_Vertically;
 
-        const int food_Horizontally = GameConstants.food_Horizontally;
-        const int food_Vertically = GameConstants.food_Vertically;
+        const int gameBoxes_Horizontally = GameConstants.GameBoxes_Horizontally;
+        const int gameBoxes_Vertically = GameConstants.GameBoxes_Vertically;
 
+        //
         // Local variables
+        //
 
-        internal int level = 1; // Max level 10
+        int level = 1; // Max level 10
 
-        internal bool gamePaused;
+        bool gamePaused;
 
-        internal SoundManager soundManager = new SoundManager();
+        SoundManager soundManager = new SoundManager();
 
-        internal Key pressedKey;
-        internal Key registeredKey;
+        Key pressedKey;
+        Key registeredKey;
 
-        internal System.Windows.Forms.Label labelReady;
-        internal System.Windows.Forms.Label labelGameOver;
-        internal System.Windows.Forms.Label labelLevel;
-        internal System.Windows.Forms.Label labelFruitSpawnChance;
+        System.Windows.Forms.Label label_Ready;
+        System.Windows.Forms.Label label_GameOver;
+        System.Windows.Forms.Label label_Level;
+        System.Windows.Forms.Label label_FruitSpawnChance;
+        System.Windows.Forms.Label label_Score;
 
-        internal Box[,] boxes = new Box[GameConstants.boxes_Horizontally, GameConstants.boxes_Vertically];
-        internal List<Box> walls = new List<Box>(); 
+        Box[,] boxes = new Box[GameConstants.Boxes_Horizontally, GameConstants.Boxes_Vertically];
+        List<Box> walls = new List<Box>();
         
-        internal Pacman pacman = new Pacman();
+        Pacman pacman = new Pacman();
+        bool pacPic_open;
 
-        internal bool pacPic_open;
-
-        internal List<PictureBox> pacmanLives = new List<PictureBox>
+        List<PictureBox> pacmanLives = new List<PictureBox>
         {
+            new PictureBox(),
             new PictureBox(),
             new PictureBox(),
             new PictureBox()
         };
 
         // Declare list containing the ghosts
-        internal List<Ghost> ghosts = new List<Ghost>();
-        internal Ghost Blinky;
-        internal Ghost Pinky;
-        internal Ghost Inky;
-        internal Ghost Clyde;
-        
+        List<Ghost> ghosts = new List<Ghost>();
+        List<Ghost> ghostsFrightened = new List<Ghost>();
 
-        internal int ghostsEatenDuringPeriod;
-        internal bool ghostsToBlink;
-        internal int currentEatGhostDuration;
-        internal int maxGhostsEatenInRow; // For score calculation
+        int ghostsEatenDuringPeriod;
+        bool ghostsToBlink;
+        int currentEatGhostDuration;
 
-        internal bool ghostPic_ver2;
+        bool ghostPic_ver2;
+        bool ghostFrightenedPic_ver2;
 
-        internal GhostBehaviour mostRecentGlobalBehaviour;
-        internal GhostBehaviour currentGlobalBehaviour;
+        GhostBehaviour mostRecentGlobalBehaviour;
+        GhostBehaviour currentGlobalBehaviour;
 
-        internal bool toChangeBehaviourSound = true; // Start as true so sound plays at the start of the game, before any behaviour changes
-        internal int secondsOfSameBehaviour; 
+        bool toChangeBehaviourSound = true; // Start as true so sound plays at the start of the game, before any behaviour changes
+        int secondsOfSameBehaviour; 
 
-        internal Box[,] foodGrid = new Box[GameConstants.food_Horizontally, GameConstants.food_Vertically];
+        Box[,] gameGrid = new Box[GameConstants.GameBoxes_Horizontally, GameConstants.GameBoxes_Vertically];
 
-        internal int foodEaten;
-        internal int powerPelletsEaten;
-        internal bool powerPellets_Filled;
-        internal int foodOnMap;
+        int foodEaten;
+        int powerPelletsEaten;
+        bool powerPellets_Filled;
 
-        internal PictureBox fruitBox = new PictureBox();
-        internal int fruitsSpawnedTotal;
-        internal Fruit currentFruit;
+        int foodOnMap;
 
-        internal bool timersDisabled;
+        PictureBox fruitBox = new PictureBox();
+        int fruitsSpawnedTotal;
+        Fruit currentFruit;
 
-        internal System.Windows.Forms.Label labelScore = new System.Windows.Forms.Label();
+        bool timersDisabled;
 
         public Form_Main(FormManager formManager, EventManager eventManager, GlobalVariables globalVariables)
         {
@@ -198,18 +239,19 @@ namespace Pacman_Projection
 
         private async void Form1_Load(object sender, EventArgs e)
         {
-            ClientSize = new Size(GameConstants.boxes_Horizontally * GameConstants.boxSize, GameConstants.boxes_Vertically * boxSize + boxSize);
+            ClientSize = new Size(GameConstants.Boxes_Horizontally * GameConstants.BoxSize, GameConstants.Boxes_Vertically * boxSize + boxSize);
             this.BackColor = Color.Black;
             this.Location = new Point(388, 57);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
+            this.KeyPreview = true;
 
             level = globalVariables.StartLevel;
 
-            // Set timerIntervals to designated interval
-            pacTickTimer.Interval = PacConstants.SpeedForLevel[level];
-            ghostTickTimer.Interval = GhostConstants.SpeedForLevel[level];
-            updateEatGhostDurationTimer.Interval = GhostConstants.BlinkDuration;
+            // Get all ghosts to use in the game from globalVariables
+            ghosts = new List<Ghost>(globalVariables.Ghosts);
+
+            UpdateTimerIntervals();
 
             //
             // Create all boxes
@@ -238,8 +280,8 @@ namespace Pacman_Projection
                 }
             }
 
-            // labelScore properties
-            labelScore = new System.Windows.Forms.Label
+            // label_Score properties
+            label_Score = new System.Windows.Forms.Label
             {
                 Location = new Point(2, 2),
                 Size = new Size(50, 20),
@@ -248,10 +290,10 @@ namespace Pacman_Projection
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Popup
             };
-            Controls.Add(labelScore);
+            Controls.Add(label_Score);
 
-            // labelLevel properties
-            labelLevel = new System.Windows.Forms.Label
+            // label_Level properties
+            label_Level = new System.Windows.Forms.Label
             {
                 Location = new Point(boxSize * 12, 2),
                 Size = new Size(120, 20),
@@ -260,10 +302,10 @@ namespace Pacman_Projection
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Popup
             };
-            Controls.Add(labelLevel);
+            Controls.Add(label_Level);
 
-            // labelFruitSpawnChance properties
-            labelFruitSpawnChance = new System.Windows.Forms.Label
+            // label_FruitSpawnChance properties
+            label_FruitSpawnChance = new System.Windows.Forms.Label
             {
                 Location = new Point(boxSize * 14, boxSize * 27),
                 Size = new Size(30, 30),
@@ -274,8 +316,8 @@ namespace Pacman_Projection
                 FlatStyle = FlatStyle.Popup,
                 TextAlign = System.Drawing.ContentAlignment.MiddleCenter
             };
-            Controls.Add(labelFruitSpawnChance);
-            labelFruitSpawnChance.BringToFront();
+            Controls.Add(label_FruitSpawnChance);
+            label_FruitSpawnChance.BringToFront();
 
             // Pacman properties
             pacman.box.LocationChanged += pacman_LocationChanged;
@@ -290,7 +332,7 @@ namespace Pacman_Projection
             // eatBox properties
             pacman.eatBox.Size = new Size(boxSize, boxSize);
             Controls.Add(pacman.eatBox);
-            pacman.UpdateLocation(pacman.box.Left, pacman.box.Top);
+            pacman.UpdateLocation();
 
             // fruitBox properties
             fruitBox.BackColor = Color.Transparent;
@@ -300,87 +342,21 @@ namespace Pacman_Projection
             Controls.Add(fruitBox);
             fruitBox.BringToFront();
 
-            //
-            // Ghosts properties
-            //
+            //                              //
+            // ********** Ghosts ********** //
+            //                              //
 
-            // Blinky
-            Blinky = new Ghost(GhostName.Blinky);
-            Blinky.box.Size = new Size(entitySize, entitySize);
-            Blinky.box.Image = GhostConstants.Images.Blinky.StartImage;
-            Blinky.box.LocationChanged += Blinky_LocationChanged;
-            Blinky.box.Location = new Point(GhostConstants.Blinky.StartX, GhostConstants.Blinky.StartY);
-            Blinky.SetState(EntityState.Standard);
+            foreach (Ghost ghost in ghosts)
+            { 
+                Controls.Add(ghost.box);
+                Controls.Add(ghost.navBox);
+                ghost.box.BringToFront();
+                ghost.box.Hide();
+            }
 
-            Controls.Add(Blinky.box);
-            Blinky.box.BringToFront();
-            Blinky.box.Hide();
-            ghosts.Add(Blinky);
-
-            // Blinky.navBox
-            Blinky.navBox.Size = new Size(boxSize, boxSize);
-            Controls.Add(Blinky.navBox);
-            Blinky.UpdateLocation(Blinky.box.Left, Blinky.box.Top);
-
-            // Pinky
-            Pinky = new Ghost(GhostName.Pinky);
-            Pinky.box.Size = new Size(entitySize, entitySize);
-            Pinky.box.Image = GhostConstants.Images.Pinky.StartImage;
-            Pinky.box.LocationChanged += Pinky_LocationChanged;
-            Pinky.box.Location = new Point(GhostConstants.Pinky.StartX, GhostConstants.Pinky.StartY);
-            Pinky.SetState(EntityState.Standard);
-
-            Controls.Add(Pinky.box);
-            Pinky.box.BringToFront();
-            Pinky.box.Hide();
-            ghosts.Add(Pinky);
-
-            // Pinky.navBox
-            Pinky.navBox.Size = new Size(boxSize, boxSize);
-            Controls.Add(Pinky.navBox);
-            Pinky.UpdateLocation(Pinky.box.Left, Pinky.box.Top);
-
-
-            // Inky
-            Inky = new Ghost(GhostName.Inky);
-            Inky.box.Size = new Size(entitySize, entitySize);
-            Inky.box.Image = GhostConstants.Images.Inky.StartImage;
-            Inky.box.LocationChanged += Inky_LocationChanged;
-            Inky.box.Location = new Point(GhostConstants.Inky.StartX, GhostConstants.Inky.StartY);
-            Inky.SetState(EntityState.Standard);
-
-            Controls.Add(Inky.box);
-            Inky.box.BringToFront();
-            Inky.box.Hide();
-            ghosts.Add(Inky);
-
-            // Inky.navBox
-            Inky.navBox.Size = new Size(boxSize, boxSize);
-            Controls.Add(Inky.navBox);
-            Inky.UpdateLocation(Inky.box.Left, Inky.box.Top);
-
-
-            // Clyde
-            Clyde = new Ghost(GhostName.Clyde);
-            Clyde.box.Size = new Size(entitySize, entitySize);
-            Clyde.box.Image = GhostConstants.Images.Clyde.StartImage;
-            Clyde.box.LocationChanged += Clyde_LocationChanged;
-            Clyde.box.Location = new Point(GhostConstants.Clyde.StartX, GhostConstants.Clyde.StartY);
-            Clyde.SetState(EntityState.Standard);
-
-            Controls.Add(Clyde.box);
-            Clyde.box.BringToFront();
-            Clyde.box.Hide();
-            ghosts.Add(Clyde);
-
-            // Clyde.navBox
-            Clyde.navBox.Size = new Size(boxSize, boxSize);
-            Controls.Add(Clyde.navBox);
-            Clyde.UpdateLocation(Clyde.box.Left, Clyde.box.Top);
-
-            //
-            // Add all the walls according to the map
-            //
+            //                             //
+            // ********** Walls ********** //
+            //                             //
 
             // Upper wall
             for (int indexX = 0; indexX < boxes_Horizontally; indexX++)
@@ -934,14 +910,18 @@ namespace Pacman_Projection
             boxes[28, 32].pictureBox.BackColor = Color.Blue;
             walls.Add(boxes[28, 32]);
 
-            // Make the "gate" into the ghosts encolsure
+            // Make the gate into the ghosts encolsure
+            // Set the outer gates GhostsCanEnter to false to force ghosts returning to the ghost
+            // house to go down when going to the return index to prevent them getting stuck
             boxes[13, 16].isGate = true;
+            boxes[13, 16].GhostsCanEnter = false;
             boxes[13, 16].pictureBox.BackColor = Color.LightPink;
             boxes[14, 16].isGate = true;
             boxes[14, 16].pictureBox.BackColor = Color.LightPink;
             boxes[15, 16].isGate = true;
             boxes[15, 16].pictureBox.BackColor = Color.LightPink;
             boxes[16, 16].isGate = true;
+            boxes[16, 16].GhostsCanEnter = false;
             boxes[16, 16].pictureBox.BackColor = Color.LightPink;
 
             //
@@ -1061,6 +1041,31 @@ namespace Pacman_Projection
             // Place all food on the map
             PlaceAllFood();
 
+            // Set GhostsCanEnter of chosen boxes to false, so that ghosts cannot enter but pacman still can.
+            // This it to prevent them from getting stuck in endless loops while attempting to reach their target
+
+            boxes[17, 34].GhostsCanEnter = false;
+            boxes[28, 34].GhostsCanEnter = false;
+            boxes[25, 31].GhostsCanEnter = false;
+            boxes[5, 4].GhostsCanEnter = false;
+            boxes[3, 8].GhostsCanEnter = false;
+            boxes[2, 3].GhostsCanEnter = false;
+            boxes[7, 4].GhostsCanEnter = false;
+            boxes[21, 3].GhostsCanEnter = false;
+            boxes[18, 4].GhostsCanEnter = false;
+            boxes[13, 10].GhostsCanEnter = false;
+            boxes[10, 11].GhostsCanEnter = false;
+            boxes[10, 13].GhostsCanEnter = false;
+            boxes[19, 11].GhostsCanEnter = false;
+            boxes[19, 13].GhostsCanEnter = false;
+            boxes[16, 10].GhostsCanEnter = false;
+            boxes[16, 12].GhostsCanEnter = false;
+            boxes[13, 12].GhostsCanEnter = false;
+            boxes[13, 13].GhostsCanEnter = false;
+            boxes[14, 13].GhostsCanEnter = false;
+            boxes[15, 13].GhostsCanEnter = false;
+            boxes[16, 13].GhostsCanEnter = false;
+
             await Task.Delay(GameConstants.EventTimes.betweenGames);
             InitializeGame();
         }
@@ -1072,8 +1077,6 @@ namespace Pacman_Projection
                 e.Cancel = true;
                 PauseGame(true);
             }
-           
-            //soundManager.StopAllSounds(); // Stop all sounds so they restart on next game start
         }
 
         private async void InitializeGame()
@@ -1087,13 +1090,13 @@ namespace Pacman_Projection
             {
                 lifeBox.Size = new Size(entitySize, entitySize);
                 lifeBox.Image = Resources.Pacman_left;
-                lifeBox.Location = new Point((GameConstants.boxes_Horizontally - 2) * boxSize - (entitySize + 5) * pacmanLives.IndexOf(lifeBox), 0);
+                lifeBox.Location = new Point((GameConstants.Boxes_Horizontally - 2) * boxSize - (entitySize + 5) * pacmanLives.IndexOf(lifeBox), 0);
                 Controls.Add(lifeBox);
                 lifeBox.BringToFront(); 
             }
 
-            // labelReady properties
-            labelReady = new System.Windows.Forms.Label
+            // label_Ready properties
+            label_Ready = new System.Windows.Forms.Label
             {
                 Location = new Point(boxSize * 11, boxSize * 11),
                 Size = new Size(boxSize * 8, boxSize * 3),
@@ -1104,12 +1107,12 @@ namespace Pacman_Projection
                 BorderStyle = BorderStyle.FixedSingle,
                 TextAlign = System.Drawing.ContentAlignment.MiddleCenter
             };
-            Controls.Add(labelReady);
-            labelReady.BringToFront();
+            Controls.Add(label_Ready);
+            label_Ready.BringToFront();
 
 
-            // labelGameOver properties
-            labelGameOver = new System.Windows.Forms.Label
+            // label_GameOver properties
+            label_GameOver = new System.Windows.Forms.Label
             {
                 Location = new Point(boxSize * 9, boxSize * 10),
                 Size = new Size(boxSize * 12, boxSize * 4),
@@ -1120,106 +1123,164 @@ namespace Pacman_Projection
                 BorderStyle = BorderStyle.FixedSingle,
                 TextAlign = System.Drawing.ContentAlignment.MiddleCenter
             };
-            Controls.Add(labelGameOver);
-            labelGameOver.BringToFront();
-            labelGameOver.Hide();
+            Controls.Add(label_GameOver);
+            label_GameOver.BringToFront();
+            label_GameOver.Hide();
 
             soundManager.PlaySound(Sounds.pacman_beginning, false);
 
             await Task.Delay(GameConstants.EventTimes.betweenGames);
 
-            // Set starting directions
-            pacman.SetDirection(PacConstants.StartDirection);
+            SetStart();
 
-            Blinky.SetDirection(GhostConstants.Blinky.StartDirection);
-            Pinky.SetDirection(GhostConstants.Pinky.StartDirection);
-            Inky.SetDirection(GhostConstants.Inky.StartDirection);
-            Clyde.SetDirection(GhostConstants.Clyde.StartDirection);
+            UpdateTimerIntervals();
+            ghostReturnTickTimer.Interval = GhostConstants.StandardReturnInterval;
 
-            // Set starting behaviours
-            Blinky.SetScatter();
-            Pinky.SetScatter();
-            Inky.SetScatter();
-            Clyde.SetScatter();
-            currentGlobalBehaviour = GhostBehaviour.Scatter;
-
-            ghostTickTimer.Interval = GhostConstants.SpeedForLevel[level];
-
-            Blinky.box.Show();
-            Blinky.box.BringToFront();
-            Pinky.box.Show();
-            Pinky.box.BringToFront();
-            Inky.box.Show();
-            Inky.box.BringToFront();
-            Clyde.box.Show();
-            Clyde.box.BringToFront();
+            foreach (Ghost ghost in ghosts)
+            {
+                ghost.box.Show();
+                ghost.box.BringToFront();
+            }
 
             // Remove one life from pacman
             Controls.Remove(pacmanLives[pacmanLives.Count - 1]);
             pacmanLives.RemoveAt(pacmanLives.Count - 1);
 
-            // Timed to be complete when pacman_beginning has finished playing
+            // Timed to be complete when the sound pacman_beginning has finished playing
             await Task.Delay(GameConstants.EventTimes.afterGhostsAppear);
 
             // Hide labelReady and start timers
-            labelReady.Hide();
+            label_Ready.Hide();
             StartTimers();
 
             SetSound_Scatter();
             PlaceFruitLoop();
+        }
 
-            boxes[0, 0].pictureBox.BackColor = Color.Black;
+        /// <summary>
+        /// Updates all timer intervals to required intervals depending on the current level
+        /// </summary>
+        private void UpdateTimerIntervals()
+        {
+            pacTickTimer.Interval = PacConstants.SpeedForLevel[level];
+            pacImageTimer.Interval = pacTickTimer.Interval;
+
+            ghostTickTimer.Interval = GhostConstants.SpeedForLevel[level];
+            ghostImageTimer.Interval = ghostTickTimer.Interval;
+
+            ghostFrightenedTickTimer.Interval = GhostConstants.SpeedForLevel_Frightened[level];
+            ghostFrightenedImageTimer.Interval = ghostFrightenedTickTimer.Interval;
         }
 
         //                                                                                        //
         //  ******************************  game-related methods  ******************************  //
         //                                                                                        //
 
+
+        /// <summary>
+        /// Set pacman and the ghosts to their respective startDirection, StartImage, starting behaviour and/or starting state. 
+        /// </summary>
+        private void SetStart()
+        {
+            ResetPacmanKey();
+            pacman.box.Location = new Point(PacConstants.StartX, PacConstants.StartY);
+            pacman.box.Image = Resources.Pacman_stationary;
+
+            foreach (Ghost ghost in ghosts)
+            {
+                ghost.box.Location = new Point(ghost.StartX, ghost.StartY);
+                ghost.SetState(EntityState.Standard);
+                if (ghost.ExitingGhostHouse)
+                {
+                    ghost.SetBehaviour(GhostBehaviour.ExitingHouse);
+                }
+                else
+                {
+                    ghost.SetScatter();
+                }
+                ghost.box.Image = ghost.StartImage;
+                ghost.SetDirection(ghost.StartDirection);
+            }
+
+            currentGlobalBehaviour = GhostBehaviour.Scatter;
+        }
+
         private async void Game(bool win)
         {
             PauseGame(false);
-            soundManager.StopAllSounds();
+
+            // Take all ghosts out of frightened mode
+            foreach (Ghost ghost in ghostsFrightened)
+            {
+                ghost.SetBehaviour(GhostBehaviour.Scatter);
+            }
+            UpdateGhostLists();
 
             pacman.box.Image = Resources.Pacman_stationary;
-            if (Blinky.CurrentState.Equals(EntityState.Eaten))
+            foreach (Ghost ghost in ghosts)
             {
-                Blinky.box.Image = Resources.Ghost_Eyes_stationary;
+                switch (ghost.Template)
+                {
+                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Blinky):
+                        if (ghost.CurrentState.Equals(EntityState.Eaten))
+                        {
+                            ghost.box.Image = GhostConstants.Images.eyesStationary;
+                        }
+                        else
+                        {
+                            ghost.box.Image = GhostConstants.Images.Blinky.stationary;
+                        }
+                        break;
+                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Pinky):
+                        if (ghost.CurrentState.Equals(EntityState.Eaten))
+                        {
+                            ghost.box.Image = GhostConstants.Images.eyesStationary;
+                        }
+                        else
+                        {
+                            ghost.box.Image = GhostConstants.Images.Pinky.stationary;
+                        }
+                        break;
+                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Inky):
+                        if (ghost.CurrentState.Equals(EntityState.Eaten))
+                        {
+                            ghost.box.Image = GhostConstants.Images.eyesStationary;
+                        }
+                        else
+                        {
+                            ghost.box.Image = GhostConstants.Images.Inky.stationary;
+                        }
+                        break;
+                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Clyde):
+                        if (ghost.CurrentState.Equals(EntityState.Eaten))
+                        {
+                            ghost.box.Image = GhostConstants.Images.eyesStationary;
+                        }
+                        else
+                        {
+                            ghost.box.Image = GhostConstants.Images.Clyde.stationary;
+                        }
+                        break;
+                        /* default: set custom ghost picture 
+                         * 
+                         if (ghost.CurrentState.Equals(EntityState.Eaten))
+                            {
+
+                            }
+                            else
+                            {
+
+                            }
+                        */
+                }
             }
-            else
-            {
-                Blinky.box.Image = Resources.Blinky_stationary;
-            }
-            if (Pinky.CurrentState.Equals(EntityState.Eaten))
-            {
-                Pinky.box.Image = Resources.Ghost_Eyes_stationary;
-            }
-            else
-            {
-                Pinky.box.Image = Resources.Pinky_stationary;
-            }
-            if (Inky.CurrentState.Equals(EntityState.Eaten))
-            {
-                Inky.box.Image = Resources.Ghost_Eyes_stationary;
-            }
-            else
-            {
-                Inky.box.Image = Resources.Inky_stationary;
-            }
-            if (Clyde.CurrentState.Equals(EntityState.Eaten))
-            {
-                Clyde.box.Image = Resources.Ghost_Eyes_stationary;
-            }
-            else
-            {
-                Clyde.box.Image = Resources.Clyde_stationary;
-            }
-                
+               
             await Task.Delay(GameConstants.EventTimes.betweenGames);
 
-            Blinky.box.Hide();
-            Pinky.box.Hide();
-            Inky.box.Hide();
-            Clyde.box.Hide();
+            foreach (Ghost ghost in ghosts)
+            {
+                ghost.box.Hide();
+            }
             fruitBox.Hide();
 
             if (win)
@@ -1228,10 +1289,13 @@ namespace Pacman_Projection
 
                 soundManager.PlaySound(Sounds.pacman_win, false);
 
+                // Hid the fruitSpawnChange label so it doesn't cover any blinking walls
+                label_FruitSpawnChance.Hide();
+
                 int timesToBlink = 10;
                 while (timesToBlink > 0)
                 {
-                    foreach (Box box in walls)
+                    foreach (var box in walls)
                     {
                         if (timesToBlink % 2 == 0)
                         {
@@ -1287,15 +1351,15 @@ namespace Pacman_Projection
                 {
                     soundManager.toPlaySounds = false;
 
-                    labelGameOver.Show();
-                    labelGameOver.BringToFront();
+                    label_GameOver.Show();
+                    label_GameOver.BringToFront();
 
                     Task.Delay(GameConstants.EventTimes.gameOverDisplayed).Wait();
 
                     // Register the end level reached for the highscore table
                     globalVariables.EndLevel = level;
 
-                    formManager.OpenForm(formManager.FormPauseMenu);
+                    formManager.OpenForm(formManager.form_PauseMenu);
                 }
             }
             else
@@ -1305,31 +1369,7 @@ namespace Pacman_Projection
 
             if (restart)
             {
-                // Move ghosts and pacman to their startig positions, reset 
-                // pacmans direction to make him start still
-                Blinky.box.Location = new Point(GhostConstants.Blinky.StartX, GhostConstants.Blinky.StartY);
-                Pinky.box.Location = new Point(GhostConstants.Pinky.StartX, GhostConstants.Pinky.StartY);
-                Inky.box.Location = new Point(GhostConstants.Inky.StartX, GhostConstants.Inky.StartY);
-                Clyde.box.Location = new Point(GhostConstants.Clyde.StartX, GhostConstants.Clyde.StartY);
-                pacman.box.Location = new Point(PacConstants.StartX, PacConstants.StartY);
-                pacman.box.Image = Resources.Pacman_stationary;
-                ResetPacmanKey();
-                // Set ghosts starting directions, pictures, and make them visible 
-                Blinky.SetDirection(GhostConstants.Blinky.StartDirection);
-                Blinky.box.Image = GhostConstants.Images.Blinky.StartImage;
-                Pinky.SetDirection(GhostConstants.Pinky.StartDirection);
-                Pinky.box.Image = GhostConstants.Images.Pinky.StartImage;
-                Inky.SetDirection(GhostConstants.Inky.StartDirection);
-                Inky.box.Image = GhostConstants.Images.Inky.StartImage;
-                Clyde.SetDirection(GhostConstants.Clyde.StartDirection);
-                Clyde.box.Image = GhostConstants.Images.Clyde.StartImage;
-
-                Blinky.SetState(EntityState.Standard);
-                Pinky.SetState(EntityState.Standard);
-                Inky.SetState(EntityState.Standard);
-                Clyde.SetState(EntityState.Standard);
-
-                currentEatGhostDuration = 0;
+                SetStart();
 
                 if (win)
                 {
@@ -1341,27 +1381,29 @@ namespace Pacman_Projection
 
                     PlaceAllFood();
 
-                    labelLevel.Text = "Level " + level.ToString();
+                    // Update the all timer intervals to match the next 
+                    UpdateTimerIntervals();
+
+                    label_Level.Text = "Level " + level.ToString();
                 }
 
-                Blinky.box.Show();
-                Blinky.box.BringToFront();
-                Pinky.box.Show();
-                Pinky.box.BringToFront();
-                Inky.box.Show();
-                Inky.box.BringToFront();
-                Clyde.box.Show();
-                Clyde.box.BringToFront();
+                foreach (Ghost ghost in ghosts)
+                {
+                    ghost.box.Show();
+                    ghost.box.BringToFront();
+                }
                 pacman.box.Show();
                 pacman.box.BringToFront();
-                fruitBox.Show();
 
-                labelReady.Show();
-                labelReady.BringToFront();
+                fruitBox.Show();
+                label_FruitSpawnChance.Show();
+
+                label_Ready.Show();
+                label_Ready.BringToFront();
 
                 await Task.Delay(GameConstants.EventTimes.beforeRestart);
 
-                labelReady.Hide();
+                label_Ready.Hide();
 
                 UnpauseGame();
             }
@@ -1372,12 +1414,12 @@ namespace Pacman_Projection
             if (addToScore)
             {
                 globalVariables.Score += scoreToChangeBy;
-                labelScore.Text = globalVariables.Score.ToString();
+                label_Score.Text = globalVariables.Score.ToString();
             }
             else
             {
                 globalVariables.Score -= scoreToChangeBy;
-                labelScore.Text = globalVariables.Score.ToString();
+                label_Score.Text = globalVariables.Score.ToString();
             }
         }
 
@@ -1387,7 +1429,7 @@ namespace Pacman_Projection
             {
                 System.Windows.Forms.Label labelScoreChange = new System.Windows.Forms.Label();
                 labelScoreChange.Location = new Point(entityToPutLabelAt.Location.X, entityToPutLabelAt.Location.Y);
-                labelScoreChange.Size = new Size(30, 20);
+                labelScoreChange.Size = new Size(40, 30);
                 labelScoreChange.Font = new Font("Arial", 9, FontStyle.Bold);
                 labelScoreChange.Text = scoreToChangeBy.ToString();
                 labelScoreChange.ForeColor = Color.DarkGreen;
@@ -1400,7 +1442,7 @@ namespace Pacman_Projection
 
                 globalVariables.Score += scoreToChangeBy;
 
-                labelScore.Text = globalVariables.Score.ToString();
+                label_Score.Text = globalVariables.Score.ToString();
 
                 await Task.Delay(GameConstants.EventTimes.afterGhostEaten);
 
@@ -1433,13 +1475,15 @@ namespace Pacman_Projection
             if (showPauseMenu)
             {
                 globalVariables.CurrentLevel = level; // Update CurrentLevel in globalVariables in case it changed since last pause
-                formManager.OpenForm(formManager.FormPauseMenu);
+                formManager.OpenForm(formManager.form_PauseMenu);
             }
         }
 
         internal void UnpauseGame()
         {
             timersDisabled = false;
+
+            soundManager.UnpauseAllSounds();
 
             while (soundManager.pausedSounds.Count > 0)
             {
@@ -1449,7 +1493,6 @@ namespace Pacman_Projection
                 soundManager.UnpauseSound(sound);
             }
 
-            this.Focus();
             this.KeyPreview = true;
 
             StartTimers();
@@ -1461,10 +1504,11 @@ namespace Pacman_Projection
             pacTickTimer.Stop();
             pacImageTimer.Stop();
             ghostTickTimer.Stop();
+            ghostFrightenedTickTimer.Stop();
             ghostReturnTickTimer.Stop();
             ghostImageTimer.Stop();
+            ghostFrightenedImageTimer.Stop();
             powerPelletBlinkTimer.Stop();
-            updateEatGhostDurationTimer.Stop();
             ghostBehaviourTimeTimer.Stop();
         }
 
@@ -1475,10 +1519,11 @@ namespace Pacman_Projection
                 pacTickTimer.Start();
                 pacImageTimer.Start();
                 ghostTickTimer.Start();
+                ghostFrightenedTickTimer.Start();
                 ghostReturnTickTimer.Start();
                 ghostImageTimer.Start();
+                ghostFrightenedImageTimer.Start();
                 powerPelletBlinkTimer.Start();
-                updateEatGhostDurationTimer.Start();
                 ghostBehaviourTimeTimer.Start();
             }
         }                                               
@@ -1583,55 +1628,38 @@ namespace Pacman_Projection
 
         private void pacman_LocationChanged(object sencer, EventArgs e)
         {
-            if (!currentGlobalBehaviour.Equals(GhostBehaviour.Frightened))
+            // Ensure all ghosts are placed in the correct list before checking for any collisions with pacman
+            UpdateGhostLists();
+
+            // Loop through all non-frightened ghosts to check if pacman is colliding with any, and, if he is, if he should die
+            foreach (Ghost ghost in ghosts)
             {
-                foreach (Ghost ghost in ghosts)
+                if (pacman.box.Bounds.IntersectsWith(ghost.box.Bounds))
                 {
-                    if (ghost.CurrentState.Equals(EntityState.Eaten))
+                    if (!ghost.CurrentState.Equals(EntityState.Eaten))
+                    {
+                        
+                        Game(false);
+                        return;
+                    }
+                    else
                     {
                         pacman.box.BringToFront();
                         return;
                     }
-                    else if (!ghost.CurrentState.Equals(EntityState.Eaten) && pacman.box.Bounds.IntersectsWith(ghost.box.Bounds))
-                    {
-                        Game(false);
-                    }
                 }
             }
-            else
+
+            // Loop through all frightened ghosts to check if pacman is colliding with any, and, if he is, he should eat them
+            foreach (Ghost ghost in ghostsFrightened)
             {
-                foreach (Ghost ghost in ghosts)
+                if (pacman.box.Bounds.IntersectsWith(ghost.box.Bounds))
                 {
-                    if (pacman.box.Bounds.IntersectsWith(ghost.box.Bounds))
-                    {
-                        if (ghost.CurrentState.Equals(EntityState.Eaten))
-                        {
-                            pacman.box.BringToFront();
-                            return;
-                        }
-                        else
-                        {
-                            if (ghost.Equals(Blinky))
-                            {
-                                GhostEaten(Blinky);
-                            }
-                            else if (ghost.Equals(Pinky))
-                            {
-                                GhostEaten(Pinky);
-                            }
-                            else if (ghost.Equals(Inky))
-                            {
-                                GhostEaten(Inky);
-                            }
-                            else if (ghost.Equals(Clyde))
-                            {
-                                GhostEaten(Clyde);
-                            }
-                        }
-                    }
+                    GhostEaten(ghost);
+                    return;
                 }
             }
-            pacman.UpdateLocation(pacman.box.Left, pacman.box.Top);
+
             pacman.box.BringToFront();
         }
 
@@ -1740,7 +1768,7 @@ namespace Pacman_Projection
 
                         // If pacman is fully inside the teleporter box (going to teleport) or if he has 
                         // teleported (going out of teleporter) either teleport or check if pacman is out of the teleporter
-                        if (pacman.BlocksIntoTeleporter.Equals(GameConstants.maxStepsIntoTeleporter) || pacman.Teleported)
+                        if (pacman.BlocksIntoTeleporter.Equals(GameConstants.MaxStepsIntoTeleporter) || pacman.Teleported)
                         {
                             // If pacman has teleported, he is now exiting the teleporter
                             // If pacman is out of the teleporter, his state should switch back to standard
@@ -1800,7 +1828,7 @@ namespace Pacman_Projection
 
                             // If pacman is fully inside the teleporter box (going to teleport) or if he has 
                             // teleported (going out of teleporter) either teleport or check if pacman is out of the teleporter
-                            if (pacman.BlocksIntoTeleporter.Equals(GameConstants.maxStepsIntoTeleporter) || pacman.Teleported)
+                            if (pacman.BlocksIntoTeleporter.Equals(GameConstants.MaxStepsIntoTeleporter) || pacman.Teleported)
                             {
                                 // If pacman has teleported, he is now exiting the teleporter
                                 // If pacman is out of the teleporter, his state should switch back to standard
@@ -1873,6 +1901,17 @@ namespace Pacman_Projection
             if (CheckForFruitCollide(pacman.eatBox))
             {
                 FruitEaten();
+            }
+
+            // After pacman has moved, update all ghost's target tiles
+            foreach (Ghost ghost in ghosts)
+            {
+                // Only update the ghost's target if it is not leaving
+                // the ghost house - all ghosts have to leave before updating their target tile
+                if (!ghost.ExitingGhostHouse)
+                {
+                    UpdateGhostTargets();
+                }
             }
         }
 
@@ -1973,68 +2012,96 @@ namespace Pacman_Projection
             switch (directionToCheckIn)
             {
                 case Direction.Left:
-                    int[] lowerLeft = entity.GetStandardPosition(EntityBox.LowerLeft);
-                    int[] upperLeft = entity.GetStandardPosition(EntityBox.UpperLeft);
+                    try
+                    {
+                        int[] lowerLeft = entity.GetStandardPosition(EntityBox.LowerLeft);
+                        int[] upperLeft = entity.GetStandardPosition(EntityBox.UpperLeft);
 
-                    // Adjust positions for direction
-                    lowerLeft[0] -= 1;
-                    upperLeft[0] -= 1;
+                        // Adjust positions for direction
+                        lowerLeft[0] -= 1;
+                        upperLeft[0] -= 1;
 
-                    if (boxes[lowerLeft[0], lowerLeft[1]].isWall || boxes[upperLeft[0], upperLeft[1]].isWall)
+                        if (boxes[lowerLeft[0], lowerLeft[1]].isWall || boxes[upperLeft[0], upperLeft[1]].isWall)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    catch
                     {
                         return true;
-                    }
-                    else
-                    {
-                        return false;
                     }
                 case Direction.Right:
-                    int[] lowerRight = entity.GetStandardPosition(EntityBox.LowerRight);
-                    int[] upperRight = entity.GetStandardPosition(EntityBox.UpperRight);
+                    try
+                    {
+                        int[] lowerRight = entity.GetStandardPosition(EntityBox.LowerRight);
+                        int[] upperRight = entity.GetStandardPosition(EntityBox.UpperRight);
 
-                    // Adjust positions for direction
-                    lowerRight[0] += 1;
-                    upperRight[0] += 1;
+                        // Adjust positions for direction
+                        lowerRight[0] += 1;
+                        upperRight[0] += 1;
 
-                    if (boxes[lowerRight[0], lowerRight[1]].isWall || boxes[upperRight[0], upperRight[1]].isWall)
+                        if (boxes[lowerRight[0], lowerRight[1]].isWall || boxes[upperRight[0], upperRight[1]].isWall)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    catch
                     {
                         return true;
-                    }
-                    else
-                    {
-                        return false;
                     }
                 case Direction.Up:
-                    int[] upperLeft_Up = entity.GetStandardPosition(EntityBox.UpperLeft);
-                    int[] upperRight_Up = entity.GetStandardPosition(EntityBox.UpperRight);
+                    try
+                    {
+                        int[] upperLeft_Up = entity.GetStandardPosition(EntityBox.UpperLeft);
+                        int[] upperRight_Up = entity.GetStandardPosition(EntityBox.UpperRight);
 
-                    // Adjust positions for direction
-                    upperLeft_Up[1] -= 1;
-                    upperRight_Up[1] -= 1;
+                        // Adjust positions for direction
+                        upperLeft_Up[1] -= 1;
+                        upperRight_Up[1] -= 1;
 
-                    if (boxes[upperLeft_Up[0],upperLeft_Up[1]].isWall || boxes[upperRight_Up[0], upperRight_Up[1]].isWall)
+                        if (boxes[upperLeft_Up[0], upperLeft_Up[1]].isWall || boxes[upperRight_Up[0], upperRight_Up[1]].isWall)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    catch                     
                     {
                         return true;
-                    }
-                    else
-                    {
-                        return false;
                     }
                 case Direction.Down:
-                    int[] lowerLeft_Down = entity.GetStandardPosition(EntityBox.LowerLeft);
-                    int[] lowerRight_Down = entity.GetStandardPosition(EntityBox.LowerRight);
+                    try
+                    {
+                        int[] lowerLeft_Down = entity.GetStandardPosition(EntityBox.LowerLeft);
+                        int[] lowerRight_Down = entity.GetStandardPosition(EntityBox.LowerRight);
 
-                    // Adjust positions for direction
-                    lowerLeft_Down[1] += 1;
-                    lowerRight_Down[1] += 1;
+                        // Adjust positions for direction
+                        lowerLeft_Down[1] += 1;
+                        lowerRight_Down[1] += 1;
 
-                    if (boxes[lowerLeft_Down[0], lowerLeft_Down[1]].isWall || boxes[lowerRight_Down[0], lowerRight_Down[1]].isWall)
+                        if (boxes[lowerLeft_Down[0], lowerLeft_Down[1]].isWall || boxes[lowerRight_Down[0], lowerRight_Down[1]].isWall)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    catch
                     {
                         return true;
-                    }
-                    else
-                    {
-                        return false;
                     }
                 default:
                     return true;
@@ -2084,7 +2151,6 @@ namespace Pacman_Projection
 
         private bool CheckForGate(Entity entity, Direction directionToCheckIn)
         {
-            //entity.UpdateStandardPositions();
             switch (directionToCheckIn)
             {
                 case Direction.Left:
@@ -2156,6 +2222,83 @@ namespace Pacman_Projection
             }
         }
 
+        /// <summary>
+        /// Used to check if an entity (ghost) can enter a specific box, even though the box is not a wall nor gate. 
+        /// Returns true if entry is allowed, false if not.
+        /// </summary>
+        private bool CheckForEntry(Entity entity, Direction directionToCheckIn)
+        {
+            switch (directionToCheckIn)
+            {
+                case Direction.Left:
+                    int[] lowerLeft = entity.GetStandardPosition(EntityBox.LowerLeft);
+                    int[] upperLeft = entity.GetStandardPosition(EntityBox.UpperLeft);
+
+                    // Adjust positions for direction
+                    lowerLeft[0] -= 1;
+                    upperLeft[0] -= 1;
+
+                    if (boxes[lowerLeft[0], lowerLeft[1]].GhostsCanEnter && boxes[upperLeft[0], upperLeft[1]].GhostsCanEnter)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                case Direction.Right:
+                    int[] lowerRight = entity.GetStandardPosition(EntityBox.LowerRight);
+                    int[] upperRight = entity.GetStandardPosition(EntityBox.UpperRight);
+
+                    // Adjust positions for direction
+                    lowerRight[0] += 1;
+                    upperRight[0] += 1;
+
+                    if (boxes[lowerRight[0], lowerRight[1]].GhostsCanEnter && boxes[upperRight[0], upperRight[1]].GhostsCanEnter)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                case Direction.Up:
+                    int[] upperLeft_Up = entity.GetStandardPosition(EntityBox.UpperLeft);
+                    int[] upperRight_Up = entity.GetStandardPosition(EntityBox.UpperRight);
+
+                    // Adjust positions for direction
+                    upperLeft_Up[1] -= 1;
+                    upperRight_Up[1] -= 1;
+
+                    if (boxes[upperLeft_Up[0], upperLeft_Up[1]].GhostsCanEnter && boxes[upperRight_Up[0], upperRight_Up[1]].GhostsCanEnter)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                case Direction.Down:
+                    int[] lowerLeft_Down = entity.GetStandardPosition(EntityBox.LowerLeft);
+                    int[] lowerRight_Down = entity.GetStandardPosition(EntityBox.LowerRight);
+
+                    // Adjust positions for direction
+                    lowerLeft_Down[1] += 1;
+                    lowerRight_Down[1] += 1;
+
+                    if (boxes[lowerLeft_Down[0], lowerLeft_Down[1]].GhostsCanEnter && boxes[lowerRight_Down[0], lowerRight_Down[1]].GhostsCanEnter)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                default:
+                    return true;
+            }
+        }
+
         private bool CheckForTeleporter(Entity entity)
         {
             try
@@ -2211,18 +2354,18 @@ namespace Pacman_Projection
         {
             // Fills the food list and places it on the map while
             // checking if it collides with any walls, if so, they are removed
-            for (int indexY = 0; indexY < food_Vertically; indexY++)
+            for (int indexY = 0; indexY < gameBoxes_Vertically; indexY++)
             {
-                for (int indexX = 0; indexX < food_Horizontally; indexX++)
+                for (int indexX = 0; indexX < gameBoxes_Horizontally; indexX++)
                 {
-                    var foodElement = foodGrid[indexX, indexY];
+                    var foodElement = gameGrid[indexX, indexY];
                     var foodIndex = new int[] { indexX, indexY };
 
                     // Only declare the foods the first time PlaceAllFood is run
-                    if (foodGrid[indexX, indexY] == null)
+                    if (gameGrid[indexX, indexY] == null)
                     { 
                         bool powerPellet = false;
-                        foreach (var index in GameConstants.powerPelletIndexes)
+                        foreach (var index in GameConstants.PowerPelletIndexes)
                         {
                             if (foodIndex[0] == index[0] && foodIndex[1] == index[1]) 
                             { 
@@ -2232,10 +2375,10 @@ namespace Pacman_Projection
                         if (powerPellet)
                         {
                             foodElement = new Box(new PictureBox(), false, false, false, true, true);
-                            foodElement.pictureBox.Image = Resources.PowerPellet;
+                            foodElement.pictureBox.Image = Resources.PowerPellet_Filled;
                             foodElement.isEaten = false;
 
-                            foodGrid[indexX, indexY] = foodElement;
+                            gameGrid[indexX, indexY] = foodElement;
                         }
                         else
                         {
@@ -2243,7 +2386,7 @@ namespace Pacman_Projection
                             foodElement.pictureBox.Image = Resources.Food;
                             foodElement.isEaten = false;
 
-                            foodGrid[indexX, indexY] = foodElement;
+                            gameGrid[indexX, indexY] = foodElement;
                         }
 
                         foodElement.pictureBox.Size = new Size(boxSize, boxSize);
@@ -2253,23 +2396,19 @@ namespace Pacman_Projection
                         // If a food collides with a wall, it will be removed
                         // The same applies to foods that are placed beside others foods,
                         // creating areas of dense foods, as well as foods placed outside the map or generally where they are not supposed to be
-                        foodElement.pictureBox.Location = new Point(indexX * boxSize + GameConstants.foodOffset_Horizontal, indexY * boxSize + GameConstants.foodOffset_Vertical);
+                        foodElement.pictureBox.Location = new Point(indexX * boxSize + GameConstants.GameGridOffset_Horizontal, indexY * boxSize + GameConstants.GameGridOffset_Vertical);
 
                         if (AbleToPlaceFood(indexX, indexY))
                         {   
                             foodElement.pictureBox.BringToFront();
                             foodOnMap++;  
                         }
-                        else
-                        {
-                            foodElement.pictureBox.Hide();
-                        }
                     }
                     else
                     {
-                        if (GameConstants.powerPelletIndexes.Contains(foodIndex))
+                        if (GameConstants.PowerPelletIndexes.Contains(foodIndex))
                         {
-                            foodElement.pictureBox.Image = Resources.PowerPellet;
+                            foodElement.pictureBox.Image = Resources.PowerPellet_Filled;
                             foodElement.isEaten = false;
                         }   
                         else
@@ -2286,7 +2425,7 @@ namespace Pacman_Projection
         {
             foreach (Box box in boxes)
             {
-                if (foodGrid[indexX, indexY].pictureBox.Bounds.IntersectsWith(box.pictureBox.Bounds) && (box.isWall || !box.isFood))
+                if (gameGrid[indexX, indexY].pictureBox.Bounds.IntersectsWith(box.pictureBox.Bounds) && (box.isWall || !box.isFood))
                 {
                     return false;
                 }
@@ -2298,14 +2437,14 @@ namespace Pacman_Projection
         {
             try
             {
-                for (int indexX = 0; indexX < food_Horizontally; indexX++)
+                for (int indexX = 0; indexX < gameBoxes_Horizontally; indexX++)
                 {
-                    for (int indexY = 0; indexY < food_Vertically; indexY++)
+                    for (int indexY = 0; indexY < gameBoxes_Vertically; indexY++)
                     {
-                        var food = foodGrid[indexX, indexY];
+                        var food = gameGrid[indexX, indexY];
                         if (food.pictureBox.Bounds.IntersectsWith(eatBox.Bounds) && !food.isEaten && food.pictureBox.Visible)
                         {
-                            return foodGrid[indexX, indexY];
+                            return gameGrid[indexX, indexY];
                         }
                     }
                 }
@@ -2321,15 +2460,15 @@ namespace Pacman_Projection
         {
             try
             {
-                for (int indexX = 0; indexX < food_Horizontally; indexX++)
+                for (int indexX = 0; indexX < gameBoxes_Horizontally; indexX++)
                 {
-                    for (int indexY = 0; indexY < food_Vertically; indexY++)
+                    for (int indexY = 0; indexY < gameBoxes_Vertically; indexY++)
                     {
-                        if (foodGrid[indexX, indexY] != null)
+                        if (gameGrid[indexX, indexY] != null)
                         {
-                            if (foodGrid[indexX, indexY].pictureBox.Bounds.IntersectsWith(eatBox.Bounds) && foodGrid[indexX, indexY].pictureBox.Image != null)
+                            if (gameGrid[indexX, indexY].pictureBox.Bounds.IntersectsWith(eatBox.Bounds) && gameGrid[indexX, indexY].pictureBox.Image != null)
                             {
-                                if (foodGrid[indexX, indexY].isPowerPellet == false)
+                                if (gameGrid[indexX, indexY].isPowerPellet == false)
                                 {
                                     return (true, false);
                                 }
@@ -2363,21 +2502,26 @@ namespace Pacman_Projection
                     }
                     else
                     {
-                        currentEatGhostDuration += GameConstants.EventTimes.powerPellet;
-                        // If the ghosts are blinking, make them stop as
-                        // currentGhostEatDuration is now over the threshold,
-                        // regardless of its previous value
-                        Blinky.White = false;
-                        Pinky.White = false;
-                        Inky.White = false;
-                        Clyde.White = false;
-                        ghostsToBlink = false;
+                        // If the ghosts are already scared, reset their frightened-related status
+                        if (currentGlobalBehaviour.Equals(GhostBehaviour.Frightened))
+                        {
+                            foreach (Ghost ghost in ghosts)
+                            {
+                                ghost.HasBeenEaten = false;
+                            }
+                            
+                            foreach (Ghost ghost in ghostsFrightened)
+                            {
+                                ghost.White = false;
+                            }
+                            ghostsToBlink = false;
+                        }
+
+                        currentEatGhostDuration += GameConstants.EventTimes.powerPellet;                   
 
                         // Ensure all ghosts are frightened
-                        if (!currentGlobalBehaviour.Equals(GhostBehaviour.Frightened))
-                        {
-                            SetGhosts_Frightened();
-                        }
+                        SetGhosts_Frightened();
+
                         ghostBehaviourTimeTimer.Stop();
 
                         UpdateScore(GameConstants.Scores.powerPellet, true);
@@ -2389,7 +2533,7 @@ namespace Pacman_Projection
                 foodEaten++;
                 foodOnMap--;
 
-                // If all foods are eaten, the player wins
+                // If all food is eaten, the player wins
                 if (foodOnMap == 0)
                 {
                     Game(true);
@@ -2401,17 +2545,17 @@ namespace Pacman_Projection
         {
             powerPellets_Filled = !powerPellets_Filled;
 
-            foreach (var index in GameConstants.powerPelletIndexes)
+            foreach (var index in GameConstants.PowerPelletIndexes)
             {
-                if (!foodGrid[index[0], index[1]].isEaten)
+                if (!gameGrid[index[0], index[1]].isEaten)
                 {
                     if (powerPellets_Filled)
                     {
-                        foodGrid[index[0], index[1]].pictureBox.Show();
+                        gameGrid[index[0], index[1]].pictureBox.Image = Resources.PowerPellet_Empty;
                     }
                     else
                     {
-                        foodGrid[index[0], index[1]].pictureBox.Hide();
+                        gameGrid[index[0], index[1]].pictureBox.Image = Resources.PowerPellet_Filled;
                     }
                 }
             }
@@ -2550,11 +2694,11 @@ namespace Pacman_Projection
 
                 if (fruitBox.Image == null)
                 {
-                    labelFruitSpawnChance.Text = Convert.ToInt32(fruitSpawnChancePercent * 100).ToString() + "%";
+                    label_FruitSpawnChance.Text = Convert.ToInt32(fruitSpawnChancePercent * 100).ToString() + "%";
                 }
                 else
                 {
-                    labelFruitSpawnChance.Text = "0%";
+                    label_FruitSpawnChance.Text = "0%";
                 }
 
                 await Task.Delay(10);
@@ -2569,23 +2713,23 @@ namespace Pacman_Projection
         {
             bool behaviourChangeThisTick = false;
 
-            if (currentGlobalBehaviour.Equals(GhostBehaviour.Scatter)) 
+            // Switch from scatter if the max time for the level is met
+            if (currentGlobalBehaviour.Equals(GhostBehaviour.Scatter))
             {
-                if (secondsOfSameBehaviour == int.Parse(GhostConstants.ScatterChaseTimesForLevel[level].Split(',')[0])) 
+                if (secondsOfSameBehaviour >= int.Parse(GhostConstants.ScatterChaseTimesForLevel[level].Split(',')[0]))
                 {
-                    SetGhosts_Chase();
+                    SetGhosts_Chase(false);
+
                     secondsOfSameBehaviour = 0;
                     behaviourChangeThisTick = true;
                 }
             }
             else if (currentGlobalBehaviour.Equals(GhostBehaviour.Chase))
             {
-                if (secondsOfSameBehaviour == int.Parse(GhostConstants.ScatterChaseTimesForLevel[level].Split(',')[1]))
+                // Switch from chase if the max time for the level is met
+                if (secondsOfSameBehaviour >= int.Parse(GhostConstants.ScatterChaseTimesForLevel[level].Split(',')[1]))
                 {
-                    SetGhosts_Scatter();
-
-                    // Set all ghosts targets to their respective map corners
-                    Blinky.SetTarget(GhostConstants.Blinky.ScatterCorner);
+                    SetGhosts_Scatter(false);
 
                     secondsOfSameBehaviour = 0;
                     behaviourChangeThisTick = true;
@@ -2598,89 +2742,8 @@ namespace Pacman_Projection
             }
         }
 
-        private void updateEatGhostDurationTimer_Tick(object sender, EventArgs e)
-        {
-            bool toStopScared = false;
-            if (currentEatGhostDuration == GhostConstants.BlinkDuration) // currentEatGhostDuration ends this tick
-            {
-                toStopScared = true;
-            }
-
-            if (currentEatGhostDuration > 0)
-            {
-                if (!currentGlobalBehaviour.Equals(GhostBehaviour.Frightened))
-                {
-                    SetGhosts_Frightened();
-                }
-
-                currentEatGhostDuration -= GhostConstants.BlinkDuration;
-                if (toStopScared && currentEatGhostDuration == 0)
-                {
-                    // Update maxGhostsEatenInRow if a new max has been reached
-                    if (ghostsEatenDuringPeriod > maxGhostsEatenInRow)
-                    {
-                        maxGhostsEatenInRow = ghostsEatenDuringPeriod;
-                    }
-                    ghostsEatenDuringPeriod = 0;
-
-                    if (mostRecentGlobalBehaviour.Equals(GhostBehaviour.Scatter))
-                    {
-                        SetGhosts_Scatter();
-                    }
-                    else if (mostRecentGlobalBehaviour.Equals(GhostBehaviour.Chase))
-                    {
-                        SetGhosts_Chase();
-                    }
-
-                    ghostBehaviourTimeTimer.Start();
-                }
-            }
-
-            if (currentGlobalBehaviour.Equals(GhostBehaviour.Frightened))
-            {
-                if (currentEatGhostDuration <= (GhostConstants.BlinkDuration * GhostConstants.TimesToBlink) || ghostsToBlink)
-                {
-                    ghostsToBlink = true;
-                    if (currentEatGhostDuration / GhostConstants.BlinkDuration % 2 == 0)
-                    {
-                        Blinky.White = false;
-                        Pinky.White = false;
-                        Inky.White = false;
-                        Clyde.White = false;
-                    }
-                    else
-                    {
-                        Blinky.White = true;
-                        Pinky.White = true;
-                        Inky.White = true;
-                        Clyde.White = true;
-                    }
-                }
-            }
-        }
-
-        private void Blinky_LocationChanged(object sender, EventArgs e)
-        {
-            Blinky.UpdateLocation(Blinky.box.Left, Blinky.box.Top);
-        }
-
-        private void Pinky_LocationChanged(object sender, EventArgs e)
-        {
-            Pinky.UpdateLocation(Pinky.box.Left, Pinky.box.Top);
-        }
-
-        private void Inky_LocationChanged(object sender, EventArgs e)
-        {
-            Inky.UpdateLocation(Inky.box.Left, Inky.box.Top);
-        }
-
-        private void Clyde_LocationChanged(object sender, EventArgs e)
-        {
-            Clyde.UpdateLocation(Clyde.box.Left, Clyde.box.Top);
-        }
-
         private void ghostTickTimer_Tick(object sender, EventArgs e)
-        { 
+        {
             // Before looping through all ghost behaviours, set all ghosts who 
             // are going to teleport into the teleporting state
             foreach (Ghost ghost in ghosts)
@@ -2693,54 +2756,173 @@ namespace Pacman_Projection
 
             foreach (Ghost ghost in ghosts)
             {
+                if (ghost.Template.Equals(GhostTemplate.Pinky))
+                {
+
+                }
+
+                // If a ghost is inside the ghost house but hasn't updated it's target, update it
+                if (ghost.ExitingGhostHouse && (ghost.TargetPosX != GhostConstants.OutOfHouseIndex[0] && ghost.TargetPosY != GhostConstants.OutOfHouseIndex[1]))
+                {
+                    ghost.SetTarget(GhostConstants.OutOfHouseIndex);
+                    continue;
+                }
+
+                // After reaching the OutOfHouseIndex the ghost is no longer inside the ghost house
+                if (ghost.CurrentPosX == GhostConstants.OutOfHouseIndex[0] && ghost.CurrentPosY == GhostConstants.OutOfHouseIndex[1] && ghost.ExitingGhostHouse)
+                {
+                    ghost.ExitingGhostHouse = false;
+                    ghost.BehaviourOverridden = false;
+                    ghost.SetBehaviour(currentGlobalBehaviour);
+                    UpdateGhostTarget(ghost);
+                }
+                
                 switch (ghost.CurrentState)
                 {
                     case EntityState.Standard:
+                        
                         switch (ghost.CurrentDirection)
                         {
                             case Direction.Left:
-                                if (CheckForTeleporter(ghost))
-                                {
-                                    ghost.SetState(EntityState.Teleporting); 
-                                    break;
-                                }
-                                else if (!CheckForPacman(ghost))
+                                if (!CheckForPacman(ghost))
                                 {
                                     if (!CheckForWall(ghost))
                                     {
                                         ghost.box.Left -= step;
                                     }
-                                    else
+
+                                    // Get all available directions the ghost can move in from its current position
+                                    var directions = CheckForDirections(ghost);
+
+                                    // Create a dictionary to hold the distances for each possible path
+                                    Dictionary<PossiblePaths, KeyValuePair<TeleportSide, double>> distancesToTarget = new Dictionary<PossiblePaths, KeyValuePair<TeleportSide, double>>();
+
+                                    // Use a "testGhost" to measure distances to the ghost's target tile in each direction the ghost can move in
+                                    Ghost testGhost = new Ghost(GhostTemplate.TestGhost);
+                                    testGhost.box.Size = ghost.box.Size;
+                                    testGhost.box.Location = ghost.box.Location;
+                                    Controls.Add(testGhost.box);
+
+                                    testGhost.navBox.Size = ghost.navBox.Size;
+                                    Controls.Add(testGhost.navBox);
+
+                                    if (directions[Direction.Up])
                                     {
-                                        NewDirection(ghost);
-                                        UpdateGhostTarget(ghost);
+                                        testGhost.box.Top -= step;
+                                        testGhost.UpdateLocation();
+
+                                        distancesToTarget[PossiblePaths.Up] = new KeyValuePair<TeleportSide, double>(TeleportSide.None, CalculateDistanceToTarget(testGhost.CurrentPos, ghost.TargetPos));  
+                                            
+                                        var distanceThroughClosestPortal = CalculateDistanceToTargetThroughPortal(testGhost.CurrentPos, ghost.TargetPos);
+                                        distancesToTarget[PossiblePaths.UpThroughPortal] = new KeyValuePair<TeleportSide, double>(distanceThroughClosestPortal.leftOrRightPortal, distanceThroughClosestPortal.distance);
+
+                                        testGhost.box.Top += step;
+                                        testGhost.UpdateLocation();
                                     }
+                                    if (directions[Direction.Down])
+                                    {
+                                        testGhost.box.Top += step;
+                                        testGhost.UpdateLocation();
+
+                                        distancesToTarget[PossiblePaths.Down] = new KeyValuePair<TeleportSide, double>(TeleportSide.None, CalculateDistanceToTarget(testGhost.CurrentPos, ghost.TargetPos));
+
+                                        var distanceThroughClosestPortal = CalculateDistanceToTargetThroughPortal(testGhost.CurrentPos, ghost.TargetPos);
+                                        distancesToTarget[PossiblePaths.DownThroughPortal] = new KeyValuePair<TeleportSide, double>(distanceThroughClosestPortal.leftOrRightPortal, distanceThroughClosestPortal.distance);
+
+                                        testGhost.UpdateLocation();
+                                        testGhost.box.Top -= step;
+                                    }
+                                    if (directions[Direction.Left])
+                                    {
+                                        testGhost.box.Left -= step;
+                                        testGhost.UpdateLocation();
+
+                                        distancesToTarget[PossiblePaths.Left] = new KeyValuePair<TeleportSide, double>(TeleportSide.None, CalculateDistanceToTarget(testGhost.CurrentPos, ghost.TargetPos));
+
+                                        var distanceThroughClosestPortal = CalculateDistanceToTargetThroughPortal(testGhost.CurrentPos, ghost.TargetPos);
+                                        distancesToTarget[PossiblePaths.LeftThroughPortal] = new KeyValuePair<TeleportSide, double>(distanceThroughClosestPortal.leftOrRightPortal, distanceThroughClosestPortal.distance);
+                                    }
+
+                                    testGhost.box.Dispose();
+                                    Controls.Remove(testGhost.box);
+
+                                    var path = GetPathToFollow(ghost.CurrentDirection, distancesToTarget);
+                                    ghost.SetPath(path.pathToTake, path.portalToTake);
                                 }
-                                else if (!ghost.Frightened)
+                                else if (!ghost.CurrentBehaviour.Equals(GhostBehaviour.Frightened))
                                 {
                                     ghost.box.Left -= step;
                                     Game(false);
                                 }
                                 break;
                             case Direction.Right:
-                                if (CheckForTeleporter(ghost))
-                                {
-                                    ghost.SetState(EntityState.Teleporting);
-                                    break;
-                                }
-                                else if (!CheckForPacman(ghost))
+                                if (!CheckForPacman(ghost))
                                 {
                                     if (!CheckForWall(ghost))
                                     {
                                         ghost.box.Left += step;
                                     }
-                                    else
+
+                                    // Get all available directions the ghost can move in from its current position
+                                    var directions = CheckForDirections(ghost);
+
+                                    // Create a dictionary to hold the distances for each possible path
+                                    Dictionary<PossiblePaths, KeyValuePair<TeleportSide, double>> distancesToTarget = new Dictionary<PossiblePaths, KeyValuePair<TeleportSide, double>>();
+
+                                    // Use a "testGhost" to measure distances to the ghost's target tile in each direction the ghost can move in
+                                    Ghost testGhost = new Ghost(GhostTemplate.TestGhost);
+                                    testGhost.box.Size = ghost.box.Size;
+                                    testGhost.box.Location = ghost.box.Location;
+                                    testGhost.UpdateLocation();
+                                    Controls.Add(testGhost.box);
+
+                                    testGhost.navBox.Size = ghost.navBox.Size;
+                                    Controls.Add(testGhost.navBox);
+
+                                    if (directions[Direction.Up])
                                     {
-                                        NewDirection(ghost);
-                                        UpdateGhostTarget(ghost);
+                                        testGhost.box.Top -= step;
+                                        testGhost.UpdateLocation();
+
+                                        distancesToTarget[PossiblePaths.Up] = new KeyValuePair<TeleportSide, double>(TeleportSide.None, CalculateDistanceToTarget(testGhost.CurrentPos, ghost.TargetPos));
+
+                                        var distanceThroughClosestPortal = CalculateDistanceToTargetThroughPortal(testGhost.CurrentPos, ghost.TargetPos);
+                                        distancesToTarget[PossiblePaths.UpThroughPortal] = new KeyValuePair<TeleportSide, double>(distanceThroughClosestPortal.leftOrRightPortal, distanceThroughClosestPortal.distance);
+
+                                        testGhost.box.Top += step;
+                                        testGhost.UpdateLocation();
                                     }
+                                    if (directions[Direction.Down])
+                                    {
+                                        testGhost.box.Top += step;
+                                        testGhost.UpdateLocation();
+
+                                        distancesToTarget[PossiblePaths.Down] = new KeyValuePair<TeleportSide, double>(TeleportSide.None, CalculateDistanceToTarget(testGhost.CurrentPos, ghost.TargetPos));
+
+                                        var distanceThroughClosestPortal = CalculateDistanceToTargetThroughPortal(testGhost.CurrentPos, ghost.TargetPos);
+                                        distancesToTarget[PossiblePaths.DownThroughPortal] = new KeyValuePair<TeleportSide, double>(distanceThroughClosestPortal.leftOrRightPortal, distanceThroughClosestPortal.distance);
+
+                                        testGhost.box.Top -= step;
+                                        testGhost.UpdateLocation();
+                                    }
+                                    if (directions[Direction.Right])
+                                    {
+                                        testGhost.box.Left += step;
+                                        testGhost.UpdateLocation();
+
+                                        distancesToTarget[PossiblePaths.Right] = new KeyValuePair<TeleportSide, double>(TeleportSide.None, CalculateDistanceToTarget(testGhost.CurrentPos, ghost.TargetPos));
+
+                                        var distanceThroughClosestPortal = CalculateDistanceToTargetThroughPortal(testGhost.CurrentPos, ghost.TargetPos);
+                                        distancesToTarget[PossiblePaths.DownThroughPortal] = new KeyValuePair<TeleportSide, double>(distanceThroughClosestPortal.leftOrRightPortal, distanceThroughClosestPortal.distance);
+                                    }
+
+                                    testGhost.box.Dispose();
+                                    Controls.Remove(testGhost.box);
+
+                                    var path = GetPathToFollow(ghost.CurrentDirection, distancesToTarget);
+                                    ghost.SetPath(path.pathToTake, path.portalToTake);
                                 }
-                                else if (!ghost.Frightened)
+                                else if (!ghost.CurrentBehaviour.Equals(GhostBehaviour.Frightened))
                                 {
                                     ghost.box.Left += step;
                                     Game(false);
@@ -2753,13 +2935,67 @@ namespace Pacman_Projection
                                     {
                                         ghost.box.Top -= step;
                                     }
-                                    else
+
+                                    // Get all available directions the ghost can move in from its current position
+                                    var directions = CheckForDirections(ghost);
+
+                                    // Create a dictionary to hold the distances for each possible path
+                                    Dictionary<PossiblePaths, KeyValuePair<TeleportSide, double>> distancesToTarget = new Dictionary<PossiblePaths, KeyValuePair<TeleportSide, double>>();
+
+                                    // Use a "testGhost" to measure distances to the ghost's target tile in each direction the ghost can move in
+                                    Ghost testGhost = new Ghost(GhostTemplate.TestGhost);
+                                    testGhost.box.Size = ghost.box.Size;
+                                    testGhost.box.Location = ghost.box.Location;
+                                    testGhost.UpdateLocation();
+                                    Controls.Add(testGhost.box);
+
+                                    testGhost.navBox.Size = ghost.navBox.Size;
+                                    Controls.Add(testGhost.navBox);
+
+                                    if (directions[Direction.Up])
                                     {
-                                        NewDirection(ghost);
-                                        UpdateGhostTarget(ghost);
+                                        testGhost.box.Top -= step;
+                                        testGhost.UpdateLocation();
+
+                                        distancesToTarget[PossiblePaths.Up] = new KeyValuePair<TeleportSide, double>(TeleportSide.None, CalculateDistanceToTarget(testGhost.CurrentPos, ghost.TargetPos));
+
+                                        var distanceThroughClosestPortal = CalculateDistanceToTargetThroughPortal(testGhost.CurrentPos, ghost.TargetPos);
+                                        distancesToTarget[PossiblePaths.UpThroughPortal] = new KeyValuePair<TeleportSide, double>(distanceThroughClosestPortal.leftOrRightPortal, distanceThroughClosestPortal.distance);
+
+                                        testGhost.box.Top += step;
+                                        testGhost.UpdateLocation();
                                     }
+                                    if (directions[Direction.Right])
+                                    {
+                                        testGhost.box.Left += step;
+                                        testGhost.UpdateLocation();
+
+                                        distancesToTarget[PossiblePaths.Right] = new KeyValuePair<TeleportSide, double>(TeleportSide.None, CalculateDistanceToTarget(testGhost.CurrentPos, ghost.TargetPos));
+
+                                        var distanceThroughClosestPortal = CalculateDistanceToTargetThroughPortal(testGhost.CurrentPos, ghost.TargetPos);
+                                        distancesToTarget[PossiblePaths.RightThroughPortal] = new KeyValuePair<TeleportSide, double>(distanceThroughClosestPortal.leftOrRightPortal, distanceThroughClosestPortal.distance);
+
+                                        testGhost.box.Left -= step;
+                                        testGhost.UpdateLocation();
+                                    }
+                                    if (directions[Direction.Left])
+                                    {
+                                        testGhost.box.Left -= step;
+                                        testGhost.UpdateLocation();
+
+                                        distancesToTarget[PossiblePaths.Left] = new KeyValuePair<TeleportSide, double>(TeleportSide.None, CalculateDistanceToTarget(testGhost.CurrentPos, ghost.TargetPos));
+
+                                        var distanceThroughClosestPortal = CalculateDistanceToTargetThroughPortal(testGhost.CurrentPos, ghost.TargetPos);
+                                        distancesToTarget[PossiblePaths.LeftThroughPortal] = new KeyValuePair<TeleportSide, double>(distanceThroughClosestPortal.leftOrRightPortal, distanceThroughClosestPortal.distance);
+                                    }
+
+                                    testGhost.box.Dispose();
+                                    Controls.Remove(testGhost.box);
+
+                                    var path = GetPathToFollow(ghost.CurrentDirection, distancesToTarget);
+                                    ghost.SetPath(path.pathToTake, path.portalToTake);
                                 }
-                                else if (!ghost.Frightened)
+                                else if (!ghost.CurrentBehaviour.Equals(GhostBehaviour.Frightened))
                                 {
                                     ghost.box.Top -= step;
                                     Game(false);
@@ -2772,22 +3008,77 @@ namespace Pacman_Projection
                                     {
                                         ghost.box.Top += step;
                                     }
-                                    else
+
+                                    // Get all available directions the ghost can move in from its current position
+                                    var directions = CheckForDirections(ghost);
+
+                                    // Create a dictionary to hold the distances for each possible path
+                                    Dictionary<PossiblePaths, KeyValuePair<TeleportSide, double>> distancesToTarget = new Dictionary<PossiblePaths, KeyValuePair<TeleportSide, double>>();
+
+                                    // Use a "testGhost" to measure distances to the ghost's target tile in each direction the ghost can move in
+                                    Ghost testGhost = new Ghost(GhostTemplate.TestGhost);
+                                    testGhost.box.Size = ghost.box.Size;
+                                    testGhost.box.Location = ghost.box.Location;
+                                    testGhost.UpdateLocation();
+                                    Controls.Add(testGhost.box);
+
+                                    testGhost.navBox.Size = ghost.navBox.Size;
+                                    Controls.Add(testGhost.navBox);
+
+                                    if (directions[Direction.Down])
                                     {
-                                        NewDirection(ghost);
-                                        UpdateGhostTarget(ghost);
+                                        testGhost.box.Top += step;
+                                        testGhost.UpdateLocation();
+
+                                        distancesToTarget[PossiblePaths.Down] = new KeyValuePair<TeleportSide, double>(TeleportSide.None, CalculateDistanceToTarget(testGhost.CurrentPos, ghost.TargetPos));
+
+                                        var distanceThroughClosestPortal = CalculateDistanceToTargetThroughPortal(testGhost.CurrentPos, ghost.TargetPos);
+                                        distancesToTarget[PossiblePaths.DownThroughPortal] = new KeyValuePair<TeleportSide, double>(distanceThroughClosestPortal.leftOrRightPortal, distanceThroughClosestPortal.distance);
+
+                                        testGhost.box.Top -= step;
+                                        testGhost.UpdateLocation();
                                     }
+                                    if (directions[Direction.Left])
+                                    {
+                                        testGhost.box.Left -= step;
+                                        testGhost.UpdateLocation();
+
+                                        distancesToTarget[PossiblePaths.Left] = new KeyValuePair<TeleportSide, double>(TeleportSide.None, CalculateDistanceToTarget(testGhost.CurrentPos, ghost.TargetPos));
+
+                                        var distanceThroughClosestPortal = CalculateDistanceToTargetThroughPortal(testGhost.CurrentPos, ghost.TargetPos);
+                                        distancesToTarget[PossiblePaths.LeftThroughPortal] = new KeyValuePair<TeleportSide, double>(distanceThroughClosestPortal.leftOrRightPortal, distanceThroughClosestPortal.distance);
+
+                                        testGhost.box.Left += step;
+                                        testGhost.UpdateLocation();
+                                    }
+                                    if (directions[Direction.Right])
+                                    {
+                                        testGhost.box.Left += step;
+                                        testGhost.UpdateLocation();
+
+                                        distancesToTarget[PossiblePaths.Right] = new KeyValuePair<TeleportSide, double>(TeleportSide.None, CalculateDistanceToTarget(testGhost.CurrentPos, ghost.TargetPos));
+
+                                        var distanceThroughClosestPortal = CalculateDistanceToTargetThroughPortal(testGhost.CurrentPos, ghost.TargetPos);
+                                        distancesToTarget[PossiblePaths.RightThroughPortal] = new KeyValuePair<TeleportSide, double>(distanceThroughClosestPortal.leftOrRightPortal, distanceThroughClosestPortal.distance);
+                                    }
+
+                                    testGhost.box.Dispose();
+                                    Controls.Remove(testGhost.box);
+
+                                    var path = GetPathToFollow(ghost.CurrentDirection, distancesToTarget);
+                                    ghost.SetPath(path.pathToTake, path.portalToTake);
                                 }
-                                else if (!ghost.Frightened)
+                                else if (!ghost.CurrentBehaviour.Equals(GhostBehaviour.Frightened))
                                 {
                                     ghost.box.Top += step;
                                     Game(false);
                                 }
                                 break;
                         }
+                        
                         break;
                     case EntityState.Teleporting:
-                        if (ghost.CurrentDirection.Equals(Direction.Left)) 
+                        if (ghost.CurrentDirection.Equals(Direction.Left))
                         {
                             ghost.box.Left -= step;
 
@@ -2804,7 +3095,7 @@ namespace Pacman_Projection
 
                             // If the ghost is fully inside the teleporter box (going to teleport) or if it has 
                             // teleported (going out of teleporter) either teleport or check if the ghost is out of the teleporter
-                            if (ghost.BlocksIntoTeleporter.Equals(GameConstants.maxStepsIntoTeleporter) || ghost.Teleported)
+                            if (ghost.BlocksIntoTeleporter.Equals(GameConstants.MaxStepsIntoTeleporter) || ghost.Teleported)
                             {
                                 // If the ghost has teleported, it is now exiting the teleporter
                                 // If the ghost is out of the teleporter, it's state should switch back to standard
@@ -2843,7 +3134,7 @@ namespace Pacman_Projection
 
                             // If the ghost is fully inside the teleporter box (going to teleport) or if it has 
                             // teleported (going out of teleporter) either teleport or check if the ghost is out of the teleporter
-                            if (ghost.BlocksIntoTeleporter.Equals(GameConstants.maxStepsIntoTeleporter) || ghost.Teleported)
+                            if (ghost.BlocksIntoTeleporter.Equals(GameConstants.MaxStepsIntoTeleporter) || ghost.Teleported)
                             {
                                 // If the ghost has teleported, it is now exiting the teleporter
                                 // If the ghost is out of the teleporter, it's state should switch back to standard
@@ -2860,16 +3151,431 @@ namespace Pacman_Projection
                                 // If the ghost hasn't teleported yet, but is in the teleporting state, teleport it
                                 if (!ghost.Teleported && ghost.CurrentState.Equals(EntityState.Teleporting))
                                 {
-                                    ghost.box.Left = -boxSize*2;
+                                    ghost.box.Left = -boxSize * 2;
                                     ghost.Teleported = true;
                                 }
                             }
                         }
                         break;
-                    case EntityState.Eaten:
-                        UpdateGhostTarget(ghost, GhostConstants.ReturnIndex);
+                }
+
+                // All entities pass over (in front of) the fruit box
+                if (ghost.box.Bounds.IntersectsWith(fruitBox.Bounds))
+                {
+                    ghost.box.BringToFront();
+                }
+            }
+
+            // After looping through each ghost, update the ghost lists so
+            // each ghost moves according to the appropriate timer
+            UpdateGhostLists();
+        }
+
+        private void ghostFrightenedTickTimer_Tick(object sender, EventArgs e)
+        {
+            // Before looping through all frightened ghosts, set all ghosts who 
+            // are going to teleport into the teleporting state
+            foreach (Ghost ghost in ghostsFrightened)
+            {
+                if (CheckForTeleporter(ghost))
+                {
+                    ghost.SetState(EntityState.Teleporting);
+                }
+            }
+
+            foreach (Ghost ghost in ghostsFrightened)
+            {
+                switch (ghost.CurrentState)
+                {
+                    case EntityState.Standard:
+                        // Get all available directions the ghost can move in from its current position
+                        var directions = CheckForDirections(ghost);
+                        List<Direction> possibleDirections = new List<Direction>();
+                        foreach (var direction in directions)
+                        {
+                            // If a direction is available, add it to the possibleDirections list
+                            if (direction.Value == true)
+                            {
+                                possibleDirections.Add(direction.Key);
+                            }
+                        }
+
+                        // Only choose a new direction if there are multiple available directions
+                        if (possibleDirections.Count > 1)
+                        {
+                            // Randomly choose one of the available directions to move in
+                            int random = new Random().Next(0, possibleDirections.Count);
+                            switch (random)
+                            {
+                                case 0:
+                                    ghost.SetDirection(possibleDirections[0]);
+                                    break;
+                                case 1:
+                                    ghost.SetDirection(possibleDirections[1]);
+                                    break;
+                                case 2:
+                                    ghost.SetDirection(possibleDirections[2]);
+                                    break;
+                            }
+
+                            switch (ghost.CurrentDirection)
+                            {
+                                case Direction.Left:
+                                    ghost.box.Left -= step;
+                                    break;
+                                case Direction.Right:
+                                    ghost.box.Left += step;
+                                    break;
+                                case Direction.Up:
+                                    ghost.box.Top -= step;
+                                    break;
+                                case Direction.Down:
+                                    ghost.box.Top += step;
+                                    break;
+                            }
+                        }
+                        else if (possibleDirections.Count == 1)
+                        {
+                            // If the ghost isn't already moving in the only possible direction, change it
+                            if (!ghost.CurrentDirection.Equals(possibleDirections[0]))
+                            {
+                                ghost.SetDirection(possibleDirections[0]);
+                            }
+
+                            switch (ghost.CurrentDirection)
+                            {
+                                case Direction.Left:
+                                    ghost.box.Left -= step;
+                                    break;
+                                case Direction.Right:
+                                    ghost.box.Left += step;
+                                    break;
+                                case Direction.Up:
+                                    ghost.box.Top -= step;
+                                    break;
+                                case Direction.Down:
+                                    ghost.box.Top += step;
+                                    break;
+                            }
+                        }
+                        break;
+                    case EntityState.Teleporting:
+                        if (ghost.CurrentDirection.Equals(Direction.Left))
+                        {
+                            ghost.box.Left -= step;
+
+                            if (!ghost.Teleported)
+                            {
+                                // If the ghost has not teleported yet, it is entering the teleporter
+                                ghost.BlocksIntoTeleporter++;
+                            }
+                            else
+                            {
+                                // Otherwise, the ghost has teleported and is exiting the teleporter instead
+                                ghost.BlocksIntoTeleporter--;
+                            }
+
+                            // If the ghost is fully inside the teleporter box (going to teleport) or if it has 
+                            // teleported (going out of teleporter) either teleport or check if the ghost is out of the teleporter
+                            if (ghost.BlocksIntoTeleporter.Equals(GameConstants.MaxStepsIntoTeleporter) || ghost.Teleported)
+                            {
+                                // If the ghost has teleported, it is now exiting the teleporter
+                                // If the ghost is out of the teleporter, it's state should switch back to standard
+                                if (ghost.Teleported && ghost.BlocksIntoTeleporter == 0)
+                                {
+                                    ghost.SetState(EntityState.Standard);
+                                    ghost.Teleported = false;
+
+                                    // Update the ghost's standard positions manually when exiting teleporting state
+                                    // so all collision logic works as intended again
+                                    ghost.UpdateStandardPositions();
+                                }
+
+                                // If ghost hasn't teleported yet, but is in the teleporting state, teleport it
+                                if (!ghost.Teleported && ghost.CurrentState.Equals(EntityState.Teleporting))
+                                {
+                                    ghost.box.Left = boxes_Horizontally * boxSize;
+                                    ghost.Teleported = true;
+                                }
+                            }
+                        }
+                        else if (ghost.CurrentDirection.Equals(Direction.Right))
+                        {
+                            ghost.box.Left += step;
+
+                            if (!ghost.Teleported)
+                            {
+                                // If the ghost has not teleported yet, it is entering the teleporter
+                                ghost.BlocksIntoTeleporter++;
+                            }
+                            else
+                            {
+                                // Otherwise, the ghost has teleported and is exiting the teleporter instead
+                                ghost.BlocksIntoTeleporter--;
+                            }
+
+                            // If the ghost is fully inside the teleporter box (going to teleport) or if it has 
+                            // teleported (going out of teleporter) either teleport or check if the ghost is out of the teleporter
+                            if (ghost.BlocksIntoTeleporter.Equals(GameConstants.MaxStepsIntoTeleporter) || ghost.Teleported)
+                            {
+                                // If the ghost has teleported, it is now exiting the teleporter
+                                // If the ghost is out of the teleporter, it's state should switch back to standard
+                                if (ghost.Teleported && ghost.BlocksIntoTeleporter == 0)
+                                {
+                                    ghost.SetState(EntityState.Standard);
+                                    ghost.Teleported = false;
+
+                                    // Update the ghost's standard positions manually when exiting teleporting state
+                                    // so all collision logic works as intended again
+                                    ghost.UpdateStandardPositions();
+                                }
+
+                                // If the ghost hasn't teleported yet, but is in the teleporting state, teleport it
+                                if (!ghost.Teleported && ghost.CurrentState.Equals(EntityState.Teleporting))
+                                {
+                                    ghost.box.Left = -boxSize * 2;
+                                    ghost.Teleported = true;
+                                }
+                            }
+                        }
                         break;
                 }
+
+                // All entities pass ove (in front of) the fruit box
+                if (ghost.box.Bounds.IntersectsWith(fruitBox.Bounds))
+                {
+                    ghost.box.BringToFront();
+                }
+            }
+
+            if (currentEatGhostDuration > 0)
+            {
+                currentEatGhostDuration -= GhostConstants.BlinkDuration;
+
+                // If all frightened ghosts have been eaten (a ghost can only be eaten once per frightened mode), exit frightened mode
+                if (currentEatGhostDuration <= 0 || ghostsFrightened.Count == 0)
+                {
+                    currentEatGhostDuration = 0;
+
+                    // Update the highestGhostCombo if a new max has been reached
+                    if (ghostsEatenDuringPeriod > globalVariables.HighestGhostCombo)
+                    {
+                        globalVariables.HighestGhostCombo = ghostsEatenDuringPeriod;
+                    }
+                    ghostsEatenDuringPeriod = 0;
+
+                    if (mostRecentGlobalBehaviour.Equals(GhostBehaviour.Scatter))
+                    {
+                        // Override all standard behaviours to scatter after exiting frightened mode
+                        SetGhosts_Scatter(true);
+                    }
+                    else if (mostRecentGlobalBehaviour.Equals(GhostBehaviour.Chase))
+                    {
+                        // Override all standard behaviours to chase after exiting frightened mode
+                        SetGhosts_Chase(true);
+                    }
+
+                    foreach (Ghost ghost in ghosts)
+                    {
+                        ghost.White = false;
+                        ghost.HasBeenEaten = false;
+                    }
+                    ghostsToBlink = false;
+
+                    ghostBehaviourTimeTimer.Start();
+                }
+            }
+
+            if (currentGlobalBehaviour.Equals(GhostBehaviour.Frightened))
+            {
+                if (currentEatGhostDuration <= (GhostConstants.BlinkDuration * GhostConstants.TimesToBlink) || ghostsToBlink)
+                {
+                    ghostsToBlink = true;
+                    foreach (Ghost ghost in ghostsFrightened)
+                    {
+                        if (currentEatGhostDuration / GhostConstants.BlinkDuration % 2 == 0)
+                        {
+                            ghost.White = true;
+                        }
+                        else
+                        {
+                            ghost.White = false;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns the distance between two tiles.
+        /// </summary
+        double CalculateDistanceToTarget(int[] position, int[] targetPosition)
+        {
+            return Math.Sqrt((position[0] - targetPosition[0]) * (position[0]- targetPosition[0]) + (position[1] - targetPosition[1]) * (position[1] - targetPosition[1])); 
+        }
+
+        /// <summary>
+        /// Returns the distance between two tiles if the entity were to pass through the portal closest to it first.
+        /// </summary>
+        (double distance, TeleportSide leftOrRightPortal) CalculateDistanceToTargetThroughPortal(int[] position, int[] targetPosition)
+        {
+            int[] portalPos = new int[2];
+            TeleportSide leftOrRightPortal;
+
+            // Determine which portal is closer
+            double distanceToLeftPortal = Math.Sqrt((position[0] - GameConstants.TeleporterLeftIndex[0]) * (position[0] - GameConstants.TeleporterLeftIndex[0]) + (position[1] - GameConstants.TeleporterLeftIndex[1]) * (position[1] - GameConstants.TeleporterLeftIndex[1]));
+            double distanceToRightPortal = Math.Sqrt((position[0] - GameConstants.TeleporterRightIndex[0]) * (position[0] - GameConstants.TeleporterRightIndex[0]) + (position[1] - GameConstants.TeleporterRightIndex[1]) * (position[1] - GameConstants.TeleporterRightIndex[1]));
+
+            if (distanceToLeftPortal < distanceToRightPortal)
+            {
+                leftOrRightPortal = TeleportSide.Left;
+            }
+            else 
+            {
+                leftOrRightPortal = TeleportSide.Right;
+            }
+
+
+            // Get the index of the closest portal
+            if (leftOrRightPortal.Equals(TeleportSide.Left))
+            {
+                portalPos[0] = GameConstants.TeleporterLeftIndex[0];
+                portalPos[1] = GameConstants.TeleporterLeftIndex[1];
+            }
+            else
+            {
+                portalPos[0] = GameConstants.TeleporterRightIndex[0];
+                portalPos[1] = GameConstants.TeleporterRightIndex[0];
+            }
+
+            // Calculate the distance to the portal
+            double distanceToPortal = Math.Sqrt((position[0] - portalPos[0]) * (position[0] - portalPos[0]) + (position[1] - portalPos[1]) * (position[1] - portalPos[1]));
+
+            // Calculate the distance from the portal to the target tile
+            double distanceToTarget = Math.Sqrt((portalPos[0] - targetPosition[0]) * (portalPos[0] - targetPosition[0]) + (portalPos[1] - targetPosition[1]) * (portalPos[1] - targetPosition[1]));
+
+            // Return the total distance along with which portal was used
+            return (distanceToPortal + distanceToTarget, leftOrRightPortal);
+        }
+
+        /// <summary>
+        /// Returns the path (through a portal or not) the entity should follow to reach its target 
+        /// tile the fastest, moving to the tile the shortest distance fom its target.
+        /// </summary>
+        (PossiblePaths pathToTake, TeleportSide portalToTake) GetPathToFollow(Direction currentDirection, Dictionary<PossiblePaths, KeyValuePair<TeleportSide, double>> distancesToTarget)
+        {
+            // Hierarchy: Up > UpThroughPortal > Down > DownThroughPortal > Left > LeftThroughPortal > Right > RightThroughPortal
+
+            if (distancesToTarget.Count() == 1)
+            {
+                return (distancesToTarget.First().Key, distancesToTarget.First().Value.Key);
+            }
+            else
+            {
+                // Variable to hold the path with the currently shortest distance
+                KeyValuePair<PossiblePaths, KeyValuePair<TeleportSide, double>> shortestDistancePath = new KeyValuePair<PossiblePaths, KeyValuePair<TeleportSide, double>>();
+
+                // Create a list for holding the paths with same distances to the target to be chosen based according to the hierarchy
+                List<KeyValuePair<PossiblePaths, KeyValuePair<TeleportSide, double>>> sameDistancePaths = new List<KeyValuePair<PossiblePaths, KeyValuePair<TeleportSide, double>>>();
+
+                // Update the shortestDistancePath each time a path with a shorter distance to the target tile is found
+                foreach (var path in distancesToTarget)
+                {
+                    if (path.Value.Value < shortestDistancePath.Value.Value || shortestDistancePath.Value.Value == 0)
+                    {
+                        shortestDistancePath = new KeyValuePair<PossiblePaths, KeyValuePair<TeleportSide, double>>(path.Key, path.Value);
+                    }
+                    else if (path.Value.Value == shortestDistancePath.Value.Value)
+                    {
+                        // Add the element with the same distance to the list
+                        sameDistancePaths.Add(path);
+                    }
+                }
+
+                // If the shortestDistancePath's distance is shorter than any previously 
+                // same distance in the sameDistancePaths list, remove them as no longer are the same
+                // The only elements left in sameDistancePaths is thus paths with the shortest, and same, distance
+
+                // Identify all paths to be removed
+                List<int> sameDistanceIndexexToRemove = new List<int>();
+                foreach (var path in sameDistancePaths)
+                {
+                    sameDistanceIndexexToRemove.Add(sameDistancePaths.IndexOf(path));
+                }
+                // Remove all identified indexes from sameDistancePaths
+                foreach (int index in  sameDistanceIndexexToRemove)
+                {
+                    try
+                    {
+                        var temp = sameDistancePaths[index];
+                        sameDistancePaths.RemoveAt(index);
+                    }
+                    catch { }
+                }
+
+                if (sameDistancePaths.Count == 0)
+                {
+                    // If there is no other path left with the same distance, return the shortest one
+                    return (shortestDistancePath.Key, shortestDistancePath.Value.Key);
+                }
+                else // There can only be two paths with the same distance at a time
+                { 
+                    var pathA = shortestDistancePath.Key;
+                    var pathAIndex = GetHierarchyIndexOfPath(pathA);
+
+                    var pathB = sameDistancePaths[0].Key;
+                    var pathBIndex = GetHierarchyIndexOfPath(pathB);    
+
+                    // The distances for both paths should be the same
+                    var pathADistance = shortestDistancePath.Value.Value;
+                    var pathBDistance = sameDistancePaths[0].Value.Value;
+
+                    var pathATeleportSide = shortestDistancePath.Value.Key;
+                    var pathBTeleportSide = shortestDistancePath.Value.Key;
+
+
+                    // The smallest pathIndex has the highest priority when both path-distances are the same
+                    if (pathAIndex < pathBIndex)
+                    {
+                        return (pathA, pathATeleportSide);
+                    }
+                    else
+                    {
+                        return (pathB, pathBTeleportSide);
+                    }
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Returns an integer indicating where in the hierarchy a path has it's place. The lower the integer, the higher the priority. 
+        /// </summary>
+        private int GetHierarchyIndexOfPath(PossiblePaths path)
+        {
+            switch (path)
+            {
+                case PossiblePaths.Up:
+                    return 0;
+                case PossiblePaths.UpThroughPortal:
+                    return 1;
+
+                case PossiblePaths.Down:
+                    return 2;
+                case PossiblePaths.DownThroughPortal:
+                    return 3;
+
+                case PossiblePaths.Left:
+                    return 4;
+                case PossiblePaths.LeftThroughPortal:
+                    return 5;
+
+                case PossiblePaths.Right:
+                    return 6;
+                case PossiblePaths.RightThroughPortal:
+                    return 7;
+                default:
+                    return int.MaxValue;
             }
         }
 
@@ -2879,116 +3585,726 @@ namespace Pacman_Projection
             {
                 if (ghost.CurrentState.Equals(EntityState.Eaten))
                 { 
-                    switch (ghost.CurrentDirection)
+                    if (ghost.CurrentDirection.Equals(Direction.Left))
                     {
-                        case Direction.Left:
-                            if (!CheckForWall(ghost))
+                        // Don't check for gate if ghost is eaten
+                        if (!CheckForWall(ghost) && CheckForEntry(ghost, ghost.CurrentDirection))
+                        {
+                            ghost.box.Left -= step;
+                        }
+
+                        // If an eaten ghost's is at the OutOfHouseIndex, it is entering the house and only needs to go straight down to reach the returnIndex
+                        if (ghost.CurrentPosX == GhostConstants.OutOfHouseIndex[0] && ghost.CurrentPosY == GhostConstants.OutOfHouseIndex[1])
+                        {
+                            ghost.EnteringGhostHouse = true;
+                        }
+                        else if (!ghost.EnteringGhostHouse)
+                        {
+                            // Get all available directions the ghost can move in from its current position
+                            var directions = CheckForDirections(ghost);
+
+                            // Create a dictionary to hold the distances for each possible path
+                            Dictionary<PossiblePaths, KeyValuePair<TeleportSide, double>> distancesToTarget = new Dictionary<PossiblePaths, KeyValuePair<TeleportSide, double>>();
+
+                            // Use a "testGhost" to measure distances to the ghost's target tile in each direction the ghost can move in
+                            Ghost testGhost = new Ghost(GhostTemplate.TestGhost);
+                            testGhost.box.Size = ghost.box.Size;
+                            testGhost.box.Location = ghost.box.Location;
+                            Controls.Add(testGhost.box);
+
+                            testGhost.navBox.Size = ghost.navBox.Size;
+                            Controls.Add(testGhost.navBox);
+
+                            if (directions[Direction.Up])
                             {
-                                ghost.box.Left -= step;
+                                testGhost.box.Top -= step;
+                                testGhost.UpdateLocation();
+
+                                distancesToTarget[PossiblePaths.Up] = new KeyValuePair<TeleportSide, double>(TeleportSide.None, CalculateDistanceToTarget(testGhost.CurrentPos, ghost.TargetPos));
+
+                                testGhost.box.Top += step;
+                                testGhost.UpdateLocation();
                             }
-                            break;
-                        case Direction.Right:
-                            if (!CheckForWall(ghost))
+                            if (directions[Direction.Down])
                             {
-                                ghost.box.Left += step;
+                                testGhost.box.Top += step;
+                                testGhost.UpdateLocation();
+
+                                distancesToTarget[PossiblePaths.Down] = new KeyValuePair<TeleportSide, double>(TeleportSide.None, CalculateDistanceToTarget(testGhost.CurrentPos, ghost.TargetPos));
+
+                                testGhost.UpdateLocation();
+                                testGhost.box.Top -= step;
                             }
-                            break;
-                        case Direction.Up:
-                            if (!CheckForWall(ghost))
+                            if (directions[Direction.Left])
                             {
-                                ghost.box.Top -= step;
+                                testGhost.box.Left -= step;
+                                testGhost.UpdateLocation();
+
+                                distancesToTarget[PossiblePaths.Left] = new KeyValuePair<TeleportSide, double>(TeleportSide.None, CalculateDistanceToTarget(testGhost.CurrentPos, ghost.TargetPos));
                             }
-                            break;
-                        case Direction.Down:
-                            if (!CheckForWall(ghost))
+
+                            testGhost.box.Dispose();
+                            Controls.Remove(testGhost.box);
+
+                            var path = GetPathToFollow(ghost.CurrentDirection, distancesToTarget);
+                            ghost.SetPath(path.pathToTake);
+                        }
+                        
+                        if (ghost.EnteringGhostHouse)
+                        {
+                            ghost.SetDirection(Direction.Down);
+                        }
+                    }
+                    else if (ghost.CurrentDirection.Equals(Direction.Right))
+                    {
+                        // Don't check for gate if ghost is eaten
+                        if (!CheckForWall(ghost) && CheckForEntry(ghost, ghost.CurrentDirection))
+                        {
+                            ghost.box.Left += step;
+                        }
+
+                        // If an eaten ghost's is at the OutOfHouseIndex, it is entering the house and only needs to go straight down to reach the returnIndex
+                        if (ghost.CurrentPosX == GhostConstants.OutOfHouseIndex[0] && ghost.CurrentPosY == GhostConstants.OutOfHouseIndex[1])
+                        {
+                            ghost.EnteringGhostHouse = true;
+                        }
+                        else if (!ghost.EnteringGhostHouse)
+                        {
+                            // Get all available directions the ghost can move in from its current position
+                            var directions = CheckForDirections(ghost);
+
+                            // Create a dictionary to hold the distances for each possible path
+                            Dictionary<PossiblePaths, KeyValuePair<TeleportSide, double>> distancesToTarget = new Dictionary<PossiblePaths, KeyValuePair<TeleportSide, double>>();
+
+                            // Use a "testGhost" to measure distances to the ghost's target tile in each direction the ghost can move in
+                            Ghost testGhost = new Ghost(GhostTemplate.TestGhost);
+                            testGhost.box.Size = ghost.box.Size;
+                            testGhost.box.Location = ghost.box.Location;
+                            testGhost.UpdateLocation();
+                            Controls.Add(testGhost.box);
+
+                            testGhost.navBox.Size = ghost.navBox.Size;
+                            Controls.Add(testGhost.navBox);
+
+                            if (directions[Direction.Up])
                             {
-                                ghost.box.Top += step;
-                                // The ghost has to be going down to eventually get to the return index, don't check for other directions
-                                if (ghost.CurrentPos == GhostConstants.ReturnIndex)
-                                {
-                                    ghost.SetState(EntityState.Standard);
-                                }
+                                testGhost.box.Top -= step;
+                                testGhost.UpdateLocation();
+
+                                distancesToTarget[PossiblePaths.Up] = new KeyValuePair<TeleportSide, double>(TeleportSide.None, CalculateDistanceToTarget(testGhost.CurrentPos, ghost.TargetPos));
+
+                                testGhost.box.Top += step;
+                                testGhost.UpdateLocation();
                             }
-                            break;
+                            if (directions[Direction.Down])
+                            {
+                                testGhost.box.Top += step;
+                                testGhost.UpdateLocation();
+
+                                distancesToTarget[PossiblePaths.Down] = new KeyValuePair<TeleportSide, double>(TeleportSide.None, CalculateDistanceToTarget(testGhost.CurrentPos, ghost.TargetPos));
+
+                                testGhost.box.Top -= step;
+                                testGhost.UpdateLocation();
+                            }
+                            if (directions[Direction.Right])
+                            {
+                                testGhost.box.Left += step;
+                                testGhost.UpdateLocation();
+
+                                distancesToTarget[PossiblePaths.Right] = new KeyValuePair<TeleportSide, double>(TeleportSide.None, CalculateDistanceToTarget(testGhost.CurrentPos, ghost.TargetPos));
+                            }
+
+                            testGhost.box.Dispose();
+                            Controls.Remove(testGhost.box);
+
+                            var path = GetPathToFollow(ghost.CurrentDirection, distancesToTarget);
+                            ghost.SetPath(path.pathToTake);
+                        }
+                        
+                        if (ghost.EnteringGhostHouse)
+                        {
+                            ghost.SetDirection(Direction.Down);
+                        }
+                    }
+                    else if (ghost.CurrentDirection.Equals(Direction.Up))
+                    {
+                        // Don't check for gate if ghost is eaten
+                        if (!CheckForWall(ghost) && CheckForEntry(ghost, ghost.CurrentDirection))
+                        {
+                            ghost.box.Top -= step;
+                        }
+
+                        // If an eaten ghost's is at the OutOfHouseIndex, it is entering the house and only needs to go straight down to reach the returnIndex
+                        if (ghost.CurrentPosX == GhostConstants.OutOfHouseIndex[0] && ghost.CurrentPosY == GhostConstants.OutOfHouseIndex[1])
+                        {
+                            ghost.EnteringGhostHouse = true;
+                        }
+                        else if (!ghost.EnteringGhostHouse)
+                        {
+                            // Get all available directions the ghost can move in from its current position
+                            var directions = CheckForDirections(ghost);
+
+                            // Create a dictionary to hold the distances for each possible path
+                            Dictionary<PossiblePaths, KeyValuePair<TeleportSide, double>> distancesToTarget = new Dictionary<PossiblePaths, KeyValuePair<TeleportSide, double>>();
+
+                            // Use a "testGhost" to measure distances to the ghost's target tile in each direction the ghost can move in
+                            Ghost testGhost = new Ghost(GhostTemplate.TestGhost);
+                            testGhost.box.Size = ghost.box.Size;
+                            testGhost.box.Location = ghost.box.Location;
+                            testGhost.UpdateLocation();
+                            Controls.Add(testGhost.box);
+
+                            testGhost.navBox.Size = ghost.navBox.Size;
+                            Controls.Add(testGhost.navBox);
+
+                            if (directions[Direction.Up])
+                            {
+                                testGhost.box.Top -= step;
+                                testGhost.UpdateLocation();
+
+                                distancesToTarget[PossiblePaths.Up] = new KeyValuePair<TeleportSide, double>(TeleportSide.None, CalculateDistanceToTarget(testGhost.CurrentPos, ghost.TargetPos));
+
+                                testGhost.box.Top += step;
+                                testGhost.UpdateLocation();
+                            }
+                            if (directions[Direction.Right])
+                            {
+                                testGhost.box.Left += step;
+                                testGhost.UpdateLocation();
+
+                                distancesToTarget[PossiblePaths.Right] = new KeyValuePair<TeleportSide, double>(TeleportSide.None, CalculateDistanceToTarget(testGhost.CurrentPos, ghost.TargetPos));
+
+                                testGhost.box.Left -= step;
+                                testGhost.UpdateLocation();
+                            }
+                            if (directions[Direction.Left])
+                            {
+                                testGhost.box.Left -= step;
+                                testGhost.UpdateLocation();
+
+                                distancesToTarget[PossiblePaths.Left] = new KeyValuePair<TeleportSide, double>(TeleportSide.None, CalculateDistanceToTarget(testGhost.CurrentPos, ghost.TargetPos));
+                            }
+
+                            testGhost.box.Dispose();
+                            Controls.Remove(testGhost.box);
+
+                            var path = GetPathToFollow(ghost.CurrentDirection, distancesToTarget);
+                            ghost.SetPath(path.pathToTake);
+                        }
+                        
+                        if (ghost.EnteringGhostHouse)
+                        {
+                            ghost.SetDirection(Direction.Down);
+                        }
+                    }
+                    else if (ghost.CurrentDirection.Equals(Direction.Down))
+                    {
+                        // Don't check for gate if ghost is eaten
+                        if (!CheckForWall(ghost) && CheckForEntry(ghost, ghost.CurrentDirection))
+                        {
+                            ghost.box.Top += step;
+                        }
+
+                        // If an eaten ghost's is at the OutOfHouseIndex, it is entering the house and only needs to go straight down to reach the returnIndex
+                        if (ghost.CurrentPosX == GhostConstants.OutOfHouseIndex[0] && ghost.CurrentPosY == GhostConstants.OutOfHouseIndex[1])
+                        {
+                            ghost.EnteringGhostHouse = true;
+                        }
+                        else if (!ghost.EnteringGhostHouse)
+                        {
+                            // Get all available directions the ghost can move in from its current position
+                            var directions = CheckForDirections(ghost);
+
+                            // Create a dictionary to hold the distances for each possible path
+                            Dictionary<PossiblePaths, KeyValuePair<TeleportSide, double>> distancesToTarget = new Dictionary<PossiblePaths, KeyValuePair<TeleportSide, double>>();
+
+                            // Use a "testGhost" to measure distances to the ghost's target tile in each direction the ghost can move in
+                            Ghost testGhost = new Ghost(GhostTemplate.TestGhost);
+                            testGhost.box.Size = ghost.box.Size;
+                            testGhost.box.Location = ghost.box.Location;
+                            testGhost.UpdateLocation();
+                            Controls.Add(testGhost.box);
+
+                            testGhost.navBox.Size = ghost.navBox.Size;
+                            Controls.Add(testGhost.navBox);
+
+                            if (directions[Direction.Down])
+                            {
+                                testGhost.box.Top += step;
+                                testGhost.UpdateLocation();
+
+                                distancesToTarget[PossiblePaths.Down] = new KeyValuePair<TeleportSide, double>(TeleportSide.None, CalculateDistanceToTarget(testGhost.CurrentPos, ghost.TargetPos));
+
+                                testGhost.box.Top -= step;
+                                testGhost.UpdateLocation();
+                            }
+                            if (directions[Direction.Left])
+                            {
+                                testGhost.box.Left -= step;
+                                testGhost.UpdateLocation();
+
+                                distancesToTarget[PossiblePaths.Left] = new KeyValuePair<TeleportSide, double>(TeleportSide.None, CalculateDistanceToTarget(testGhost.CurrentPos, ghost.TargetPos));
+
+                                testGhost.box.Left += step;
+                                testGhost.UpdateLocation();
+                            }
+                            if (directions[Direction.Right])
+                            {
+                                testGhost.box.Left += step;
+                                testGhost.UpdateLocation();
+
+                                distancesToTarget[PossiblePaths.Right] = new KeyValuePair<TeleportSide, double>(TeleportSide.None, CalculateDistanceToTarget(testGhost.CurrentPos, ghost.TargetPos));
+                            }
+
+                            testGhost.box.Dispose();
+                            Controls.Remove(testGhost.box);
+
+                            var path = GetPathToFollow(ghost.CurrentDirection, distancesToTarget);
+                            ghost.SetPath(path.pathToTake);
+                        }
+                        
+                        if (ghost.EnteringGhostHouse)
+                        {
+                            ghost.SetDirection(Direction.Down);
+                        }
+                    }
+
+                    // If the ghost has reached the ghost house (the return index), change its state back to standard
+                    if (ghost.CurrentPosX == GhostConstants.ReturnIndex[0] && ghost.CurrentPosY == GhostConstants.ReturnIndex[1])
+                    {
+                        ghost.SetState(EntityState.Standard);
+                        ghost.SetBehaviour(GhostBehaviour.ExitingHouse);
+
+                        // Make a list containing all currently eaten ghosts
+                        List<Ghost> eatenGhosts = ghosts.Where(g => g.CurrentState.Equals(EntityState.Eaten)).ToList();
+
+                        // If there are no more ghosts in the eaten state after this ghost has returned, stop the sound
+                        if (eatenGhosts.Count == 0)
+                        {
+                            soundManager.StopSound(Sounds.ghost_return);
+                        }
                     }
                 }
             }
         }
 
-        private void NewDirection(Ghost ghost)
+        /// <summary>
+        /// Returns a dictionary indicating which direction can be moved in.
+        /// Usually, a ghost can never turn 180 degrees, never going back the way it came.
+        /// </summary>
+        private Dictionary<Direction, bool> CheckForDirections(Ghost ghost)
         {
-            StopEntityMovement(ghost);
+            Dictionary<Direction, bool> availableDirections = new Dictionary<Direction, bool>();
 
-            Random rnd = new Random();
-            int randomInt = rnd.Next(0, 4); 
+            switch (ghost.CurrentDirection)
+            {
+                case Direction.Left:
+                    // Left
+                    if ((!CheckForWall(ghost, Direction.Left) && CheckForEntry(ghost, Direction.Left)) || CheckForTeleporter(ghost))
+                    {
+                        availableDirections.Add(Direction.Left, true);
+                    }
+                    else
+                    {
+                        availableDirections.Add(Direction.Left, false);
+                    }
 
-            if (randomInt == 0)
-            {
-                ghost.SetDirection(Direction.Left);
+                    // Ghost can not turn around (right)
+                    availableDirections.Add(Direction.Right, false);
+
+                    // Up
+                    if (!CheckForWall(ghost, Direction.Up) && CheckForEntry(ghost, Direction.Up))
+                    {
+                        availableDirections.Add(Direction.Up, true);
+                    }
+                    else
+                    {
+                        availableDirections.Add(Direction.Up, false);
+                    }
+
+                    // Down
+                    if (!ghost.CurrentState.Equals(EntityState.Eaten))
+                    {
+                        if (!CheckForWall(ghost, Direction.Down) && !CheckForGate(ghost, Direction.Down) && CheckForEntry(ghost, Direction.Down))
+                        {
+                            availableDirections.Add(Direction.Down, true);
+                        }
+                        else
+                        {
+                            availableDirections.Add(Direction.Down, false);
+                        }
+                    }
+                    else
+                    {
+                        // Entities (ghosts) that are eaten can pass through gates to return to the ghost house
+                        if (!CheckForWall(ghost, Direction.Down) && CheckForEntry(ghost, Direction.Down))
+                        {
+                            availableDirections.Add(Direction.Down, true);
+                        }
+                        else
+                        {
+                            availableDirections.Add(Direction.Down, false);
+                        }
+                    }
+                    return availableDirections;
+                case Direction.Right:
+
+                    // Ghost can not turn around (left)
+                    availableDirections.Add(Direction.Left, false);
+
+                    // Right
+                    if ((!CheckForWall(ghost, Direction.Right) && CheckForEntry(ghost, Direction.Right)) || CheckForTeleporter(ghost))
+                    {
+                        availableDirections.Add(Direction.Right, true);
+                    }
+                    else
+                    {
+                        availableDirections.Add(Direction.Right, false);
+                    }
+
+                    // Up
+                    if (!CheckForWall(ghost, Direction.Up) && CheckForEntry(ghost, Direction.Up))
+                    {
+                        availableDirections.Add(Direction.Up, true);
+                    }
+                    else
+                    {
+                        availableDirections.Add(Direction.Up, false);
+                    }
+
+                    // Down
+                    if (!ghost.CurrentState.Equals(EntityState.Eaten))
+                    {
+                        if (!CheckForWall(ghost, Direction.Down) && !CheckForGate(ghost, Direction.Down) && CheckForEntry(ghost, Direction.Down))
+                        {
+                            availableDirections.Add(Direction.Down, true);
+                        }
+                        else
+                        {
+                            availableDirections.Add(Direction.Down, false);
+                        }
+                    }
+                    else
+                    {
+                        // Entities (ghosts) that are eaten can pass through gates to return to the ghost house
+                        if (!CheckForWall(ghost, Direction.Down) && CheckForEntry(ghost, Direction.Down))
+                        {
+                            availableDirections.Add(Direction.Down, true);
+                        }
+                        else
+                        {
+                            availableDirections.Add(Direction.Down, false);
+                        }
+                    }
+                    return availableDirections;
+                case Direction.Up:
+                    // Left
+                    if ((!CheckForWall(ghost, Direction.Left) && CheckForEntry(ghost, Direction.Left)) || CheckForTeleporter(ghost))
+                    {
+                        availableDirections.Add(Direction.Left, true);
+                    }
+                    else
+                    {
+                        availableDirections.Add(Direction.Left, false);
+                    }
+
+                    // Right
+                    if ((!CheckForWall(ghost, Direction.Right) && CheckForEntry(ghost, Direction.Right)) || CheckForTeleporter(ghost))
+                    {
+                        availableDirections.Add(Direction.Right, true);
+                    }
+                    else
+                    {
+                        availableDirections.Add(Direction.Right, false);
+                    }
+
+                    // Up
+                    if (!CheckForWall(ghost, Direction.Up) && CheckForEntry(ghost, Direction.Up))
+                    {
+                        availableDirections.Add(Direction.Up, true);
+                    }
+                    else
+                    {
+                        availableDirections.Add(Direction.Up, false);
+                    }
+
+                    // Ghost can not turn around (down)
+                    availableDirections.Add(Direction.Down, false);
+
+                    return availableDirections;
+                case Direction.Down:
+                    // Left
+                    if ((!CheckForWall(ghost, Direction.Left) && CheckForEntry(ghost, Direction.Left)) || CheckForTeleporter(ghost))
+                    {
+                        availableDirections.Add(Direction.Left, true);
+                    }
+                    else
+                    {
+                        availableDirections.Add(Direction.Left, false);
+                    }
+
+                    // Right
+                    if ((!CheckForWall(ghost, Direction.Right) && CheckForEntry(ghost, Direction.Right)) || CheckForTeleporter(ghost))
+                    {
+                        availableDirections.Add(Direction.Right, true);
+                    }
+                    else
+                    {
+                        availableDirections.Add(Direction.Right, false);
+                    }
+
+                    // Ghost can not turn around (up)
+                    availableDirections.Add(Direction.Up, false);
+
+                    // Down
+                    if (!ghost.CurrentState.Equals(EntityState.Eaten))
+                    {
+                        if ((!CheckForWall(ghost, Direction.Down) && !CheckForGate(ghost, Direction.Down) && CheckForEntry(ghost, Direction.Down)) || CheckForTeleporter(ghost))
+                        {
+                            availableDirections.Add(Direction.Down, true);
+                        }
+                        else
+                        {
+                            availableDirections.Add(Direction.Down, false);
+                        }
+                    }
+                    else
+                    {
+                        // Entities (ghosts) that are eaten can pass through gates to return to the ghost house
+                        if ((!CheckForWall(ghost, Direction.Down) && CheckForEntry(ghost, Direction.Down)) || CheckForTeleporter(ghost))
+                        {
+                            availableDirections.Add(Direction.Down, true);
+                        }
+                        else
+                        {
+                            availableDirections.Add(Direction.Down, false);
+                        }
+                    }
+                    return availableDirections;
+                default:
+                    availableDirections.Add(Direction.Left, false);
+                    availableDirections.Add(Direction.Right, false);
+                    availableDirections.Add(Direction.Up, false);
+                    availableDirections.Add(Direction.Down, false);
+
+                    return availableDirections;
             }
-            else if (randomInt == 1)
+        }
+
+        private void SetGhostBhaviourToGobalBeaviour(Ghost ghost)
+        {
+            switch (currentGlobalBehaviour)
             {
-                ghost.SetDirection(Direction.Right);
+                case GhostBehaviour.Chase:
+                    ghost.SetChase();
+                    break;
+                case GhostBehaviour.Scatter:
+                    ghost.SetScatter();
+                    break;
+                case GhostBehaviour.Frightened: 
+                    ghost.SetFrightened();
+                    break;
             }
-            else if (randomInt == 2)
+        }
+
+        private void UpdateGhostLists()
+        {
+            // Add all ghosts who are no longer frightened in the frightened list to the ordinary list
+            for (int index = ghostsFrightened.Count - 1; index >= 0; index--)
             {
-                ghost.SetDirection(Direction.Up);
+                if (!ghostsFrightened[index].CurrentBehaviour.Equals(GhostBehaviour.Frightened))
+                {
+                    ghosts.Add(ghostsFrightened[index]);
+                }
             }
-            else if (randomInt == 3)
+
+            // Add all ghosts who now are frightened in the ordinary list to the frightened list
+            for (int index = ghosts.Count - 1; index >= 0; index--)
             {
-                ghost.SetDirection(Direction.Down);
+                if (ghosts[index].CurrentBehaviour.Equals(GhostBehaviour.Frightened))
+                {
+                    ghostsFrightened.Add(ghosts[index]);
+                }
+            }
+
+
+            // Remove all non-frightened ghosts from the frightened ghost list
+            for (int index = ghostsFrightened.Count - 1; index >= 0; index--)
+            {
+                if (!ghostsFrightened[index].CurrentBehaviour.Equals(GhostBehaviour.Frightened))
+                {
+                    ghostsFrightened.Remove(ghostsFrightened[index]);
+                }
+            }
+
+            // Remove all ghosts who are frightened from the ordinary list
+            for (int index = ghosts.Count - 1; index >= 0; index--)
+            {
+                if (ghosts[index].CurrentBehaviour.Equals(GhostBehaviour.Frightened))
+                {
+                    ghosts.Remove(ghosts[index]);
+                }
             }
         }
 
         private void SetGhosts_Frightened()
         {
-            // Switch current behaviour to most recent behaviour before its updated
+            // Switch current behaviour to most recent behaviour before it's updated
             mostRecentGlobalBehaviour = currentGlobalBehaviour;
             currentGlobalBehaviour = GhostBehaviour.Frightened;
 
             SetSound_Scared();
 
-            Blinky.SetFrightened();
-            Pinky.SetFrightened();
-            Inky.SetFrightened();
-            Clyde.SetFrightened();
+            foreach (Ghost ghost in ghosts)
+            {
+                if (ghost.BehaviourCanBeChangedTo(GhostBehaviour.Frightened))
+                {
+                    ghost.SetFrightened();
 
-            ghostTickTimer.Interval = GhostConstants.SpeedForLevel_Frightened[level];
+                    // Ghosts turn around when frightened
+                    switch (ghost.CurrentDirection)
+                    {
+                        case Direction.Left:
+                            ghost.SetDirection(Direction.Right);
+                            break;
+                        case Direction.Right:
+                            ghost.SetDirection(Direction.Left);
+                            break;
+                        case Direction.Up:
+                            ghost.SetDirection(Direction.Down);
+                            break;
+                        case Direction.Down:
+                            ghost.SetDirection(Direction.Up);
+                            break;
+                    }
+                }
+            }
+
+            UpdateGhostLists();
+            UpdateTimerIntervals();
         }
 
-        private void SetGhosts_Scatter()
+        private void SetGhosts_Scatter(bool overrideAllStandardBehaviours)
         {
             mostRecentGlobalBehaviour = currentGlobalBehaviour;
             currentGlobalBehaviour = GhostBehaviour.Scatter;
 
             SetSound_Scatter();
 
-            Blinky.SetScatter();
-            Pinky.SetScatter();
-            Inky.SetScatter();
-            Clyde.SetScatter();
+            // If the preivous global behaviour had a higher place in the default behaviour hierarchy, set overrideAllStandardBehavoiurs to true so the ghost's change behaviour
+            if (GhostConstants.DefaultBehaviourHierarchy.IndexOf(mostRecentGlobalBehaviour) < GhostConstants.DefaultBehaviourHierarchy.IndexOf(currentGlobalBehaviour))
+            {
+                overrideAllStandardBehaviours = true;
+            }
 
-            ghostTickTimer.Interval = GhostConstants.SpeedForLevel[level];
+            foreach (Ghost ghost in ghosts)
+            {
+                if (ghost.BehaviourCanBeChangedTo(GhostBehaviour.Scatter) || overrideAllStandardBehaviours)
+                {
+                    // Only ghosts who aren't eaten or are exiting the ghost house can have their behaviour overridden
+                    if (!ghost.CurrentState.Equals(EntityState.Eaten) && !ghost.CurrentBehaviour.Equals(GhostBehaviour.ExitingHouse))
+                    {
+                        ghost.SetScatter();
+                    }
+                }
+            }
+           
+            foreach (Ghost ghost in ghostsFrightened)
+            {
+                if (ghost.BehaviourCanBeChangedTo(GhostBehaviour.Scatter) || overrideAllStandardBehaviours)
+                {
+                    // Only ghosts who aren't eaten or are exiting the ghost house can have their behaviour overridden
+                    if (!ghost.CurrentState.Equals(EntityState.Eaten) && !ghost.CurrentBehaviour.Equals(GhostBehaviour.ExitingHouse))
+                    {
+                        ghost.SetScatter();
+                    }
+                }
+            }
+
+            UpdateGhostLists();
+            UpdateTimerIntervals();
         }
 
-        private void SetGhosts_Chase()
+        private void SetGhosts_Chase(bool overrideAllStandardBehaviours)
         {
             mostRecentGlobalBehaviour = currentGlobalBehaviour;
             currentGlobalBehaviour = GhostBehaviour.Chase;
-
+            
             SetSound_Chase();
 
-            Blinky.SetChase();
-            Pinky.SetChase();
-            Inky.SetChase();
-            Clyde.SetChase();
+            // If the preivous global behaviour had a higher place in the default behaviour hierarchy, set overrideAllStandardBehavoiurs to true so the ghost's change behaviour
+            if (GhostConstants.DefaultBehaviourHierarchy.IndexOf(mostRecentGlobalBehaviour) < GhostConstants.DefaultBehaviourHierarchy.IndexOf(currentGlobalBehaviour))
+            {
+                overrideAllStandardBehaviours = true;
+            }
 
-            ghostTickTimer.Interval = GhostConstants.SpeedForLevel[level];
+            foreach (Ghost ghost in ghosts)
+            {
+                if (ghost.BehaviourCanBeChangedTo(GhostBehaviour.Chase) || overrideAllStandardBehaviours)
+                {
+                    // Only ghosts who aren't eaten or are exiting the ghost house can have their behaviour overridden
+                    if (!ghost.CurrentState.Equals(EntityState.Eaten) && !ghost.CurrentBehaviour.Equals(GhostBehaviour.ExitingHouse))
+                    {
+                        ghost.SetChase();
+
+                        // Ghosts turn around when chasing
+                        switch (ghost.CurrentDirection)
+                        {
+                            case Direction.Left:
+                                ghost.SetDirection(Direction.Right);
+                                break;
+                            case Direction.Right:
+                                ghost.SetDirection(Direction.Left);
+                                break;
+                            case Direction.Up:
+                                ghost.SetDirection(Direction.Down);
+                                break;
+                            case Direction.Down:
+                                ghost.SetDirection(Direction.Up);
+                                break;
+                        }
+                    }
+                }
+            }
+
+            foreach (Ghost ghost in ghostsFrightened)
+            {
+                if (ghost.BehaviourCanBeChangedTo(GhostBehaviour.Chase) || overrideAllStandardBehaviours)
+                {
+                    // Only ghosts who aren't eaten or are exiting the ghost house can have their behaviour overridden
+                    if (!ghost.CurrentState.Equals(EntityState.Eaten) && !ghost.CurrentBehaviour.Equals(GhostBehaviour.ExitingHouse))
+                    {
+                        ghost.SetChase();
+
+                        // Ghosts turn around when chasing
+                        switch (ghost.CurrentDirection)
+                        {
+                            case Direction.Left:
+                                ghost.SetDirection(Direction.Right);
+                                break;
+                            case Direction.Right:
+                                ghost.SetDirection(Direction.Left);
+                                break;
+                            case Direction.Up:
+                                ghost.SetDirection(Direction.Down);
+                                break;
+                            case Direction.Down:
+                                ghost.SetDirection(Direction.Up);
+                                break;
+                        }
+                    }
+                }
+            }
+
+            UpdateGhostLists();
+            UpdateGhostTargets();
+
+            UpdateTimerIntervals();
         }
 
         private bool CheckForPacman(Ghost ghost)
         {
-            if (!ghost.CurrentState.Equals(EntityState.Eaten))
+            if (ghost.CurrentState.Equals(EntityState.Standard))
             {
                 // Create a temporary pictureBox to move in the direction the entity wants 
                 // to move, checking if it will collide with pacman or another ghost
@@ -2998,58 +4314,47 @@ namespace Pacman_Projection
                 testGhost.Location = ghost.box.Location;
                 Controls.Add(testGhost);
 
-
-                // TODO: MAKE INTO SWITCH STATEMENT
-
-
                 try
                 {
-                    if (ghost.CurrentDirection.Equals(Direction.Up))
+                    switch (ghost.CurrentDirection)
                     {
-                        testGhost.Top -= step;
-                        if (testGhost.Bounds.IntersectsWith(pacman.box.Bounds))
-                        {
+                        case Direction.Left:
+                            testGhost.Left -= step;
+                            if (testGhost.Bounds.IntersectsWith(pacman.box.Bounds))
+                            {
+                                testGhost.Dispose();
+                                return true;
+                            }
                             testGhost.Dispose();
-                            return true;
-                        }
-                        testGhost.Dispose();
-                        return false;
-                    }
-                    else if (ghost.CurrentDirection.Equals(Direction.Down))
-                    {
-                        testGhost.Top += step;
-                        if (testGhost.Bounds.IntersectsWith(pacman.box.Bounds))
-                        {
+                            return false;
+                        case Direction.Right:
+                            testGhost.Left += step;
+                            if (testGhost.Bounds.IntersectsWith(pacman.box.Bounds))
+                            {
+                                testGhost.Dispose();
+                                return true;
+                            }
                             testGhost.Dispose();
-                            return true;
-                        }
-                        testGhost.Dispose();
-                        return false;
-                    }
-                    else if (ghost.CurrentDirection.Equals(Direction.Left))
-                    {
-                        testGhost.Left -= step;
-                        if (testGhost.Bounds.IntersectsWith(pacman.box.Bounds))
-                        {
+                            return false;
+                        case Direction.Up:
+                            testGhost.Top -= step;
+                            if (testGhost.Bounds.IntersectsWith(pacman.box.Bounds))
+                            {
+                                testGhost.Dispose();
+                                return true;
+                            }
                             testGhost.Dispose();
-                            return true;
-                        }
-                        testGhost.Dispose();
-                        return false;
-                    }
-                    else if (ghost.CurrentDirection.Equals(Direction.Right))
-                    {
-                        testGhost.Left += step;
-                        if (testGhost.Bounds.IntersectsWith(pacman.box.Bounds))
-                        {
+                            return false;
+                        case Direction.Down:
+                            testGhost.Top += step;
+                            if (testGhost.Bounds.IntersectsWith(pacman.box.Bounds))
+                            {
+                                testGhost.Dispose();
+                                return true;
+                            }
                             testGhost.Dispose();
-                            return true;
-                        }
-                        testGhost.Dispose();
-                        return false;
+                            return false;
                     }
-                    testGhost.Dispose();
-                    return false;
                 }
                 catch (Exception)
                 {
@@ -3061,36 +4366,345 @@ namespace Pacman_Projection
             {
                 return false;
             }
+            return false;
         }
 
+        /// <summary>
+        /// Update a specific ghost's target according to the current global behaviour
+        /// </summary>
         private void UpdateGhostTarget(Ghost ghost)
         {
-            // Hierarchy: Up > Down > Left > Right  
-            // Blinky: Chase pacman directly
-            // Pinky: Chase pacman 4 boxes ahead in his direction
-            // Inky: Chase pacman 4 boxes ahead in his direction + Blinky's position mirrored (180 degrees) 
-            // Clyde: Chase pacman directly, but if within 8 boxes of pacman, enter scatter mode
-
-            PictureBox testGhost = new PictureBox()
+            // Ghosts inside the ghost house don't follow the global behaviour until they leave
+            if (!ghost.ExitingGhostHouse)
             {
-                Size = ghost.box.Size,
-                Location = ghost.box.Location
-            }; 
+                switch (currentGlobalBehaviour)
+                {
+                    case GhostBehaviour.Chase:
+                        switch (ghost.Template)
+                        {
+                            case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Blinky):
+                                ghost.SetChase();
+                                ghost.SetTarget(pacman.CurrentPos);
+                                break;
+                            case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Pinky):
+                                ghost.SetChase();
 
-            // Always dispose as to not take up memory
-            testGhost.Dispose();        
+                                switch (pacman.CurrentDirection)
+                                {
+                                    case Direction.Left:
+                                        ghost.SetTarget(pacman.CurrentPosX - 4, pacman.CurrentPosY);
+                                        break;
+                                    case Direction.Right:
+                                        ghost.SetTarget(pacman.CurrentPosX + 4, pacman.CurrentPosY);
+                                        break;
+                                    case Direction.Up:
+                                        ghost.SetTarget(pacman.CurrentPosX - 4, pacman.CurrentPosY - 4);
+                                        break;
+                                    case Direction.Down:
+                                        ghost.SetTarget(pacman.CurrentPosX, pacman.CurrentPosY + 4);
+                                        break;
+                                    case Direction.Stationary:
+                                        ghost.SetTarget(pacman.CurrentPos);
+                                        break;
+
+                                }
+                                break;
+                            case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Inky):
+                                ghost.SetChase();
+
+                                int targetXpreliminary_Inky = 0;
+                                int targetYpreliminary_Inky = 0;
+                                switch (pacman.CurrentDirection)
+                                {
+                                    case Direction.Left:
+                                        targetXpreliminary_Inky = pacman.CurrentPosX - 2;
+                                        targetYpreliminary_Inky = pacman.CurrentPosY;
+                                        break;
+                                    case Direction.Right:
+                                        targetXpreliminary_Inky = pacman.CurrentPosX + 2;
+                                        targetYpreliminary_Inky = pacman.CurrentPosY;
+                                        break;
+                                    case Direction.Up:
+                                        targetXpreliminary_Inky = pacman.CurrentPosX - 2;
+                                        targetYpreliminary_Inky = pacman.CurrentPosY - 2;
+                                        break;
+                                    case Direction.Down:
+                                        targetXpreliminary_Inky = pacman.CurrentPosX;
+                                        targetYpreliminary_Inky = pacman.CurrentPosY + 2;
+                                        break;
+                                    case Direction.Stationary:
+                                        targetXpreliminary_Inky = pacman.CurrentPosX;
+                                        targetYpreliminary_Inky = pacman.CurrentPosY;
+                                        break;
+                                }
+
+                                // Inky's target is the position mirrored across Blinky's position
+                                Ghost blinky = null;
+                                foreach (Ghost g in ghosts)
+                                {
+                                    if (g.Template.Equals(GhostTemplate.Blinky))
+                                    {
+                                        blinky = g; 
+                                    }
+                                }
+
+                                int disDiffX_Inky = targetXpreliminary_Inky - blinky.CurrentPosX;
+                                int disDiffY_Inky = targetYpreliminary_Inky - blinky.CurrentPosY;
+
+                                if (blinky.CurrentPosX < targetXpreliminary_Inky && blinky.CurrentPosY > targetYpreliminary_Inky)
+                                {
+                                    ghost.SetTarget(targetXpreliminary_Inky + disDiffX_Inky, targetYpreliminary_Inky - disDiffY_Inky);
+                                }
+                                else if (blinky.CurrentPosX < targetXpreliminary_Inky && blinky.CurrentPosY < targetYpreliminary_Inky)
+                                {
+                                    ghost.SetTarget(targetXpreliminary_Inky + disDiffX_Inky, targetYpreliminary_Inky + disDiffY_Inky);
+                                }
+                                else if (blinky.CurrentPosX > targetXpreliminary_Inky && blinky.CurrentPosY < targetYpreliminary_Inky)
+                                {
+                                    ghost.SetTarget(targetXpreliminary_Inky - disDiffX_Inky, targetYpreliminary_Inky + disDiffY_Inky);
+                                }
+                                else if (blinky.CurrentPosX > targetXpreliminary_Inky && blinky.CurrentPosY > targetYpreliminary_Inky)
+                                {
+                                    ghost.SetTarget(targetXpreliminary_Inky - disDiffX_Inky, targetYpreliminary_Inky - disDiffY_Inky);
+                                }
+                                break;
+                            case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Clyde):
+                                // Calculate the distance Clyde is from Pacman
+                                int disDiffX_Clyde = ghost.CurrentPosX - pacman.CurrentPosX;
+                                int disDiffY_Clyde = ghost.CurrentPosY - pacman.CurrentPosY;
+
+                                // It doesn't matter if diffX or diffY is negative, as squaring them will make them positive
+                                // If Clyde is within 8 tiles of Pacman, enter scatter mode
+                                if (Math.Sqrt((disDiffX_Clyde * disDiffX_Clyde) + (disDiffY_Clyde * disDiffY_Clyde)) <= GhostConstants.Clyde.BehaviourOverrideDistance)
+                                {
+                                    if (ghost.BehaviourOverridden)
+                                    {
+                                        // If Clyde's behaviour is already overridden, reset his duration counter
+                                        ghost.BehaviourOverrideDuration = 0;
+                                    }
+                                    else
+                                    {
+                                        // Check if Clyde's behaviour can be overridden by Scatter
+                                        if (ghost.BehaviourCanBeChangedTo(GhostBehaviour.Scatter))
+                                        {
+                                            ghost.SetScatter();
+                                            ghost.BehaviourOverridden = true;
+                                        }
+                                    }
+                                }
+
+                                if (ghost.BehaviourOverridden)
+                                {
+                                    if (ghost.BehaviourOverrideDuration >= GhostConstants.Clyde.BevahiourOverrideScatterTime)
+                                    {
+                                        SetGhostBhaviourToGobalBeaviour(ghost);
+
+                                        ghost.BehaviourOverridden = false;
+                                        ghost.BehaviourOverrideDuration = 0;
+                                    }
+
+                                    // Increase the behaviourDuration after each tick if overridden
+                                    ghost.BehaviourOverrideDuration += ghostTickTimer.Interval;
+                                }
+                                ghost.SetChase();
+                                ghost.SetTarget(pacman.CurrentPos);
+                                break;
+                            default:
+                                // Default to pacman's position
+                                ghost.SetTarget(pacman.CurrentPos);
+                                break;
+                        }
+                        break;
+                    case GhostBehaviour.Scatter:
+                        ghost.SetScatter();
+                        break;
+
+                    case GhostBehaviour.Frightened:
+                        // A ghost can only be eaten once per frightened mode
+                        // When an eaten ghost exits the ghost house after being eaten, they enter chase mode.
+                        if (ghost.HasBeenEaten)
+                        {
+                            ghost.SetChase();
+                        }
+                        else
+                        {
+                            ghost.SetFrightened();
+                        }
+                        break;
+                }
+            }
         }
 
-        private void UpdateGhostTarget(Ghost ghost, int[] targetIndex)
+        /// <summary>
+        /// Updates all ghost's respective targets according to their current behaviour.
+        /// </summary>
+        private void UpdateGhostTargets()
         {
-            ghost.SetTarget(targetIndex);
+            // Blinky: Chase Pacman directly
+            // Pinky: Chase Pacman 4 boxes ahead in his direction (up => 4 tiles up and right)
+            // Inky: Chase Pacman 4 boxes ahead in his direction + Blinky's position mirrored (180 degrees) 
+            // Clyde: Chase Pacman directly, but if within 8 boxes of Pacman, enter scatter mode
+
+            foreach (Ghost ghost in ghosts)
+            {
+                if (ghost.Template.Equals(GhostTemplate.Clyde))
+                {
+                    // Calculate the distance Clyde is from Pacman
+                    int disDiffX_Clyde = ghost.CurrentPosX - pacman.CurrentPosX;
+                    int disDiffY_Clyde = ghost.CurrentPosY - pacman.CurrentPosY;
+
+                    // It doesn't matter if diffX or diffY is negative, as squaring them will make them positive
+                    // If Clyde is within 8 tiles of Pacman, enter scatter mode
+                    if (Math.Sqrt((disDiffX_Clyde * disDiffX_Clyde) + (disDiffY_Clyde * disDiffY_Clyde)) <= GhostConstants.Clyde.BehaviourOverrideDistance)
+                    {
+                        if (ghost.BehaviourOverridden)
+                        {
+                            // If Clyde's behaviour is already overridden, reset his duration counter
+                            ghost.BehaviourOverrideDuration = 0;
+                        }
+                        else
+                        {
+                            // Override Clyde's behavour so he follows his own behaviour hierarchy
+                            ghost.BehaviourOverridden = true;
+
+                            // Check if Clyde's behaviour can be changed to Scatter
+                            if (ghost.BehaviourCanBeChangedTo(GhostBehaviour.Scatter))
+                            {
+                                ghost.SetScatter();
+                                ghost.BehaviourOverridden = true;
+                            }
+                        }
+                    }
+
+                    if (ghost.BehaviourOverridden)
+                    {
+                        if (ghost.BehaviourOverrideDuration >= GhostConstants.Clyde.BevahiourOverrideScatterTime)
+                        {
+                            SetGhostBhaviourToGobalBeaviour(ghost);
+
+                            ghost.BehaviourOverridden = false;
+                            ghost.BehaviourOverrideDuration = 0;
+                        }
+
+                        // Increase the behaviourDuration after each tick if overridden
+                        ghost.BehaviourOverrideDuration += ghostTickTimer.Interval;
+                    }
+                }
+
+                // Ghosts inside the ghost house don't follow the global behaviour until they have left the ghost house
+                if (!ghost.ExitingGhostHouse)
+                {
+                    if (currentGlobalBehaviour == GhostBehaviour.Chase)
+                    {
+                        switch (ghost.Template)
+                        {
+                            case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Blinky):
+                                ghost.SetTarget(pacman.CurrentPos);
+                                break;
+                            case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Pinky):
+                                switch (pacman.CurrentDirection)
+                                {
+                                    case Direction.Left:
+                                        ghost.SetTarget(pacman.CurrentPosX - 4, pacman.CurrentPosY);
+                                        break;
+                                    case Direction.Right:
+                                        ghost.SetTarget(pacman.CurrentPosX + 4, pacman.CurrentPosY);
+                                        break;
+                                    case Direction.Up:
+                                        ghost.SetTarget(pacman.CurrentPosX - 4, pacman.CurrentPosY - 4);
+                                        break;
+                                    case Direction.Down:
+                                        ghost.SetTarget(pacman.CurrentPosX, pacman.CurrentPosY + 4);
+                                        break;
+                                    case Direction.Stationary:
+                                        ghost.SetTarget(pacman.CurrentPos);
+                                        break;
+                                }
+                                break;
+                            case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Inky):
+                                int targetXpreliminary_Inky = 0;
+                                int targetYpreliminary_Inky = 0;
+                                switch (pacman.CurrentDirection)
+                                {
+                                    case Direction.Left:
+                                        targetXpreliminary_Inky = pacman.CurrentPosX - 2;
+                                        targetYpreliminary_Inky = pacman.CurrentPosY;
+                                        break;
+                                    case Direction.Right:
+                                        targetXpreliminary_Inky = pacman.CurrentPosX + 2;
+                                        targetYpreliminary_Inky = pacman.CurrentPosY;
+                                        break;
+                                    case Direction.Up:
+                                        targetXpreliminary_Inky = pacman.CurrentPosX - 2;
+                                        targetYpreliminary_Inky = pacman.CurrentPosY - 2;
+                                        break;
+                                    case Direction.Down:
+                                        targetXpreliminary_Inky = pacman.CurrentPosX;
+                                        targetYpreliminary_Inky = pacman.CurrentPosY + 2;
+                                        break;
+                                    case Direction.Stationary:
+                                        targetXpreliminary_Inky = pacman.CurrentPosX;
+                                        targetYpreliminary_Inky = pacman.CurrentPosY;
+                                        break;
+                                }
+
+                                // Inky's target is the position mirrored across Blinky's position
+                                Ghost blinky = null;
+                                foreach (Ghost g in ghosts)
+                                {
+                                    if (g.Template.Equals(GhostTemplate.Blinky))
+                                    {
+                                        blinky = g;
+                                        break;
+                                    }
+                                }
+
+                                int disDiffX_Inky = targetXpreliminary_Inky - blinky.CurrentPosX;
+                                int disDiffY_Inky = targetYpreliminary_Inky - blinky.CurrentPosY;
+
+                                if (blinky.CurrentPosX < targetXpreliminary_Inky && blinky.CurrentPosY > targetYpreliminary_Inky)
+                                {
+                                    ghost.SetTarget(targetXpreliminary_Inky + disDiffX_Inky, targetYpreliminary_Inky - disDiffY_Inky);
+                                }
+                                else if (blinky.CurrentPosX < targetXpreliminary_Inky && blinky.CurrentPosY < targetYpreliminary_Inky)
+                                {
+                                    ghost.SetTarget(targetXpreliminary_Inky + disDiffX_Inky, targetYpreliminary_Inky + disDiffY_Inky);
+                                }
+                                else if (blinky.CurrentPosX > targetXpreliminary_Inky && blinky.CurrentPosY < targetYpreliminary_Inky)
+                                {
+                                    ghost.SetTarget(targetXpreliminary_Inky - disDiffX_Inky, targetYpreliminary_Inky + disDiffY_Inky);
+                                }
+                                else if (blinky.CurrentPosX > targetXpreliminary_Inky && blinky.CurrentPosY > targetYpreliminary_Inky)
+                                {
+                                    ghost.SetTarget(targetXpreliminary_Inky - disDiffX_Inky, targetYpreliminary_Inky - disDiffY_Inky);
+                                }
+                                break;
+                            case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Clyde):
+                                if (!ghost.BehaviourOverridden)
+                                {
+                                    ghost.SetTarget(pacman.CurrentPos);
+                                }
+                                break;
+                            default:
+                                // Default to pacman's position TODO: implement custom ghost template
+                                ghost.SetTarget(pacman.CurrentPos);
+                                break;
+                        }
+                    }
+                }
+            }
         }
- 
+
         private async void GhostEaten(Ghost ghost)
         {
             StopTimers();
 
             ghost.SetState(EntityState.Eaten);
+            ghost.SetBehaviour(GhostBehaviour.Returning);
+
+            ghost.SetTarget(GhostConstants.ReturnIndex);
+
+            UpdateGhostLists();
 
             ghost.box.Image = GhostConstants.Images.eyesStationary; // Default image when eaten
             ghostsEatenDuringPeriod++;
@@ -3112,6 +4726,9 @@ namespace Pacman_Projection
             pacman.box.Show();
 
             StartTimers();
+
+            // Don't play more than one ghost_return playback at a time
+            soundManager.PlaySound(Sounds.ghost_return, true, true);
         }
 
         private void ghostImageTimer_Tick(object sender, EventArgs e)
@@ -3122,191 +4739,197 @@ namespace Pacman_Projection
             foreach (Ghost ghost in ghosts)
             {
                 if (!ghost.CurrentState.Equals(EntityState.Eaten))
-                {
-                    if (ghost.Frightened)
-                    {
-                        if (ghostPic_ver2)
-                        {
-                            if (ghost.White)
-                            {
-                                ghost.box.Image = GhostConstants.Images.frightenedWhite2;
-                                return;
-                            }
-                            else
-                            {
-                                ghost.box.Image = GhostConstants.Images.frightenedBlue2;
-                                return;
-                            }
-                        }
-                        else
-                        {
-                            if (ghost.White)
-                            {
-                                ghost.box.Image = GhostConstants.Images.frightenedWhite;
-                                return;
-                            }
-                            else
-                            {
-                                ghost.box.Image = GhostConstants.Images.frightenedBlue;
-                                return;
-                            }
-                        }
-                    }
-
+                {  
                     switch (ghost.CurrentDirection)
                     {
                         case Direction.Left:
                             if (ghostPic_ver2)
                             {
-                                switch (ghost)
+                                switch (ghost.Template)
                                 {
-                                    case Ghost _ when ghost.Equals(Blinky):
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Blinky):
                                         ghost.box.Image = GhostConstants.Images.Blinky.left2;
-                                        break;
-                                    case Ghost _ when ghost.Equals(Pinky):
+                                        continue;
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Pinky):
                                         ghost.box.Image = GhostConstants.Images.Pinky.left2;
-                                        break;
-                                    case Ghost _ when ghost.Equals(Inky):
+                                        continue;
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Inky):
                                         ghost.box.Image = GhostConstants.Images.Inky.left2;
-                                        break;
-                                    case Ghost _ when ghost.Equals(Clyde):
+                                        continue;
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Clyde):
                                         ghost.box.Image = GhostConstants.Images.Clyde.left2;
-                                        break;
+                                        continue;
                                 }
                             }
                             else
                             {
-                                switch (ghost)
+                                switch (ghost.Template)
                                 {
-                                    case Ghost _ when ghost.Equals(Blinky):
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Blinky):
                                         ghost.box.Image = GhostConstants.Images.Blinky.left;
-                                        break;
-                                    case Ghost _ when ghost.Equals(Pinky):
+                                        continue;
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Pinky):
                                         ghost.box.Image = GhostConstants.Images.Pinky.left;
-                                        break;
-                                    case Ghost _ when ghost.Equals(Inky):
+                                        continue;
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Inky):
                                         ghost.box.Image = GhostConstants.Images.Inky.left;
-                                        break;
-                                    case Ghost _ when ghost.Equals(Clyde):
+                                        continue;
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Clyde):
                                         ghost.box.Image = GhostConstants.Images.Clyde.left;
-                                        break;
+                                        continue;
                                 }
                             }
-                            break;
+                            continue;
                         case Direction.Right:
                             if (ghostPic_ver2)
                             {
-                                switch (ghost)
+                                switch (ghost.Template)
                                 {
-                                    case Ghost _ when ghost.Equals(Blinky):
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Blinky):
                                         ghost.box.Image = GhostConstants.Images.Blinky.right2;
-                                        break;
-                                    case Ghost _ when ghost.Equals(Pinky):
+                                        continue;
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Pinky):
                                         ghost.box.Image = GhostConstants.Images.Pinky.right2;
-                                        break;
-                                    case Ghost _ when ghost.Equals(Inky):
+                                        continue;
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Inky):
                                         ghost.box.Image = GhostConstants.Images.Inky.right2;
-                                        break;
-                                    case Ghost _ when ghost.Equals(Clyde):
+                                        continue;
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Clyde):
                                         ghost.box.Image = GhostConstants.Images.Clyde.right2;
-                                        break;
+                                        continue;
                                 }
                             }
                             else
                             {
-                                switch (ghost)
-                                { 
-                                    case Ghost _ when ghost.Equals(Blinky):
+                                switch (ghost.Template)
+                                {
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Blinky):
                                         ghost.box.Image = GhostConstants.Images.Blinky.right;
-                                        break;
-                                    case Ghost _ when ghost.Equals(Pinky):
+                                        continue;
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Pinky):
                                         ghost.box.Image = GhostConstants.Images.Pinky.right;
-                                        break;
-                                    case Ghost _ when ghost.Equals(Inky):
+                                        continue;
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Inky):
                                         ghost.box.Image = GhostConstants.Images.Inky.right;
-                                        break;
-                                    case Ghost _ when ghost.Equals(Clyde):
+                                        continue;
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Clyde):
                                         ghost.box.Image = GhostConstants.Images.Clyde.right;
-                                        break;
+                                        continue;
                                 }
                             }
-                            break;
+                            continue;
                         case Direction.Up:
                             if (ghostPic_ver2)
                             {
-                                switch (ghost)
+                                switch (ghost.Template)
                                 {
-                                    case Ghost _ when ghost.Equals(Blinky):
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Blinky):
                                         ghost.box.Image = GhostConstants.Images.Blinky.up2;
-                                        break;
-                                    case Ghost _ when ghost.Equals(Pinky):
+                                        continue;
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Pinky):
                                         ghost.box.Image = GhostConstants.Images.Pinky.up2;
-                                        break;
-                                    case Ghost _ when ghost.Equals(Inky):
+                                        continue;
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Inky):
                                         ghost.box.Image = GhostConstants.Images.Inky.up2;
-                                        break;
-                                    case Ghost _ when ghost.Equals(Clyde):
+                                        continue;
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Clyde):
                                         ghost.box.Image = GhostConstants.Images.Clyde.up2;
-                                        break;
+                                        continue;
                                 }
                             }
                             else
                             {
-                                switch (ghost)
+                                switch (ghost.Template)
                                 {
-                                    case Ghost _ when ghost.Equals(Blinky):
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Blinky):
                                         ghost.box.Image = GhostConstants.Images.Blinky.up;
-                                        break;
-                                    case Ghost _ when ghost.Equals(Pinky):
+                                        continue;
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Pinky):
                                         ghost.box.Image = GhostConstants.Images.Pinky.up;
-                                        break;
-                                    case Ghost _ when ghost.Equals(Inky):
+                                        continue;
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Inky):
                                         ghost.box.Image = GhostConstants.Images.Inky.up;
-                                        break;
-                                    case Ghost _ when ghost.Equals(Clyde):
+                                        continue;
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Clyde):
                                         ghost.box.Image = GhostConstants.Images.Clyde.up;
-                                        break;
+                                        continue;
                                 }
                             }
-                            break;
+                            continue;
                         case Direction.Down:
                             if (ghostPic_ver2)
                             {
-                                switch (ghost)
+                                switch (ghost.Template)
                                 {
-                                    case Ghost _ when ghost.Equals(Blinky):
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Blinky):
                                         ghost.box.Image = GhostConstants.Images.Blinky.down2;
-                                        break;
-                                    case Ghost _ when ghost.Equals(Pinky):
+                                        continue;
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Pinky):
                                         ghost.box.Image = GhostConstants.Images.Pinky.down2;
-                                        break;
-                                    case Ghost _ when ghost.Equals(Inky):
+                                        continue;
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Inky):
                                         ghost.box.Image = GhostConstants.Images.Inky.down2;
-                                        break;
-                                    case Ghost _ when ghost.Equals(Clyde):
+                                        continue;
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Clyde):
                                         ghost.box.Image = GhostConstants.Images.Clyde.down2;
-                                        break;
+                                        continue;
                                 }
                             }
                             else
                             {
-                                switch (ghost)
+                                switch (ghost.Template)
                                 {
-                                    case Ghost _ when ghost.Equals(Blinky):
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Blinky):
                                         ghost.box.Image = GhostConstants.Images.Blinky.down;
-                                        break;
-                                    case Ghost _ when ghost.Equals(Pinky):
+                                        continue;
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Pinky):
                                         ghost.box.Image = GhostConstants.Images.Pinky.down;
-                                        break;
-                                    case Ghost _ when ghost.Equals(Inky):
+                                        continue;
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Inky):
                                         ghost.box.Image = GhostConstants.Images.Inky.down;
-                                        break;
-                                    case Ghost _ when ghost.Equals(Clyde):
+                                        continue;
+                                    case GhostTemplate _ when ghost.Template.Equals(GhostTemplate.Clyde):
                                         ghost.box.Image = GhostConstants.Images.Clyde.down;
-                                        break;
+                                        continue;
                                 }
                             }
-                            break;
+                            continue;
+                    }
+                    
+                }
+            }
+        }
+
+        private void ghostFrightenedImageTimer_Tick(object sender, EventArgs e)
+        {
+            ghostFrightenedPic_ver2 = !ghostFrightenedPic_ver2;
+
+            foreach (Ghost ghost in ghostsFrightened)
+            {
+                if (ghostPic_ver2)
+                {
+                    if (ghost.White)
+                    {
+                        ghost.box.Image = GhostConstants.Images.frightenedWhite2;
+                        continue;
+                    }
+                    else
+                    {
+                        ghost.box.Image = GhostConstants.Images.frightenedBlue2;
+                        continue;
+                    }
+                }
+                else
+                {
+                    if (ghost.White)
+                    {
+                        ghost.box.Image = GhostConstants.Images.frightenedWhite;
+                        continue;
+                    }
+                    else
+                    {
+                        ghost.box.Image = GhostConstants.Images.frightenedBlue;
+                        continue;
                     }
                 }
             }

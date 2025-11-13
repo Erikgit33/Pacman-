@@ -1,6 +1,7 @@
 ﻿using Pacman_Projection.Properties;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -13,27 +14,34 @@ namespace Pacman_Projection
     /// </summary>
     public static class GhostConstants
     {
-        public const int StandardInterval = 180;
+        public const int StandardInterval = 270;
 
-        public const int StandardReturnInterval = 30;
-        public static int[] ReturnIndex = { 14, 17}; // The index the ghosts return to when eaten
+        public const int StandardReturnInterval = 60;
+        /// <summary>
+        /// The index the ghosts return to when eaten
+        /// </summary>
+        public static int[] ReturnIndex = { 14, 18}; 
 
+        /// <summary>
+        /// The index the ghosts target when leaving the ghost house
+        /// </summary>
+        public static int[] OutOfHouseIndex = {14, 13};
         /// <summary>
         /// Contains the speed of the ghosts for each level when they are scared, in milliseconds.
         /// Key is the level number, value is the speed (interval) in milliseconds.
         /// </summary>
         public static Dictionary<int, int> SpeedForLevel_Frightened = new Dictionary<int, int>
         {
-            {1, StandardInterval + 5*28}, // 320ms
-            {2, StandardInterval + 5*27},
-            {3, StandardInterval + 5*26},
-            {4, StandardInterval + 5*25},
-            {5, StandardInterval + 5*24},
-            {6, StandardInterval + 5*23},
-            {7, StandardInterval + 5*22},
-            {8, StandardInterval + 5*21},
-            {9, StandardInterval + 5*20},
-            {10, StandardInterval + 5*19} // 275ms
+            {1, StandardInterval + 5*32}, // 430ms
+            {2, StandardInterval + 5*31},
+            {3, StandardInterval + 5*30},
+            {4, StandardInterval + 5*29},
+            {5, StandardInterval + 5*28},
+            {6, StandardInterval + 5*27},
+            {7, StandardInterval + 5*26},
+            {8, StandardInterval + 5*25},
+            {9, StandardInterval + 5*24},
+            {10, StandardInterval + 5*23} // 385ms
         };
 
         /// <summary>
@@ -42,7 +50,7 @@ namespace Pacman_Projection
         /// </summary>
         public static Dictionary<int, int> SpeedForLevel = new Dictionary<int, int>
         {
-            {1, StandardInterval}, // 180ms
+            {1, StandardInterval}, // 270ms
             {2, StandardInterval - 3},
             {3, StandardInterval - 3*2},
             {4, StandardInterval - 3*3},
@@ -51,7 +59,7 @@ namespace Pacman_Projection
             {7, StandardInterval - 3*6},
             {8, StandardInterval - 3*7},
             {9, StandardInterval - 3*8},
-            {10, StandardInterval - 3*9} // 153ms
+            {10, StandardInterval - 3*9} // 243ms
         };
 
         public const int BlinkDuration = 250;
@@ -64,24 +72,48 @@ namespace Pacman_Projection
         public static Dictionary<int, string> ScatterChaseTimesForLevel = new Dictionary<int, string>
         {
             // scatter,chase 
-            {1, "7,15"},
-            {2, "7,15"},
-            {3, "7,15"},
-            {4, "7,17"},
-            {5, "5,17"},
-            {6, "5,17"},
-            {7, "5,17"},
-            {8, "5,17"},
-            {9, "5,17"},
+            {1, "10,10"},
+            {2, "10,11"},
+            {3, "9,11"},
+            {4, "9,12"},
+            {5, "8,12"},
+            {6, "8,13"},
+            {7, "7,13"},
+            {8, "6,14"},
+            {9, "5,15"},
             {10,"5,17"}
         };
 
-        // The grid foor food also doubles as a navigation grid, since fod are always ate the center 
-        // of entities, it allows for exact locations matching the entity
-        public static int[] MapCorner_BottomLeftIndex = { 3, GameConstants.food_Vertically };
-        public static int[] MapCorner_TopLeftIndex = { 2, 0 };
-        public static int[] MapCorner_TopRightIndex = { GameConstants.food_Horizontally, 3 };
-        public static int[] MapCorner_BottomRightIndex = { GameConstants.food_Horizontally - 1, GameConstants.food_Vertically - 3};
+        /// <summary>
+        /// The bottom-left corner index of the game grid for ghost scatter targeting
+        /// </summary>
+        public static int[] MapCorner_BottomLeftIndex = { 3, GameConstants.GameBoxes_Vertically - 1};
+        /// <summary>
+        /// The top-left corner index of the game grid for ghost scatter targeting
+        /// </summary>
+        public static int[] MapCorner_TopLeftIndex = { 4, 0 };
+        /// <summary>
+        /// The top-right corner index of the game grid for ghost scatter targeting
+        /// </summary>
+        public static int[] MapCorner_TopRightIndex = { GameConstants.GameBoxes_Horizontally - 2 , 3 };
+        /// <summary>
+        /// The bottom-right corner index of the game grid for ghost scatter targeting
+        /// </summary>
+        public static int[] MapCorner_BottomRightIndex = { GameConstants.GameBoxes_Horizontally - 4, GameConstants.GameBoxes_Vertically - 2};
+
+
+        /// <summary>
+        /// The standard hierarchy for ghost behaviours, Frightened > Chase > Scatter for typical behaviours
+        /// This can be changed when creating a custom ghost.
+        /// </summary>
+        public static List<GhostBehaviour> DefaultBehaviourHierarchy = new List<GhostBehaviour>
+        {
+            GhostBehaviour.ExitingHouse,
+            GhostBehaviour.Returning,
+            GhostBehaviour.Frightened,
+            GhostBehaviour.Chase,
+            GhostBehaviour.Scatter,
+        };
 
         public static class Images
         {
@@ -102,9 +134,9 @@ namespace Pacman_Projection
                 public static Image StartImage = Resources.Blinky_left;
 
                 public static Image left = Resources.Blinky_left;
-                public static Image right = Resources.Blinky_left;
-                public static Image up = Resources.Blinky_left;
-                public static Image down = Resources.Blinky_left;
+                public static Image right = Resources.Blinky_right;
+                public static Image up = Resources.Blinky_up;
+                public static Image down = Resources.Blinky_down;
                 
                 public static Image left2 = Resources.Blinky_left_ver__2;
                 public static Image right2 = Resources.Blinky_right_ver__2;
@@ -120,9 +152,9 @@ namespace Pacman_Projection
                 public static Image StartImage = Resources.Pinky_down;
 
                 public static Image left = Resources.Pinky_left;
-                public static Image right = Resources.Pinky_left;
-                public static Image up = Resources.Pinky_left;
-                public static Image down = Resources.Pinky_left;
+                public static Image right = Resources.Pinky_right;
+                public static Image up = Resources.Pinky_up;
+                public static Image down = Resources.Pinky_down;
 
                 public static Image left2 = Resources.Pinky_left_ver__2;
                 public static Image right2 = Resources.Pinky_right_ver__2;
@@ -138,9 +170,9 @@ namespace Pacman_Projection
                 public static Image StartImage = Resources.Inky_up;
 
                 public static Image left = Resources.Inky_left;
-                public static Image right = Resources.Inky_left;
-                public static Image up = Resources.Inky_left;
-                public static Image down = Resources.Inky_left;
+                public static Image right = Resources.Inky_right;
+                public static Image up = Resources.Inky_up;
+                public static Image down = Resources.Inky_down;
 
                 public static Image left2 = Resources.Inky_left_ver__2;
                 public static Image right2 = Resources.Inky_right_ver__2;
@@ -156,9 +188,9 @@ namespace Pacman_Projection
                 public static Image StartImage = Resources.Clyde_up;
 
                 public static Image left = Resources.Clyde_left;
-                public static Image right = Resources.Clyde_left;
-                public static Image up = Resources.Clyde_left;
-                public static Image down = Resources.Clyde_left;
+                public static Image right = Resources.Clyde_right;
+                public static Image up = Resources.Clyde_up;
+                public static Image down = Resources.Clyde_down;
 
                 public static Image left2 = Resources.Clyde_left_ver__2;
                 public static Image right2 = Resources.Clyde_right_ver__2;
@@ -172,8 +204,8 @@ namespace Pacman_Projection
 
         public static class Blinky
         {
-            public const int StartX = GameConstants.boxSize * 8; // 14
-            public const int StartY = GameConstants.boxSize * 21; // 16
+            public const int StartX = GameConstants.BoxSize * 14;
+            public const int StartY = GameConstants.BoxSize * 16;
 
             public const Direction StartDirection = Direction.Left;
             public const MapCorner ScatterCorner = MapCorner.TopRight;
@@ -181,8 +213,8 @@ namespace Pacman_Projection
 
         public static class Pinky
         {
-            public const int StartX = GameConstants.boxSize * 14;
-            public const int StartY = GameConstants.boxSize * 21;
+            public const int StartX = GameConstants.BoxSize * 14;
+            public const int StartY = GameConstants.BoxSize * 21;
 
             public const Direction StartDirection = Direction.Down;
             public const MapCorner ScatterCorner = MapCorner.TopLeft;
@@ -190,8 +222,8 @@ namespace Pacman_Projection
 
        public static class Inky
         {
-            public const int StartX = GameConstants.boxSize * 12;
-            public const int StartY = GameConstants.boxSize * 20;
+            public const int StartX = GameConstants.BoxSize * 12;
+            public const int StartY = GameConstants.BoxSize * 20;
 
             public const Direction StartDirection = Direction.Up;
             public const MapCorner ScatterCorner = MapCorner.BottomRight;
@@ -199,11 +231,15 @@ namespace Pacman_Projection
 
         public static class Clyde
         {
-            public const int StartX = GameConstants.boxSize * 16;
-            public const int StartY = GameConstants.boxSize * 20;
+            public const int StartX = GameConstants.BoxSize * 16;
+            public const int StartY = GameConstants.BoxSize * 20;
 
             public const Direction StartDirection = Direction.Up;
             public const MapCorner ScatterCorner = MapCorner.BottomLeft;
+
+            public const int BevahiourOverrideScatterTime = StandardInterval * 25;
+            // Clyde will switch to scatter mode if within this distance of Pacman
+            public const int BehaviourOverrideDistance = 8; // In boxes
         }
     }
 }

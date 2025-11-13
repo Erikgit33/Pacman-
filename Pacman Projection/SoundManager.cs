@@ -90,7 +90,10 @@ namespace Pacman_Projection
             }
         }
 
-        public async Task PlaySound(Sounds soundEnum, bool loop)
+        /// <summary>
+        /// Plays a sound.
+        /// </summary>
+        public async void PlaySound(Sounds soundEnum, bool loop)
         {
             if (toPlaySounds)
             {
@@ -100,13 +103,13 @@ namespace Pacman_Projection
                     {
                         pausedSounds.Remove(soundEnum); // Remove from paused sounds if it exists there
                     }
-
+                    
                     MemoryStream memoryStream = new MemoryStream(soundData[soundEnum]);
                     WaveFileReader reader = new WaveFileReader(memoryStream);
                     WaveOutEvent waveOut = null;
                     WaveStream waveStream = null;
 
-                    if (loop && !await CheckForSound(soundEnum)) // Don't loop sound again if it's already looping
+                    if (loop && !CheckForSound(soundEnum)) // Don't loop sound again if it's already looping
                     {
                         waveStream = loop ? new LoopStream(reader) : (WaveStream)reader;
                         waveOut = new WaveOutEvent();
@@ -124,7 +127,8 @@ namespace Pacman_Projection
                         waveOut.Play();
                     }
 
-                    if (!await CheckForSound(soundEnum))
+                    // If the sound doesn't exist in activeSounds, add it
+                    if (!CheckForSound(soundEnum))
                     {
                         activeSounds.Add(soundEnum, new Sound(nameof(soundEnum), loop, memoryStream, reader, waveOut, waveStream));
                     }
@@ -142,16 +146,87 @@ namespace Pacman_Projection
                         };
                     }
                 }
-                else
+            }
+        }
+        
+        /// <summary>
+        /// Plays a sound with the option of limiting it to the only playin instance of it.  
+        /// </summary>
+        public async void PlaySound(Sounds soundEnum, bool loop, bool limitToOneSimultaneous)
+        {
+            if (toPlaySounds)
+            {
+                if (soundData.ContainsKey(soundEnum))
                 {
-                    MessageBox.Show("Sound not found and/or cannot be played: \n" + nameof(soundEnum) + ".\n POSSIBLE SOLUTION: " +
-                    "\n1. Ensure soundData contains the sound-file. " +
-                    "\n2. Check for spelling errors at relevant locations and methods in used code. " +
-                    "\n3. Set sound-property 'Build Action' => 'Embedded Resources'");
+                    bool play = false;
+                    if (CheckForSound(soundEnum))
+                    {
+                        if (!limitToOneSimultaneous)
+                        {
+                            play = true;
+                        }
+                    }
+                    else
+                    {
+                        play = true;
+                    }
+
+                   
+                    if (play)
+                    {
+                        if (pausedSounds.ContainsKey(soundEnum))
+                        {
+                            pausedSounds.Remove(soundEnum); // Remove from paused sounds if it exists there
+                        }
+
+                        MemoryStream memoryStream = new MemoryStream(soundData[soundEnum]);
+                        WaveFileReader reader = new WaveFileReader(memoryStream);
+                        WaveOutEvent waveOut = null;
+                        WaveStream waveStream = null;
+
+                        if (loop && !CheckForSound(soundEnum)) // Don't loop sound again if it's already looping
+                        {
+                            waveStream = loop ? new LoopStream(reader) : (WaveStream)reader;
+                            waveOut = new WaveOutEvent();
+                            // if looping, set the desired latency to loopingLatency (70ms)
+                            waveOut.DesiredLatency = loopingLatency;
+
+                            waveOut.Init(waveStream);
+                            waveOut.Play();
+                        }
+                        else
+                        {
+                            waveOut = new WaveOutEvent();
+
+                            waveOut.Init(reader);
+                            waveOut.Play();
+                        }
+
+                        if (!CheckForSound(soundEnum))
+                        {
+                            activeSounds.Add(soundEnum, new Sound(nameof(soundEnum), loop, memoryStream, reader, waveOut, waveStream));
+                        }
+
+                        if (!loop)
+                        {
+                            waveOut.PlaybackStopped += (sender, e) =>
+                            {
+                                // Dispose if not null, crash-preventing
+                                waveOut?.Dispose();
+                                waveStream?.Dispose();
+                                memoryStream?.Dispose();
+                                reader?.Dispose();
+                                activeSounds?.Remove(soundEnum);
+                            };
+                        }
+                    }   
                 }
             }
         }
 
+        /// <summary>
+        /// Unpauses a sound.
+        /// </summary>
         public void UnpauseSound(Sounds soundEnum)
         {
             if (pausedSounds.ContainsKey(soundEnum))
@@ -176,13 +251,39 @@ namespace Pacman_Projection
         }
 
         /// <summary>
-        /// Checks if a sound is currently active (playing) 
+        /// Unpauses all paused sounds.
         /// </summary>
-        private Task<bool> CheckForSound(Sounds sound)
+        public void UnpauseAllSounds()
         {
-            return Task.FromResult(activeSounds.ContainsKey(sound));
+            if (pausedSounds.Count > 0)
+            {
+                int index = pausedSounds.Count - 1;
+                while (index >= 0)
+                {
+                    try
+                    {
+                        PauseSound(pausedSounds.ElementAt(index).Key);
+                        index--;
+                    }
+                    catch
+                    {
+                        index--;
+                    }
+                }
+            }
         }
 
+        /// <summary>
+        /// Checks if a sound is currently active (playing).
+        /// </summary>
+        private bool CheckForSound(Sounds sound)
+        {
+            return activeSounds.ContainsKey(sound);
+        }
+
+        /// <summary>
+        /// Stops a sound.
+        /// </summary>
         public void StopSound(Sounds soundEnum)
         {
             if (soundData.ContainsKey(soundEnum) && activeSounds.ContainsKey(soundEnum))
@@ -195,6 +296,9 @@ namespace Pacman_Projection
             }
         }
 
+        /// <summary>
+        /// Stops all sounds.
+        /// </summary>
         public void StopAllSounds()
         {
             if (activeSounds.Count > 0)
@@ -211,7 +315,7 @@ namespace Pacman_Projection
                         activeSounds.Remove(activeSounds.ElementAt(index).Key);
                         index--;
                     }
-                    catch (Exception) 
+                    catch 
                     { 
                         index--; 
                     }
@@ -219,6 +323,9 @@ namespace Pacman_Projection
             }
         }
 
+        /// <summary>
+        /// Pause a non-looping sound.
+        /// </summary>
         public void PauseSound(Sounds soundEnum)
         {
             if (activeSounds.ContainsKey(soundEnum))
@@ -231,6 +338,9 @@ namespace Pacman_Projection
             }
         }
 
+        /// <summary>
+        /// Pauses a looping sound.
+        /// </summary>
         public void PauseLoopedSound(Sounds soundEnum)
         {
             if (activeSounds.ContainsKey(soundEnum))

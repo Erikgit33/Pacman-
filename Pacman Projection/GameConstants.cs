@@ -12,28 +12,52 @@ namespace Pacman_Projection
     /// </summary>
     public static class GameConstants
     {
-        public const int step = 14; 
-        public const int boxSize = step;
-        public const int entitySize = boxSize * 2;
+        public const int Step = 14; 
+        public const int BoxSize = Step;
+        public const int EntitySize = BoxSize * 2;
+
+        public static int[] TeleporterLeftIndex = { 0, 19 };
+        public static int[] TeleporterRightIndex = { Boxes_Horizontally - 1, 19 };
 
         /// <summary>
         /// The amount of steps an entity can take into a teleporter before being teleported out the other side.
         /// Also used when exiting a teleporter: when reaching zero, the teleporter has been fully exited.
         /// </summary>
-        public const int maxStepsIntoTeleporter = 3;
+        public const int MaxStepsIntoTeleporter = 3;
 
-        public const int boxes_Horizontally = 30;
-        public const int boxes_Vertically = 39;
+        /// <summary>
+        /// "Boxes" refers to the grid units that make up the game map (none, wall teleporter etc.).
+        /// </summary>
+        public const int Boxes_Horizontally = 30;
+        /// <summary>
+        /// "Boxes" refers to the grid units that make up the game map (none, wall teleporter etc.).
+        /// </summary>
+        public const int Boxes_Vertically = 39;
 
-        public const int food_Horizontally = 29;
-        public const int food_Vertically = 36;
+        /// <summary>
+        /// "gameBoxes" refers to the grid overlapping the game map, used for positioning, movement calculations and food.
+        /// </summary>
+        public const int GameBoxes_Horizontally = 29;
+        /// <summary>
+        /// "gameBoxes" refers to the grid overlapping the game map, used for positioning, movement calculations and food.
+        /// </summary>
+        public const int GameBoxes_Vertically = 36;
 
-        public const int boxOffset_Vertical = boxSize * 2;
+        /// <summary>
+        /// Vertical offset that applies to the box-grid.
+        /// </summary>
+        public const int BoxOffset_Vertical = BoxSize * 2;
 
-        public const int foodOffset_Horizontal = boxSize / 2;
-        public const int foodOffset_Vertical = boxSize * 3 + boxSize / 2;
+        /// <summary>
+        /// Horizontal offset that applies to the gameBoxes-grid only.
+        /// </summary>
+        public const int GameGridOffset_Horizontal = BoxSize / 2;
+        /// <summary>
+        /// Vertical offset that applies to the gameBoxes-grid only.
+        /// </summary>
+        public const int GameGridOffset_Vertical = BoxSize * 3 + BoxSize / 2;
 
-        public static List<int[]> powerPelletIndexes = new List<int[]>
+        public static List<int[]> PowerPelletIndexes = new List<int[]>
         {
             new int[] { 1, 0 }, 
             new int[] { 27, 0 }, 
@@ -69,7 +93,7 @@ namespace Pacman_Projection
         /// </summary>
         internal class EventTimes
         {
-            public const int powerPellet = 11000;
+            public const int powerPellet = 7000;
             public const int perDeathSequence = 160;
             public const int afterGhostsAppear = 2800;
             public const int betweenGames = 1500;
@@ -79,7 +103,8 @@ namespace Pacman_Projection
             public const int wallBlink = 220;
             public const int gameOverDisplayed = 2000;
 
-            public const int buttonDelay = 200;
+            public const int buttonDelay = 150;
+            public const int removeBoxDelay = 150;
         }
     }
 }

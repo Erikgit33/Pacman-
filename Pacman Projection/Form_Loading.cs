@@ -20,7 +20,7 @@ namespace Pacman_Projection
         private void startGameTimer_Tick(object sender, EventArgs e)
         {
             var formManager = new FormManager();
-            formManager.OpenForm(formManager.FormMenu);
+            formManager.OpenForm(formManager.form_Menu);
             startGameTimer.Enabled = false;
             this.Hide();
         }

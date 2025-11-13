@@ -13,12 +13,12 @@ namespace Pacman_Projection
     /// </summary>
     public static class PacConstants
     {
-        public const int StartX = GameConstants.boxSize * 14;
-        public const int StartY = GameConstants.boxSize * 23 + GameConstants.boxOffset_Vertical;
+        public const int StartX = GameConstants.BoxSize * 14;
+        public const int StartY = GameConstants.BoxSize * 23 + GameConstants.BoxOffset_Vertical;
 
         public const Direction StartDirection = Direction.Stationary;
 
-        const int pacTickTimerIntervalStandard = 190;
+        const int pacTickTimerIntervalStandard = 170;
 
         /// <summary>
         /// Contains the speed of Pacman for each level, in milliseconds.
@@ -26,7 +26,7 @@ namespace Pacman_Projection
         /// </summary>
         public static Dictionary<int, int> SpeedForLevel = new Dictionary<int, int>
         {
-            {1, pacTickTimerIntervalStandard}, // 190ms
+            {1, pacTickTimerIntervalStandard}, // 170ms
             {2, pacTickTimerIntervalStandard - 2},
             {3, pacTickTimerIntervalStandard - 2*2},
             {4, pacTickTimerIntervalStandard - 2*3},
@@ -35,9 +35,12 @@ namespace Pacman_Projection
             {7, pacTickTimerIntervalStandard - 2*6},
             {8, pacTickTimerIntervalStandard - 2*7},
             {9, pacTickTimerIntervalStandard - 2*8},
-            {10, pacTickTimerIntervalStandard - 2*9} // 172ms
+            {10, pacTickTimerIntervalStandard - 2*9} // 152ms
         };
 
+        /// <summary>
+        /// Contains each image to display at pacman's death, generating an animation effect, from first to last index.
+        /// </summary>
         public static List<Image> deathSequence = new List<Image>
         {
             Resources.pacman_death_0_8_,

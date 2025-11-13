@@ -24,6 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -112,6 +113,12 @@
     <Compile Include="Box.cs" />
     <Compile Include="Entity.cs" />
     <Compile Include="FormManager.cs" />
+    <Compile Include="Form_Ghosts.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form_Ghosts.Designer.cs">
+      <DependentUpon>Form_Ghosts.cs</DependentUpon>
+    </Compile>
     <Compile Include="Form_Loading.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -149,6 +156,9 @@
     <Compile Include="IndexButton.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="IndexPictureBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="LoopStream.cs" />
     <Compile Include="PacConstants.cs" />
     <Compile Include="Pacman.cs" />
@@ -163,6 +173,9 @@
     <Compile Include="Sound.cs" />
     <Compile Include="SoundManager.cs" />
     <Compile Include="GameConstants.cs" />
+    <EmbeddedResource Include="Form_Ghosts.resx">
+      <DependentUpon>Form_Ghosts.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form_Highscore.resx">
       <DependentUpon>Form_Highscore.cs</DependentUpon>
     </EmbeddedResource>
@@ -228,7 +241,7 @@
     <EmbeddedResource Include="Resources\pacman_beginning.wav" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\pacman_eatghost.wav" />
+    <EmbeddedResource Include="Resources\pacman_eatGhost.wav" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\pacman_death.wav" />
@@ -237,7 +250,7 @@
     <None Include="Resources\Food.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\pacman_eatfruit.wav" />
+    <EmbeddedResource Include="Resources\pacman_eatFruit.wav" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Blinky down ver. 2.png" />
@@ -420,24 +433,6 @@
     <None Include="Resources\pacman death 2%288%29.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\pacman death 3%28%298.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\pacman death 4%288%29.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\pacman death 5%288%29.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\pacman death 6%288%29.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\pacman death 7%288%29.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\pacman death 8%288%29.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Menu background.png" />
   </ItemGroup>
   <ItemGroup>
@@ -484,6 +479,150 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\ghost_chase1.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PowerPellet_Empty.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pacman death 4%288%29.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pacman death 5%288%29.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pacman death 6%288%29.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pacman death 7%288%29.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pacman death 8%288%29.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pacman death 3%288%29.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomBrown down ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomBrown down.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomBrown left ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomBrown left.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomBrown right ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomBrown right.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomBrown stationary ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomBrown stationary.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomBrown up ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomBrown up.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomGreen down ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomGreen down.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomGreen left ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomGreen left.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomGreen right ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomGreen right.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomGreen stationary ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomGreen stationary.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomGreen up ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomGreen up.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomPurple down ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomPurple down.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomPurple left ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomPurple left.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomPurple right ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomPurple right.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomPurple stationary ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomPurple stationary.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomPurple up ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomPurple up.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomYellow down ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomYellow down.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomYellow left ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomYellow left.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomYellow right ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomYellow right.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomYellow stationary ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomYellow stationary.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomYellow up ver. 2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CustomYellow up.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\AddSign.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

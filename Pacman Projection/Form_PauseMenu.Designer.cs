@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form_PauseMenu));
             this.SuspendLayout();
             // 
             // Form_PauseMenu
@@ -35,7 +36,12 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "Form_PauseMenu";
+            this.Opacity = 0.9D;
+            this.ShowInTaskbar = false;
             this.Text = "Form_PauseMenu";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form_PauseMenu_FormClosing);
             this.Load += new System.EventHandler(this.Form_PauseMenu_Load);

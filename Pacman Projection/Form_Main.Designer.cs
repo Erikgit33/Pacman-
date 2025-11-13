@@ -35,9 +35,10 @@
             this.ghostTickTimer = new System.Windows.Forms.Timer(this.components);
             this.ghostImageTimer = new System.Windows.Forms.Timer(this.components);
             this.powerPelletBlinkTimer = new System.Windows.Forms.Timer(this.components);
-            this.updateEatGhostDurationTimer = new System.Windows.Forms.Timer(this.components);
             this.ghostBehaviourTimeTimer = new System.Windows.Forms.Timer(this.components);
             this.ghostReturnTickTimer = new System.Windows.Forms.Timer(this.components);
+            this.ghostFrightenedTickTimer = new System.Windows.Forms.Timer(this.components);
+            this.ghostFrightenedImageTimer = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // pacTickTimer
@@ -63,10 +64,6 @@
             this.powerPelletBlinkTimer.Interval = 200;
             this.powerPelletBlinkTimer.Tick += new System.EventHandler(this.powerPelletBlinkTimer_Tick);
             // 
-            // updateEatGhostDurationTimer
-            // 
-            this.updateEatGhostDurationTimer.Tick += new System.EventHandler(this.updateEatGhostDurationTimer_Tick);
-            // 
             // ghostBehaviourTimeTimer
             // 
             this.ghostBehaviourTimeTimer.Interval = 1000;
@@ -76,6 +73,14 @@
             // 
             this.ghostReturnTickTimer.Tick += new System.EventHandler(this.ghostReturnTickTimer_Tick);
             // 
+            // ghostFrightenedTickTimer
+            // 
+            this.ghostFrightenedTickTimer.Tick += new System.EventHandler(this.ghostFrightenedTickTimer_Tick);
+            // 
+            // ghostFrightenedImageTimer
+            // 
+            this.ghostFrightenedImageTimer.Tick += new System.EventHandler(this.ghostFrightenedImageTimer_Tick);
+            // 
             // Form_Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -84,6 +89,8 @@
             this.ClientSize = new System.Drawing.Size(804, 697);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "Form_Main";
             this.Text = "Pacman";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form_Main_FormClosing);
@@ -100,9 +107,10 @@
         private System.Windows.Forms.Timer ghostTickTimer;
         private System.Windows.Forms.Timer ghostImageTimer;
         private System.Windows.Forms.Timer powerPelletBlinkTimer;
-        private System.Windows.Forms.Timer updateEatGhostDurationTimer;
         private System.Windows.Forms.Timer ghostBehaviourTimeTimer;
         private System.Windows.Forms.Timer ghostReturnTickTimer;
+        private System.Windows.Forms.Timer ghostFrightenedTickTimer;
+        private System.Windows.Forms.Timer ghostFrightenedImageTimer;
     }
 }
 

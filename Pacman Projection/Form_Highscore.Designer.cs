@@ -37,10 +37,13 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(483, 450);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "Form_Highscore";
             this.Text = "Highscores";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form_Highscore_FormClosing);
             this.Load += new System.EventHandler(this.Form_Highscore_Load);
+            this.VisibleChanged += new System.EventHandler(this.Form_Highscore_VisibleChanged);
             this.ResumeLayout(false);
 
         }

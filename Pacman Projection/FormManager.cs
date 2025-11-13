@@ -14,23 +14,16 @@ using System.Text.Json;
 
 namespace Pacman_Projection
 {  
-    public enum Forms
-    {
-        FormMenu,
-        FormHighscore,
-        FormMain,
-        FormaPauseMenu
-    }
-
     public class FormManager
     {
         GlobalVariables globalVariables;
         EventManager eventManager = new EventManager();
 
-        public Form_Menu FormMenu { get; private set; }
-        public Form_Highscore FormHighscore { get; private set; }
-        public Form_Main FormMain { get; private set; }
-        public Form_PauseMenu FormPauseMenu { get; private set; }
+        public Form_Menu form_Menu { get; private set; }
+        public Form_Highscore form_Highscore { get; private set; }
+        public Form_Ghosts form_Ghosts { get; private set; }
+        public Form_Main form_Main { get; private set; }
+        public Form_PauseMenu form_PauseMenu { get; private set; }
 
         public FormManager()
         {
@@ -44,19 +37,20 @@ namespace Pacman_Projection
                 globalVariables = new GlobalVariables(playerNames);
             }
 
-            FormMenu = new Form_Menu(this, eventManager, globalVariables);
-            FormHighscore = new Form_Highscore(this, eventManager, globalVariables);
-            FormMain = new Form_Main(this, eventManager, globalVariables);
-            FormPauseMenu = new Form_PauseMenu(this, eventManager, globalVariables);
+            form_Menu = new Form_Menu(this, eventManager, globalVariables);
+            form_Highscore = new Form_Highscore(this, eventManager, globalVariables);
+            form_Ghosts = new Form_Ghosts(this, eventManager, globalVariables);
+            form_Main = new Form_Main(this, eventManager, globalVariables);
+            form_PauseMenu = new Form_PauseMenu(this, eventManager, globalVariables);
         }
 
         public void SwitchToForm(Form formToClose, Form formToOpen)
         {
             // Only dispose of (to create new later) FormMain and FormHighscore to reset their states 
-            if (formToClose.Equals(FormMain))
+            if (formToClose.Equals(form_Main))
             {
                 formToClose.Dispose();
-                FormMain = null;
+                form_Main = null;
             }
             else // Only close (dispose) FormMain
             {
@@ -70,18 +64,28 @@ namespace Pacman_Projection
         {
             if (formToOpen != null) // Only FormMain is set to null after closing
             {
+                // All other forms
                 formToOpen.Show();
             }
             else
             {
-                FormMain = new Form_Main(this, eventManager, globalVariables);
-                FormMain.Show();
+                // form_Main
+                form_Main = new Form_Main(this, eventManager, globalVariables);
+                form_Main.Show();
             }
         }
 
         public void CloseForm(Form formToClose)
         {
-            formToClose.Hide();
+            if (formToClose.Equals(form_Main))
+            {
+                formToClose.Dispose();
+                form_Main = null;
+            }
+            else
+            {
+                formToClose.Hide();
+            }
         }
 
         public void SaveScoreToJson(string playerName, int startLevel, int endLevel, int score, int fruitEaten, int ghostsEaten, int highestGhostCombo)

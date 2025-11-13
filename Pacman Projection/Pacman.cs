@@ -11,16 +11,35 @@ namespace Pacman_Projection
 {
     class Pacman : Entity
     {
+        /// <summary>
+        /// The box used to detect when Pacman eats a pellet or power pellet.
+        /// Also used for ghost navigation and targeting.
+        /// </summary>
         internal PictureBox eatBox = new PictureBox();
 
-        public Pacman() { }
-
-        public void UpdateLocation(int left, int top)
+        public Pacman() 
         {
-            CurrentPosX = left;
-            CurrentPosY = top;
+            box.LocationChanged += UpdateLocation;
+        }
 
-            eatBox.Location = new Point(CurrentPosX + eatBox.Width / 2, CurrentPosY + eatBox.Width / 2);
+        public void UpdateLocation(object sender, EventArgs e)
+        {
+            eatBox.Location = new Point(box.Left + eatBox.Width / 2, box.Top + eatBox.Width / 2);
+
+            CurrentPosX = eatBox.Left / GameConstants.BoxSize;
+            CurrentPosY = (eatBox.Top - GameConstants.GameGridOffset_Vertical) / GameConstants.BoxSize;
+
+            CurrentPos = new int[] { CurrentPosX, CurrentPosY };
+        }
+
+        public void UpdateLocation()
+        {
+            eatBox.Location = new Point(box.Left + eatBox.Width / 2, box.Top + eatBox.Width / 2);
+
+            CurrentPosX = eatBox.Left / GameConstants.BoxSize;
+            CurrentPosY = (eatBox.Top - GameConstants.GameGridOffset_Vertical) / GameConstants.BoxSize;
+
+            CurrentPos = new int[] { CurrentPosX, CurrentPosY };
         }
     }
 }

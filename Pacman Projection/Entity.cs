@@ -11,21 +11,61 @@ namespace Pacman_Projection
 {
     internal class Entity
     {
+        /// <summary>
+        /// The box (pivturebox) component of the Entity. It holds all images and displays the entity. 
+        /// </summary>
         public PictureBox box = new PictureBox();
 
-        internal Direction CurrentDirection { get; private set; }
+        /// <summary>
+        /// The entity's current direction.
+        /// </summary>
+        public Direction CurrentDirection { get; private set; }
 
-        internal EntityState CurrentState { get; private set; }
+        /// <summary>
+        /// The entity's current state.
+        /// </summary>
+        public EntityState CurrentState { get; private set; } = EntityState.Standard;
 
-        internal bool Teleported { get; set; }
-        internal int BlocksIntoTeleporter { get; set; }
+        /// <summary>
+        /// Indicates whether the ghost has teleported or not, used while in the teleporting state.
+        /// </summary>
+        public bool Teleported { get; set; }
 
-        internal int CurrentPosX { get; set; }
-        internal int CurrentPosY { get; set; }
+        /// <summary>
+        /// Indicates how many blocks "into the teleporter", off the map, the ghost is. 
+        /// </summary>
+        public int BlocksIntoTeleporter { get; set; }
 
+        /// <summary>
+        /// The entity's current X index.
+        /// </summary>
+        public int CurrentPosX { get; internal set; }
+
+        /// <summary>
+        /// The entity's current Y index.
+        /// </summary>
+        public int CurrentPosY { get; internal set; }
+
+        /// <summary>
+        /// The entity's current position as [x, y] indexes.    
+        /// </summary>
+        public int[] CurrentPos { get; internal set; }
+
+        /// <summary>
+        /// The entity's lower-left standard-position box's position. 
+        /// </summary>
         private int[] LowerLeftStandardPos = new int[2];
+        /// <summary>
+        /// The entity's upper-left standard-position box's position. 
+        /// </summary>
         private int[] UpperLeftStandardPos = new int[2];
+        /// <summary>
+        /// The entity's upper-right standard-position box's position. 
+        /// </summary>
         private int[] UpperRightStandardPos = new int[2];
+        /// <summary>
+        /// The entity's lower-right standard-position box's position. 
+        /// </summary>
         private int[] LowerRightStandardPos = new int[2];
 
         public Entity()
@@ -71,8 +111,18 @@ namespace Pacman_Projection
             }
             else
             {
-                LowerLeftStandardPos[0] = box.Left / GameConstants.boxSize;
-                LowerLeftStandardPos[1] = (box.Top + GameConstants.boxSize - GameConstants.boxOffset_Vertical) / GameConstants.boxSize;
+                LowerLeftStandardPos[0] = box.Left / GameConstants.BoxSize;
+                LowerLeftStandardPos[1] = (box.Top + GameConstants.BoxSize - GameConstants.BoxOffset_Vertical) / GameConstants.BoxSize;
+
+                // Crash preventing
+                if (LowerLeftStandardPos[0] > GameConstants.Boxes_Horizontally - 1)
+                {
+                    LowerLeftStandardPos[0] = GameConstants.Boxes_Horizontally - 1;
+                }
+                if (LowerLeftStandardPos[1] > GameConstants.Boxes_Vertically - 1)
+                {
+                    LowerLeftStandardPos[1] = GameConstants.Boxes_Vertically - 1;
+                }
 
                 UpperLeftStandardPos[0] = LowerLeftStandardPos[0];
                 UpperLeftStandardPos[1] = LowerLeftStandardPos[1] - 1;

@@ -12,10 +12,10 @@ namespace Pacman_Projection
 
         public void ButtonPress()
         {
-            Task.Run(async() => 
+            Task.Run(() => 
             {
                 soundManager.PlaySound(Sounds.buttonPress, false);
-                await Task.Delay(GameConstants.EventTimes.buttonDelay);
+                Task.Delay(GameConstants.EventTimes.buttonDelay).Wait();
             });
         }
     }
