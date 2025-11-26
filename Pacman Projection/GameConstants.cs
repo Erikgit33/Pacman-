@@ -1,6 +1,7 @@
 ﻿using System;
 using System.CodeDom;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,12 +13,22 @@ namespace Pacman_Projection
     /// </summary>
     public static class GameConstants
     {
-        public const int Step = 14; 
+        public const int FormWidth = Boxes_Horizontally * BoxSize;
+        public const int FormHeight = Boxes_Vertically * BoxSize;
+
+        public const int FormXOffset = 388;
+        public const int FormYOffset = 85;
+
+        public const int Step = 14;
         public const int BoxSize = Step;
         public const int EntitySize = BoxSize * 2;
 
         public static int[] TeleporterLeftIndex = { 0, 19 };
         public static int[] TeleporterRightIndex = { Boxes_Horizontally - 1, 19 };
+
+        public static Color Color_Background = Color.Black;
+        public static Color Color_Wall = Color.Blue;
+        public static Color Color_Gate = Color.LightPink;
 
         /// <summary>
         /// The amount of steps an entity can take into a teleporter before being teleported out the other side.
@@ -66,6 +77,15 @@ namespace Pacman_Projection
         };
 
         /// <summary>
+        /// The index for the top-most, left-most box in the ghost house.
+        /// </summary>
+        public static int[] GhostHouse_TopLeftIndex = { 12, 17 };
+        /// <summary>
+        /// The index for the bottom-most, right-most box in the ghost house.
+        /// </summary>
+        public static int[] GhostHouse_BottomRightIndex = { 17, 21 };
+
+        /// <summary>
         /// Contains the scores for different game elements.
         /// </summary>
         internal class Scores
@@ -103,8 +123,8 @@ namespace Pacman_Projection
             public const int wallBlink = 220;
             public const int gameOverDisplayed = 2000;
 
-            public const int buttonDelay = 150;
-            public const int removeBoxDelay = 150;
+            public const int buttonDelay = 30;
+            public const int mapSelectGridDelay = 150;
         }
     }
 }

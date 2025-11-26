@@ -94,7 +94,7 @@
             this.Name = "Form_Main";
             this.Text = "Pacman";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form_Main_FormClosing);
-            this.Load += new System.EventHandler(this.Form1_Load);
+            this.Load += new System.EventHandler(this.Form_Main_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.View_KeyDown);
             this.ResumeLayout(false);
 

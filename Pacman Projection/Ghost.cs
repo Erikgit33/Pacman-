@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Runtime.Remoting.Channels;
 using System.Text;
@@ -88,12 +89,27 @@ namespace Pacman_Projection
         /// </summary>
         public Direction StartDirection { get; private set; }
 
+        /// <summary>
+        /// The set of images the ghost uses for its various states and directions.
+        /// </summary>
         public Dictionary<ImageType, Image> Images { get; private set; }
 
         /// <summary>
-        /// The template the ghost was created according to. 
+        /// The template the ghost was created according to.
+        /// A ghost's template determines its starting position, starting direction, ScatterCorner, images, and behaviour hierarchy.
         /// </summary>
         public GhostTemplate Template { get; private set; }
+
+        /// <summary>
+        /// The type of chase behaviour the ghost uses while in Chase mode, determining how the ghost calculates its target while chasing Pacman.
+        /// ChaseType can be changed independantly of the ghost's Template.
+        /// </summary>
+        public GhostChaseType GhostChaseType { get; private set; }
+
+        /// <summary>
+        /// Dictates the specific type of ghost, i.e. which set of images the ghost should use. 
+        /// </summary>
+        public GhostImageType GhostImageType { get; private set; }
 
         /// <summary>
         /// Contains the behaviour hierarchy for the ghost.
@@ -102,7 +118,12 @@ namespace Pacman_Projection
         /// and the global behaviour attempts to change it, the ghost will check if the new (global) behaviour can override its current behaviour 
         /// based on the hierarchy specified here.
         /// </summary>
-        private List<GhostBehaviour> BehaviourHierarchy;  
+        private List<GhostBehaviour> BehaviourHierarchy;
+
+        /// <summary>
+        /// Used for target calculation ghosts with the chaseType Flank.
+        /// </summary>
+        internal Ghost CorrespondingChaseTypeGhost { get; set; }
 
         public Ghost(GhostTemplate ghostTemplate)
         {
@@ -112,6 +133,8 @@ namespace Pacman_Projection
             {
                 case GhostTemplate.Blinky:
                     Template = GhostTemplate.Blinky;
+                    GhostChaseType = GhostChaseType.Chase;
+                    GhostImageType = GhostImageType.Blinky;
 
                     ScatterCorner = MapCorner.TopRight;
 
@@ -137,18 +160,27 @@ namespace Pacman_Projection
                         { ImageType.FrightenedBlue, GhostConstants.Images.frightenedBlue },
                         { ImageType.FrightenedBlue2, GhostConstants.Images.frightenedBlue2 },
                         { ImageType.FrightenedWhite, GhostConstants.Images.frightenedWhite },
-                        { ImageType.FrightenedWhite2, GhostConstants.Images.frightenedWhite2 }
+                        { ImageType.FrightenedWhite2, GhostConstants.Images.frightenedWhite2 },
+
+                        { ImageType.Stationary_Eyes, GhostConstants.Images.eyesStationary },
+                        { ImageType.Up_Eyes, GhostConstants.Images.eyesUp },
+                        { ImageType.Down_Eyes, GhostConstants.Images.eyesDown },
+                        { ImageType.Left_Eyes, GhostConstants.Images.eyesLeft },
+                        { ImageType.Right_Eyes, GhostConstants.Images.eyesRight }
                     };
 
                     BehaviourHierarchy = GhostConstants.DefaultBehaviourHierarchy;
                     break;
                 case GhostTemplate.Pinky:
                     Template = GhostTemplate.Pinky;
+                    GhostChaseType = GhostChaseType.Ambush;
+                    GhostImageType = GhostImageType.Pinky;
 
                     ScatterCorner = MapCorner.TopLeft;
 
                     StartX = GhostConstants.Pinky.StartX;
                     StartY = GhostConstants.Pinky.StartY;
+
                     StartsInGhostHouse = true;
                     ExitingGhostHouse = true;
 
@@ -171,13 +203,21 @@ namespace Pacman_Projection
                         { ImageType.FrightenedBlue, GhostConstants.Images.frightenedBlue },
                         { ImageType.FrightenedBlue2, GhostConstants.Images.frightenedBlue2 },
                         { ImageType.FrightenedWhite, GhostConstants.Images.frightenedWhite },
-                        { ImageType.FrightenedWhite2, GhostConstants.Images.frightenedWhite2 }
+                        { ImageType.FrightenedWhite2, GhostConstants.Images.frightenedWhite2 },
+
+                        { ImageType.Stationary_Eyes, GhostConstants.Images.eyesStationary },
+                        { ImageType.Up_Eyes, GhostConstants.Images.eyesUp },
+                        { ImageType.Down_Eyes, GhostConstants.Images.eyesDown },
+                        { ImageType.Left_Eyes, GhostConstants.Images.eyesLeft },
+                        { ImageType.Right_Eyes, GhostConstants.Images.eyesRight }
                     };
 
                     BehaviourHierarchy = GhostConstants.DefaultBehaviourHierarchy;
                     break;
                 case GhostTemplate.Inky:
                     Template = GhostTemplate.Inky;
+                    GhostChaseType = GhostChaseType.Flank;
+                    GhostImageType = GhostImageType.Inky;
 
                     ScatterCorner = MapCorner.BottomRight;
 
@@ -206,13 +246,21 @@ namespace Pacman_Projection
                         { ImageType.FrightenedBlue, GhostConstants.Images.frightenedBlue },
                         { ImageType.FrightenedBlue2, GhostConstants.Images.frightenedBlue2 },
                         { ImageType.FrightenedWhite, GhostConstants.Images.frightenedWhite },
-                        { ImageType.FrightenedWhite2, GhostConstants.Images.frightenedWhite2 }
+                        { ImageType.FrightenedWhite2, GhostConstants.Images.frightenedWhite2 },
+
+                        { ImageType.Stationary_Eyes, GhostConstants.Images.eyesStationary },
+                        { ImageType.Up_Eyes, GhostConstants.Images.eyesUp },
+                        { ImageType.Down_Eyes, GhostConstants.Images.eyesDown },
+                        { ImageType.Left_Eyes, GhostConstants.Images.eyesLeft },
+                        { ImageType.Right_Eyes, GhostConstants.Images.eyesRight }
                     };
 
                     BehaviourHierarchy = GhostConstants.DefaultBehaviourHierarchy;
                     break;
                 case GhostTemplate.Clyde:
                     Template = GhostTemplate.Clyde;
+                    GhostChaseType = GhostChaseType.Fallback;
+                    GhostImageType = GhostImageType.Clyde;
 
                     ScatterCorner = MapCorner.BottomLeft;
 
@@ -241,10 +289,16 @@ namespace Pacman_Projection
                         { ImageType.FrightenedBlue, GhostConstants.Images.frightenedBlue },
                         { ImageType.FrightenedBlue2, GhostConstants.Images.frightenedBlue2 },
                         { ImageType.FrightenedWhite, GhostConstants.Images.frightenedWhite },
-                        { ImageType.FrightenedWhite2, GhostConstants.Images.frightenedWhite2 }
+                        { ImageType.FrightenedWhite2, GhostConstants.Images.frightenedWhite2 },
+
+                        { ImageType.Stationary_Eyes, GhostConstants.Images.eyesStationary },
+                        { ImageType.Up_Eyes, GhostConstants.Images.eyesUp },
+                        { ImageType.Down_Eyes, GhostConstants.Images.eyesDown },
+                        { ImageType.Left_Eyes, GhostConstants.Images.eyesLeft },
+                        { ImageType.Right_Eyes, GhostConstants.Images.eyesRight }
                     };
                     
-                    // Clyde's behaviour is overridden if within a certain distance of pacman, Scatter thus
+                    // Clyde's behaviour is overridden if within a certain distance of pacman (Fallback), Scatter thus
                     // holds a higher prioritiy in his behaviour hierarchy.
                     BehaviourHierarchy = new List<GhostBehaviour>
                     {
@@ -256,23 +310,304 @@ namespace Pacman_Projection
                     };
 
                     break;
-                case GhostTemplate.Custom:
-                    ScatterCorner = MapCorner.None;
-                    // TODO: Custom ghost implementation
-                    break;
             }
 
-            // box.Size is the same for all GhostTemplates
+            // box.Size is the same for all ghosts
             box.Size = new Size(GameConstants.EntitySize, GameConstants.EntitySize);
             navBox.Size = new Size(GameConstants.BoxSize, GameConstants.BoxSize);
         }
 
+        public Ghost(GhostImageType selectedImageType, GhostChaseType selectedChaseType, MapCorner selectedScatterCorner, int[] selectedStartingPosition)
+        {
+            box.LocationChanged += UpdateLocation;
+
+            GhostChaseType = selectedChaseType;
+            GhostImageType = selectedImageType;
+
+            ScatterCorner = selectedScatterCorner;
+
+            StartX = selectedStartingPosition[0];
+            StartY = selectedStartingPosition[1];
+
+            if (GetStartsInGhostHouse(StartX, StartY))
+            {
+                StartsInGhostHouse = true;
+                ExitingGhostHouse = true;
+            }
+
+            switch (GhostImageType)
+            {   
+                case GhostImageType.Blinky:
+                    Images = new Dictionary<ImageType, Image>
+                    {
+                        { ImageType.Stationary, GhostConstants.Images.Clyde.stationary },
+                        { ImageType.Stationary2, GhostConstants.Images.Clyde.stationary2 },
+                        { ImageType.Up, GhostConstants.Images.Clyde.up },
+                        { ImageType.Up2, GhostConstants.Images.Clyde.up2 },
+                        { ImageType.Down, GhostConstants.Images.Clyde.down },
+                        { ImageType.Down2, GhostConstants.Images.Clyde.down2 },
+                        { ImageType.Left, GhostConstants.Images.Clyde.left },
+                        { ImageType.Left2, GhostConstants.Images.Clyde.left2 },
+                        { ImageType.Right, GhostConstants.Images.Clyde.right },
+                        { ImageType.Right2, GhostConstants.Images.Clyde.right2 },
+
+                        { ImageType.FrightenedBlue, GhostConstants.Images.frightenedBlue },
+                        { ImageType.FrightenedBlue2, GhostConstants.Images.frightenedBlue2 },
+                        { ImageType.FrightenedWhite, GhostConstants.Images.frightenedWhite },
+                        { ImageType.FrightenedWhite2, GhostConstants.Images.frightenedWhite2 },
+
+                        { ImageType.Stationary_Eyes, GhostConstants.Images.eyesStationary },
+                        { ImageType.Up_Eyes, GhostConstants.Images.eyesUp },
+                        { ImageType.Down_Eyes, GhostConstants.Images.eyesDown },
+                        { ImageType.Left_Eyes, GhostConstants.Images.eyesLeft },
+                        { ImageType.Right_Eyes, GhostConstants.Images.eyesRight }
+                    };
+                    break;
+                case GhostImageType.Pinky:
+                    Images = new Dictionary<ImageType, Image>
+                    {
+                        { ImageType.Stationary, GhostConstants.Images.Pinky.stationary },
+                        { ImageType.Stationary2, GhostConstants.Images.Pinky.stationary2 },
+                        { ImageType.Up, GhostConstants.Images.Pinky.up },
+                        { ImageType.Up2, GhostConstants.Images.Pinky.up2 },
+                        { ImageType.Down, GhostConstants.Images.Pinky.down },
+                        { ImageType.Down2, GhostConstants.Images.Pinky.down2 },
+                        { ImageType.Left, GhostConstants.Images.Pinky.left },
+                        { ImageType.Left2, GhostConstants.Images.Pinky.left2 },
+                        { ImageType.Right, GhostConstants.Images.Pinky.right },
+                        { ImageType.Right2, GhostConstants.Images.Pinky.right2 },
+
+                        { ImageType.FrightenedBlue, GhostConstants.Images.frightenedBlue },
+                        { ImageType.FrightenedBlue2, GhostConstants.Images.frightenedBlue2 },
+                        { ImageType.FrightenedWhite, GhostConstants.Images.frightenedWhite },
+                        { ImageType.FrightenedWhite2, GhostConstants.Images.frightenedWhite2 },
+
+                        { ImageType.Stationary_Eyes, GhostConstants.Images.eyesStationary },
+                        { ImageType.Up_Eyes, GhostConstants.Images.eyesUp },
+                        { ImageType.Down_Eyes, GhostConstants.Images.eyesDown },
+                        { ImageType.Left_Eyes, GhostConstants.Images.eyesLeft },
+                        { ImageType.Right_Eyes, GhostConstants.Images.eyesRight }
+                    };
+                    break;
+                case GhostImageType.Inky:
+                    Images = new Dictionary<ImageType, Image>
+                    {
+                        { ImageType.Stationary, GhostConstants.Images.Inky.stationary },
+                        { ImageType.Stationary2, GhostConstants.Images.Inky.stationary2 },
+                        { ImageType.Up, GhostConstants.Images.Inky.up },
+                        { ImageType.Up2, GhostConstants.Images.Inky.up2 },
+                        { ImageType.Down, GhostConstants.Images.Inky.down },
+                        { ImageType.Down2, GhostConstants.Images.Inky.down2 },
+                        { ImageType.Left, GhostConstants.Images.Inky.left },
+                        { ImageType.Left2, GhostConstants.Images.Inky.left2 },
+                        { ImageType.Right, GhostConstants.Images.Inky.right },
+                        { ImageType.Right2, GhostConstants.Images.Inky.right2 },
+
+                        { ImageType.FrightenedBlue, GhostConstants.Images.frightenedBlue },
+                        { ImageType.FrightenedBlue2, GhostConstants.Images.frightenedBlue2 },
+                        { ImageType.FrightenedWhite, GhostConstants.Images.frightenedWhite },
+                        { ImageType.FrightenedWhite2, GhostConstants.Images.frightenedWhite2 },
+
+                        { ImageType.Stationary_Eyes, GhostConstants.Images.eyesStationary },
+                        { ImageType.Up_Eyes, GhostConstants.Images.eyesUp },
+                        { ImageType.Down_Eyes, GhostConstants.Images.eyesDown },
+                        { ImageType.Left_Eyes, GhostConstants.Images.eyesLeft },
+                        { ImageType.Right_Eyes, GhostConstants.Images.eyesRight }
+                    };
+                    break;
+                case GhostImageType.Clyde:
+                    Images = new Dictionary<ImageType, Image>
+                    {
+                        { ImageType.Stationary, GhostConstants.Images.Clyde.stationary },
+                        { ImageType.Stationary2, GhostConstants.Images.Clyde.stationary2 },
+                        { ImageType.Up, GhostConstants.Images.Clyde.up },
+                        { ImageType.Up2, GhostConstants.Images.Clyde.up2 },
+                        { ImageType.Down, GhostConstants.Images.Clyde.down },
+                        { ImageType.Down2, GhostConstants.Images.Clyde.down2 },
+                        { ImageType.Left, GhostConstants.Images.Clyde.left },
+                        { ImageType.Left2, GhostConstants.Images.Clyde.left2 },
+                        { ImageType.Right, GhostConstants.Images.Clyde.right },
+                        { ImageType.Right2, GhostConstants.Images.Clyde.right2 },
+
+                        { ImageType.FrightenedBlue, GhostConstants.Images.frightenedBlue },
+                        { ImageType.FrightenedBlue2, GhostConstants.Images.frightenedBlue2 },
+                        { ImageType.FrightenedWhite, GhostConstants.Images.frightenedWhite },
+                        { ImageType.FrightenedWhite2, GhostConstants.Images.frightenedWhite2 },
+
+                        { ImageType.Stationary_Eyes, GhostConstants.Images.eyesStationary },
+                        { ImageType.Up_Eyes, GhostConstants.Images.eyesUp },
+                        { ImageType.Down_Eyes, GhostConstants.Images.eyesDown },
+                        { ImageType.Left_Eyes, GhostConstants.Images.eyesLeft },
+                        { ImageType.Right_Eyes, GhostConstants.Images.eyesRight }
+                    };
+                    break;
+                case GhostImageType.Sue:
+                    Images = new Dictionary<ImageType, Image>
+                    {
+                        { ImageType.Stationary, GhostConstants.Images.Sue.stationary },
+                        { ImageType.Stationary2, GhostConstants.Images.Sue.stationary2 },
+                        { ImageType.Up, GhostConstants.Images.Sue.up },
+                        { ImageType.Up2, GhostConstants.Images.Sue.up2 },
+                        { ImageType.Down, GhostConstants.Images.Sue.down },
+                        { ImageType.Down2, GhostConstants.Images.Sue.down2 },
+                        { ImageType.Left, GhostConstants.Images.Sue.left },
+                        { ImageType.Left2, GhostConstants.Images.Sue.left2 },
+                        { ImageType.Right, GhostConstants.Images.Sue.right },
+                        { ImageType.Right2, GhostConstants.Images.Sue.right2 },
+
+                        { ImageType.FrightenedBlue, GhostConstants.Images.frightenedBlue },
+                        { ImageType.FrightenedBlue2, GhostConstants.Images.frightenedBlue2 },
+                        { ImageType.FrightenedWhite, GhostConstants.Images.frightenedWhite },
+                        { ImageType.FrightenedWhite2, GhostConstants.Images.frightenedWhite2 },
+
+                        { ImageType.Stationary_Eyes, GhostConstants.Images.eyesStationary },
+                        { ImageType.Up_Eyes, GhostConstants.Images.eyesUp },
+                        { ImageType.Down_Eyes, GhostConstants.Images.eyesDown },
+                        { ImageType.Left_Eyes, GhostConstants.Images.eyesLeft },
+                        { ImageType.Right_Eyes, GhostConstants.Images.eyesRight }
+                    };
+                    break;
+                case GhostImageType.Funky:
+                    Images = new Dictionary<ImageType, Image>
+                    {
+                        { ImageType.Stationary, GhostConstants.Images.Funky.stationary },
+                        { ImageType.Stationary2, GhostConstants.Images.Funky.stationary2 },
+                        { ImageType.Up, GhostConstants.Images.Funky.up },
+                        { ImageType.Up2, GhostConstants.Images.Funky.up2 },
+                        { ImageType.Down, GhostConstants.Images.Funky.down },
+                        { ImageType.Down2, GhostConstants.Images.Funky.down2 },
+                        { ImageType.Left, GhostConstants.Images.Funky.left },
+                        { ImageType.Left2, GhostConstants.Images.Funky.left2 },
+                        { ImageType.Right, GhostConstants.Images.Funky.right },
+                        { ImageType.Right2, GhostConstants.Images.Funky.right2 },
+
+                        { ImageType.FrightenedBlue, GhostConstants.Images.frightenedBlue },
+                        { ImageType.FrightenedBlue2, GhostConstants.Images.frightenedBlue2 },
+                        { ImageType.FrightenedWhite, GhostConstants.Images.frightenedWhite },
+                        { ImageType.FrightenedWhite2, GhostConstants.Images.frightenedWhite2 },
+
+                        { ImageType.Stationary_Eyes, GhostConstants.Images.eyesStationary },
+                        { ImageType.Up_Eyes, GhostConstants.Images.eyesUp },
+                        { ImageType.Down_Eyes, GhostConstants.Images.eyesDown },
+                        { ImageType.Left_Eyes, GhostConstants.Images.eyesLeft },
+                        { ImageType.Right_Eyes, GhostConstants.Images.eyesRight }
+                    };
+                    break;
+                case GhostImageType.Spunky:
+                    Images = new Dictionary<ImageType, Image>
+                    {
+                        { ImageType.Stationary, GhostConstants.Images.Spunky.stationary },
+                        { ImageType.Stationary2, GhostConstants.Images.Spunky.stationary2 },
+                        { ImageType.Up, GhostConstants.Images.Spunky.up },
+                        { ImageType.Up2, GhostConstants.Images.Spunky.up2 },
+                        { ImageType.Down, GhostConstants.Images.Spunky.down },
+                        { ImageType.Down2, GhostConstants.Images.Spunky.down2 },
+                        { ImageType.Left, GhostConstants.Images.Spunky.left },
+                        { ImageType.Left2, GhostConstants.Images.Spunky.left2 },
+                        { ImageType.Right, GhostConstants.Images.Spunky.right },
+                        { ImageType.Right2, GhostConstants.Images.Spunky.right2 },
+
+                        { ImageType.FrightenedBlue, GhostConstants.Images.frightenedBlue },
+                        { ImageType.FrightenedBlue2, GhostConstants.Images.frightenedBlue2 },
+                        { ImageType.FrightenedWhite, GhostConstants.Images.frightenedWhite },
+                        { ImageType.FrightenedWhite2, GhostConstants.Images.frightenedWhite2 },
+
+                        { ImageType.Stationary_Eyes, GhostConstants.Images.eyesStationary },
+                        { ImageType.Up_Eyes, GhostConstants.Images.eyesUp },
+                        { ImageType.Down_Eyes, GhostConstants.Images.eyesDown },
+                        { ImageType.Left_Eyes, GhostConstants.Images.eyesLeft },
+                        { ImageType.Right_Eyes, GhostConstants.Images.eyesRight }
+                    };
+                    break;
+                case GhostImageType.Whimsy:
+                    Images = new Dictionary<ImageType, Image>
+                    {
+                        { ImageType.Stationary, GhostConstants.Images.Whimsy.stationary },
+                        { ImageType.Stationary2, GhostConstants.Images.Whimsy.stationary2 },
+                        { ImageType.Up, GhostConstants.Images.Whimsy.up },
+                        { ImageType.Up2, GhostConstants.Images.Whimsy.up2 },
+                        { ImageType.Down, GhostConstants.Images.Whimsy.down },
+                        { ImageType.Down2, GhostConstants.Images.Whimsy.down2 },
+                        { ImageType.Left, GhostConstants.Images.Whimsy.left },
+                        { ImageType.Left2, GhostConstants.Images.Whimsy.left2 },
+                        { ImageType.Right, GhostConstants.Images.Whimsy.right },
+                        { ImageType.Right2, GhostConstants.Images.Whimsy.right2 },
+
+                        { ImageType.FrightenedBlue, GhostConstants.Images.frightenedBlue },
+                        { ImageType.FrightenedBlue2, GhostConstants.Images.frightenedBlue2 },
+                        { ImageType.FrightenedWhite, GhostConstants.Images.frightenedWhite },
+                        { ImageType.FrightenedWhite2, GhostConstants.Images.frightenedWhite2 },
+
+                        { ImageType.Stationary_Eyes, GhostConstants.Images.eyesStationary },
+                        { ImageType.Up_Eyes, GhostConstants.Images.eyesUp },
+                        { ImageType.Down_Eyes, GhostConstants.Images.eyesDown },
+                        { ImageType.Left_Eyes, GhostConstants.Images.eyesLeft },
+                        { ImageType.Right_Eyes, GhostConstants.Images.eyesRight }
+                    };
+                    break;
+            }
+
+            if (GhostChaseType.Equals(GhostChaseType.Fallback))
+            {
+                // Fallback behaviour hierarchy
+                BehaviourHierarchy = new List<GhostBehaviour>
+                {
+                    GhostBehaviour.ExitingHouse,
+                    GhostBehaviour.Returning,
+                    GhostBehaviour.Frightened,
+                    GhostBehaviour.Scatter,
+                    GhostBehaviour.Chase
+                };
+            }
+            else
+            {
+                BehaviourHierarchy = GhostConstants.DefaultBehaviourHierarchy;
+            }
+
+            // box.Size is the same for all ghosts
+            box.Size = new Size(GameConstants.EntitySize, GameConstants.EntitySize);
+            navBox.Size = new Size(GameConstants.BoxSize, GameConstants.BoxSize);
+        }
+
+        private bool GetStartsInGhostHouse(int startX, int startY)
+        {
+            int startXIndex = startX / GameConstants.BoxSize;
+            int startYIndex = startY / GameConstants.BoxSize;
+
+            if (startXIndex >= GameConstants.GhostHouse_TopLeftIndex[0] && startXIndex <= GameConstants.GhostHouse_BottomRightIndex[0]
+             && startYIndex >= GameConstants.GhostHouse_TopLeftIndex[1] && startYIndex <= GameConstants.GhostHouse_BottomRightIndex[1])
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        internal void SetStartDirectionAndImage(List<Direction> possibleDirections)
+        {
+            int random = new Random().Next(0, possibleDirections.Count);
+            StartDirection = possibleDirections[random];
+            switch (StartDirection)
+            {
+                case Direction.Up:
+                    StartImage = Images[ImageType.Up];
+                    break;
+                case Direction.Down:
+                    StartImage = Images[ImageType.Down];
+                    break;
+                case Direction.Left:
+                    StartImage = Images[ImageType.Left];
+                    break;
+                case Direction.Right:
+                    StartImage = Images[ImageType.Right];
+                    break;
+            }
+        }
+
         private void UpdateLocation(object sender, EventArgs e)
         {
-            if (Template.Equals(GhostTemplate.Blinky))
-            {
-
-            }
             navBox.Location = new Point(box.Left + navBox.Width / 2, box.Top + navBox.Width / 2);
 
             CurrentPosX = navBox.Left / GameConstants.BoxSize;

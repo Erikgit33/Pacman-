@@ -25,7 +25,9 @@ namespace Pacman_Projection
         GlobalVariables GlobalVariables;
 
         Label label_HighscoreLabel;
-        Label label_Highscore;
+        List<Label> highscoreLabels = new List<Label>();
+
+        Label label_NoHighscores;
 
         public Form_Highscore(FormManager formManager, EventManager eventManager, GlobalVariables globalVariables)
         {
@@ -38,74 +40,63 @@ namespace Pacman_Projection
         private void Form_Highscore_Load(object sender, EventArgs e)
         {
             // Set form size to fit projector
-            ClientSize = new Size(GameConstants.BoxSize * 30, GameConstants.BoxSize * 38);
-            this.Location = new Point(388, 85);
+            ClientSize = new Size(GameConstants.BoxSize * 60, GameConstants.FormHeight);
+            this.Location = new Point(GameConstants.FormXOffset - (this.Width - GameConstants.FormWidth) / 2, GameConstants.FormYOffset);
             this.BackColor = Color.Black;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
 
-            // Create the highscoreLabel label
+            // label_HighscoreLabel properties
             label_HighscoreLabel = new Label()
             {
-                Location = new Point(10, 10),
-                Size = new Size(GameConstants.BoxSize * 30, GameConstants.BoxSize * 6),
-                Font = new Font("Arial", 12, FontStyle.Bold),
-                ForeColor = Color.White
+                Location = new Point(0, GameConstants.BoxSize),
+                Size = new Size(this.Width, GameConstants.BoxSize * 6),
+                Font = new Font("Arial", 20, FontStyle.Bold),
+                ForeColor = Color.Yellow,
+                Text = "HIGHSCORES \n ----------------------------------------------------------------------------\n",
+                TextAlign = ContentAlignment.TopCenter
             };
             Controls.Add(label_HighscoreLabel);
 
-            // Create the highscore label   
-            label_Highscore = new Label()
+            // label_NoHighscores properties    
+            label_NoHighscores = new Label()
             {
-                Location = new Point(10, GameConstants.BoxSize * 7),
-                Size = new Size(GameConstants.BoxSize * 30, GameConstants.BoxSize * 30),
-                Font = new Font("Arial", 9, FontStyle.Regular),
-                ForeColor = Color.Yellow,
-                AutoScrollOffset = new Point(0, 0)
+                Location = new Point(0, GameConstants.BoxSize * 8),
+                Size = new Size(this.Width, GameConstants.BoxSize * 8),
+                Font = new Font("Arial", 16, FontStyle.Regular),
+                ForeColor = Color.White,
+                Text = "No saved highscores!",
+                TextAlign = ContentAlignment.TopCenter
             };
-            Controls.Add(label_Highscore);
+            Controls.Add(label_NoHighscores);
+            label_NoHighscores.BringToFront();
+            label_NoHighscores.Hide();
 
             if (File.Exists("highscores.json"))
             {
                 string savedJson = File.ReadAllText("highscores.json");
                 List<Player> playerEntries = JsonSerializer.Deserialize<List<Player>>(savedJson);
 
-                label_HighscoreLabel.Text = "HIGHSCORES\n\n";
-                label_HighscoreLabel.Text += "RANK, STATS, START/ENDLEVEL\n";
-                label_HighscoreLabel.Text += "----------------------------------------------------------------------------\n";
-
                 UpdateHighscoreLabel(playerEntries);
             }
             else
             {
-                label_Highscore.Text = "No saved highscores!";
-            }
-        }
-
-        public void UpdateHighscoreLabel()
-        {
-            if (File.Exists("highscores.json"))
-            {
-                string savedJson = File.ReadAllText("highscores.json");
-                List<Player> playerEntries = JsonSerializer.Deserialize<List<Player>>(savedJson);
-
-                label_HighscoreLabel.Text = "HIGHSCORES\n\n";
-                label_HighscoreLabel.Text += "RANK, STATS, START/ENDLEVEL\n";
-                label_HighscoreLabel.Text += "----------------------------------------------------------------------------\n";
-
-                UpdateHighscoreLabel(playerEntries);
-            }
-            else
-            {
-                label_Highscore.Text = "No saved highscores!";
+                label_NoHighscores.Show();   
             }
         }
         private void UpdateHighscoreLabel(List<Player> playerEntries)
         {
-            // Reset text
-            label_Highscore.Text = string.Empty;
-            
+            // Remove all existing highscore labels
+            int index = highscoreLabels.Count - 1;
+            while (index >= 0)
+            {
+                Controls.Remove(highscoreLabels[index]);
+                highscoreLabels[index].Dispose();
+                highscoreLabels.RemoveAt(index);
+                index--;
+            }
+
             // Remove all IndexButtons
             foreach (object obj in Controls)
             {
@@ -123,16 +114,27 @@ namespace Pacman_Projection
             {
                 foreach (Player playerEntry in sortedPlayerEntries)
                 {
-                    label_Highscore.Text += (sortedPlayerEntries.IndexOf(playerEntry) + 1).ToString() + ". "
-                        + GetPlayerEntryString(playerEntry)
-                        + Environment.NewLine
-                        + Environment.NewLine;
+                    highscoreLabels.Add(new Label()
+                    {
+                        Location = new Point(10, GameConstants.BoxSize * 7 + sortedPlayerEntries.IndexOf(playerEntry) * GameConstants.BoxSize * 2 + 5),
+                        Size = new Size(this.Width - GameConstants.BoxSize * 7, GameConstants.BoxSize * 2),
+                        Font = new Font("Arial", 9, FontStyle.Regular),
+                        Text = (sortedPlayerEntries.IndexOf(playerEntry) + 1).ToString() + ". "
+                        + GetPlayerEntryString(playerEntry),
+                        ForeColor = Color.Yellow,
+                    });
+                    Controls.Add(highscoreLabels[sortedPlayerEntries.IndexOf(playerEntry)]);
+                    highscoreLabels[sortedPlayerEntries.IndexOf(playerEntry)].BringToFront();
 
-                    var indexButton = new IndexButton(sortedPlayerEntries.IndexOf(playerEntry));
-                    indexButton.Size = new Size(22, 22);
-                    indexButton.Location = new Point(GameConstants.BoxSize * 26 + GameConstants.BoxSize / 2, 95 + (Height + 8) * sortedPlayerEntries.IndexOf(playerEntry));
-                    indexButton.Image = Resources.Trashcan;
-                    indexButton.ImageAlign = ContentAlignment.MiddleCenter;    
+                    var label = highscoreLabels[sortedPlayerEntries.IndexOf(playerEntry)];
+
+                    var indexButton = new IndexButton(sortedPlayerEntries.IndexOf(playerEntry)) 
+                    {
+                        Size = new Size(26, 26),
+                        Location = new Point(label.Location.X + label.Width + GameConstants.BoxSize, label.Location.Y - 26 / 4),
+                        Image = Resources.Trashcan,
+                        ImageAlign = ContentAlignment.MiddleCenter,
+                    };    
                     indexButton.Click += IndexButton_Click;
                     Controls.Add(indexButton);
                     indexButton.BringToFront();
@@ -140,7 +142,7 @@ namespace Pacman_Projection
             }
             else
             {
-                label_Highscore.Text = "No saved highscores!";
+                label_NoHighscores.Show();
             }
         }
 
@@ -152,13 +154,14 @@ namespace Pacman_Projection
 
         private string GetPlayerEntryString(Player playerEntry)
         {
-            // [Name], Highscore: [Score], Fruit: [FruitEaten], Ghosts: [GhostsEaten], Combo: [HighestGhostCombo], ([StartLevel]/[EndLevel])
+            // [Name], Highscore: [Score], Fruit: [FruitEaten], Ghosts: [GhostsEaten], Combo: [HighestGhostCombo], Number of ghosts: [GhostCount], Started at level: [StartLevel] / Ended at leve: [EndLevel])
             return $"{playerEntry.Name} - Highscore: "
                 + $"{playerEntry.Score}, "
-                + $"Fruit: {playerEntry.FruitEaten}, "
-                + $"Ghosts: {playerEntry.GhostsEaten}, "
-                + $"Combo: {playerEntry.HighestGhostCombo}, "
-                + $"({playerEntry.StartLevel}/{playerEntry.EndLevel})";
+                + $"Fruit eaten: {playerEntry.FruitEaten}, "
+                + $"Ghosts eaten: {playerEntry.GhostsEaten}, "
+                + $"Highest combo: {playerEntry.HighestGhostCombo}, "
+                + $"Number of ghosts: {playerEntry.GhostCount}, "
+                + $"(Started at level: {playerEntry.StartLevel} / Ended at level: {playerEntry.EndLevel})";
         }
 
         private void IndexButton_Click(object sender, EventArgs e)
@@ -198,6 +201,8 @@ namespace Pacman_Projection
 
         private void Form_Highscore_FormClosing(object sender, FormClosingEventArgs e)
         {
+            eventManager.ButtonPress();
+
             e.Cancel = true;
             formManager.CloseForm(this);
         }
@@ -206,7 +211,17 @@ namespace Pacman_Projection
         {
             if (this.Visible == true)
             {
-                UpdateHighscoreLabel();
+                if (File.Exists("highscores.json"))
+                {
+                    string savedJson = File.ReadAllText("highscores.json");
+                    List<Player> playerEntries = JsonSerializer.Deserialize<List<Player>>(savedJson);
+
+                    UpdateHighscoreLabel(playerEntries);
+                }
+                else
+                {
+                    label_NoHighscores.Show();
+                }
             }
         }
     }

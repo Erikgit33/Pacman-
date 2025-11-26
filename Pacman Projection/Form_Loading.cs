@@ -24,5 +24,10 @@ namespace Pacman_Projection
             startGameTimer.Enabled = false;
             this.Hide();
         }
+
+        private void Form_Loading_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }

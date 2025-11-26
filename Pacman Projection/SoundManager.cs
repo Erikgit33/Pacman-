@@ -13,23 +13,6 @@ using System.Windows.Forms;
 
 namespace Pacman_Projection
 {
-    public enum Sounds
-    {
-        menuMusic,
-        buttonPress,
-        pacman_beginning,
-        pacman_chomp,
-        pacman_eatFruit,
-        pacman_eatGhost,
-        pacman_death,
-        pacman_win,
-        ghost_scared,
-        ghost_return,
-        ghost_scatter,
-        ghost_chase1,
-        ghost_chase2,
-        ghost_chase3
-    }
     public class SoundManager
     {
         // Declare dictionaries to keep track of all sounds and their current states
@@ -240,7 +223,7 @@ namespace Pacman_Projection
                     pausedSounds.Remove(soundEnum);
                 }
                 else
-                {
+                { 
                     var sound = pausedSounds[soundEnum];
                     sound.MemoryStream.Position = sound.PausedPosition; // Restore the position to its last paused position
                     sound.WaveOut.Play();

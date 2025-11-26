@@ -27,6 +27,7 @@ namespace Pacman_Projection
             InitializeComponent();
 
             ClientSize = new Size(250, 150);
+            this.Location = new Point(GameConstants.FormXOffset + GameConstants.FormXOffset / 2 - this.Width / 2, GameConstants.FormYOffset + GameConstants.FormHeight / 2 - ClientSize.Height / 2);
             this.Text = "Pause Menu";
             this.formManager = formManager;
             this.eventManager = eventManager;
@@ -48,6 +49,16 @@ namespace Pacman_Projection
             Controls.Add(button_ResumeGame);
             button_ResumeGame.Click += button_resumeGame_Click;
 
+            button_ResumeGame.MouseEnter += (s, args) =>
+            {
+                Cursor = Cursors.Hand;
+            };
+
+            button_ResumeGame.MouseLeave += (s, args) =>
+            {
+                Cursor = Cursors.Default;
+            };
+
             // button_ExitGame properties
             button_ExitGame = new Button
             {
@@ -57,6 +68,16 @@ namespace Pacman_Projection
             };
             Controls.Add(button_ExitGame);
             button_ExitGame.Click += button_exitGame_Click;
+
+            button_ExitGame.MouseEnter += (s, args) =>
+            {
+                Cursor = Cursors.Hand;
+            };
+
+            button_ExitGame.MouseLeave += (s, args) =>
+            {
+                Cursor = Cursors.Default;
+            };
 
             // label_Name properties
             label_Name = new Label
@@ -93,9 +114,20 @@ namespace Pacman_Projection
             switch (result)
             {
                 case DialogResult.Yes:
-                    globalVariables.EndLevel = globalVariables.CurrentLevel; // Set the end level to the current level before saving
-                    formManager.SaveScoreToJson(globalVariables.PlayerName, globalVariables.StartLevel, globalVariables.EndLevel, globalVariables.Score, globalVariables.FruitEaten, globalVariables.GhostsEaten, globalVariables.HighestGhostCombo);
+                    // Set the end level to the current level before saving
+                    globalVariables.EndLevel = globalVariables.CurrentLevel;
+
+                    // Save the score to JSON with all relevant details
+                    formManager.SaveScoreToJson(globalVariables.PlayerName, globalVariables.StartLevel, 
+                                                globalVariables.EndLevel, globalVariables.Score, 
+                                                globalVariables.FruitEaten, globalVariables.GhostsEaten, 
+                                                globalVariables.HighestGhostCombo, globalVariables.Ghosts.Count);
+
                     formManager.CloseForm(formManager.form_Main);
+
+                    // Clear the name in globalVariables for next time
+                    globalVariables.PlayerName = string.Empty;
+
                     formManager.SwitchToForm(this, formManager.form_Menu);
                     break;
                 case DialogResult.No:

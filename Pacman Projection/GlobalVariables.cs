@@ -54,5 +54,10 @@ namespace Pacman_Projection
         { 
             NameList = new List<string>(nameList);
         }
+
+        public GlobalVariables() 
+        {
+            NameList = new List<string>();
+        }
     }
 }

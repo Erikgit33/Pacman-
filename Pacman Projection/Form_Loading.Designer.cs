@@ -47,6 +47,7 @@
             this.MinimizeBox = false;
             this.Name = "Form_Loading";
             this.Text = "Form_Loading";
+            this.Load += new System.EventHandler(this.Form_Loading_Load);
             this.ResumeLayout(false);
 
         }

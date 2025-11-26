@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Pacman_Projection
 {
     /// <summary>
-    /// Contains constants for the ghosts, such as their starting positions, speeds for each level, and scatter/chase times.
+    /// Contains constants for the ghosts, such as their starting positions, different behaviours, speeds for each level etc.
     /// </summary>
     public static class GhostConstants
     {
@@ -87,19 +87,19 @@ namespace Pacman_Projection
         /// <summary>
         /// The bottom-left corner index of the game grid for ghost scatter targeting
         /// </summary>
-        public static int[] MapCorner_BottomLeftIndex = { 3, GameConstants.GameBoxes_Vertically - 1};
+        public static int[] MapCorner_BottomLeftIndex = { 2, GameConstants.GameBoxes_Vertically - 1};
         /// <summary>
         /// The top-left corner index of the game grid for ghost scatter targeting
         /// </summary>
-        public static int[] MapCorner_TopLeftIndex = { 4, 0 };
+        public static int[] MapCorner_TopLeftIndex = { 2, 2 };
         /// <summary>
         /// The top-right corner index of the game grid for ghost scatter targeting
         /// </summary>
-        public static int[] MapCorner_TopRightIndex = { GameConstants.GameBoxes_Horizontally - 2 , 3 };
+        public static int[] MapCorner_TopRightIndex = { GameConstants.GameBoxes_Horizontally - 2 , 2 };
         /// <summary>
         /// The bottom-right corner index of the game grid for ghost scatter targeting
         /// </summary>
-        public static int[] MapCorner_BottomRightIndex = { GameConstants.GameBoxes_Horizontally - 4, GameConstants.GameBoxes_Vertically - 2};
+        public static int[] MapCorner_BottomRightIndex = { GameConstants.GameBoxes_Horizontally - 2, GameConstants.GameBoxes_Vertically - 1};
 
 
         /// <summary>
@@ -128,6 +128,15 @@ namespace Pacman_Projection
             public static Image eyesUp = Resources.Ghost_Eyes_up;
             public static Image eyesDown = Resources.Ghost_Eyes_down;
             public static Image eyesStationary = Resources.Ghost_Eyes_stationary;
+
+            public static class ChaseTypes
+            {
+                public static Image chase = Resources.ChaseType_Chase;
+                public static Image ambush = Resources.ChaseType_Ambush;
+                public static Image flank = Resources.ChaseType_Flank;
+                public static Image fallback = Resources.ChaseType_Fallback;
+                public static Image random = Resources.ChaseType_Random;
+            }
 
             public static class Blinky
             {
@@ -199,6 +208,70 @@ namespace Pacman_Projection
 
                 public static Image stationary = Resources.Clyde_stationary;
                 public static Image stationary2 = Resources.Clyde_stationary_ver__2;
+            }
+
+            public static class Sue
+            {
+                public static Image left = Resources.Sue_left;
+                public static Image right = Resources.Sue_right;
+                public static Image up = Resources.Sue_up;
+                public static Image down = Resources.Sue_down;
+
+                public static Image left2 = Resources.Sue_left_ver__2;
+                public static Image right2 = Resources.Sue_right_ver__2;
+                public static Image up2 = Resources.Sue_up_ver__2;
+                public static Image down2 = Resources.Sue_down_ver__2;
+
+                public static Image stationary = Resources.Sue_stationary;
+                public static Image stationary2 = Resources.Sue_stationary_ver__2;
+            }
+
+            public static class Funky
+            {
+                public static Image left = Resources.Funky_left;
+                public static Image right = Resources.Funky_right;
+                public static Image up = Resources.Funky_up;
+                public static Image down = Resources.Funky_down;
+
+                public static Image left2 = Resources.Funky_left_ver__2;
+                public static Image right2 = Resources.Funky_right_ver__2;
+                public static Image up2 = Resources.Funky_up_ver__2;
+                public static Image down2 = Resources.Funky_down_ver__2;
+
+                public static Image stationary = Resources.Funky_stationary;
+                public static Image stationary2 = Resources.Funky_stationary_ver__2;
+            }
+
+            public static class Spunky
+            {
+                public static Image left = Resources.Spunky_left;
+                public static Image right = Resources.Spunky_right;
+                public static Image up = Resources.Spunky_up;
+                public static Image down = Resources.Spunky_down;
+
+                public static Image left2 = Resources.Spunky_left_ver__2;
+                public static Image right2 = Resources.Spunky_right_ver__2;
+                public static Image up2 = Resources.Spunky_up_ver__2;
+                public static Image down2 = Resources.Spunky_down_ver__2;
+
+                public static Image stationary = Resources.Spunky_stationary;
+                public static Image stationary2 = Resources.Spunky_stationary_ver__2;
+            }
+
+            public static class Whimsy
+            {
+                public static Image left = Resources.Whimsy_left;
+                public static Image right = Resources.Whimsy_right;
+                public static Image up = Resources.Whimsy_up;
+                public static Image down = Resources.Whimsy_down;
+
+                public static Image left2 = Resources.Whimsy_left_ver__2;
+                public static Image right2 = Resources.Whimsy_right_ver__2;
+                public static Image up2 = Resources.Whimsy_up_ver__2;
+                public static Image down2 = Resources.Whimsy_down_ver__2;
+
+                public static Image stationary = Resources.Whimsy_stationary;
+                public static Image stationary2 = Resources.Whimsy_stationary_ver__2;
             }
         }
 

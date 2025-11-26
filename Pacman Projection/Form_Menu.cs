@@ -42,8 +42,8 @@ namespace Pacman_Projection
         private void FormMenu_Load(object sender, EventArgs e)
         {
             // Set form size to fit projector
-            ClientSize = new Size(boxSize * 30, boxSize * 38);
-            this.Location = new Point(388, 85);
+            ClientSize = new Size(GameConstants.FormWidth, GameConstants.FormHeight);
+            this.Location = new Point(GameConstants.FormXOffset, GameConstants.FormYOffset);
             this.BackColor = Color.Black;
 
             // button_Play properties
@@ -59,6 +59,16 @@ namespace Pacman_Projection
             Controls.Add(button_Play);
             button_Play.BringToFront();
 
+            button_Play.MouseEnter += (s, args) =>
+            {
+                Cursor = Cursors.Hand;
+            };
+
+            button_Play.MouseLeave += (s, args) =>
+            {
+                Cursor = Cursors.Default;
+            };
+
             // button_Highscore properties
             button_Highscore = new Button
             {
@@ -71,6 +81,16 @@ namespace Pacman_Projection
             button_Highscore.Click += button_Highscore_Click;
             Controls.Add(button_Highscore);
             button_Highscore.BringToFront();
+
+            button_Highscore.MouseEnter += (s, args) =>
+            {
+                Cursor = Cursors.Hand;
+            };
+
+            button_Highscore.MouseLeave += (s, args) =>
+            {
+                Cursor = Cursors.Default;
+            };
 
             // button_Ghosts properties
             button_Ghosts = new Button
@@ -85,6 +105,15 @@ namespace Pacman_Projection
             Controls.Add(button_Ghosts);
             button_Ghosts.BringToFront();
 
+            button_Ghosts.MouseEnter += (s, args) =>
+            {
+                Cursor = Cursors.Hand;
+            };
+
+            button_Ghosts.MouseLeave += (s, args) =>
+            {
+                Cursor = Cursors.Default;
+            };
 
             // nameBox properties 
             textBox_Name = new TextBox
@@ -154,7 +183,19 @@ namespace Pacman_Projection
             }
             else if (textBox_Name.Text == "Enter Name")
             {
-                globalVariables.PlayerName = "Player";
+                // Get the ammount of players with default names "PlayerX" and add one to it to avoid duplicates
+                List<string> PlayerEntriesWithNamePlayer = globalVariables.NameList.Where(name => name.StartsWith("Player")).ToList();
+
+                int count = PlayerEntriesWithNamePlayer.Count;
+
+                if (count > 0)
+                {
+                    globalVariables.PlayerName = "Player" + PlayerEntriesWithNamePlayer.Count;
+                }
+                else
+                {
+                    globalVariables.PlayerName = "Player";
+                }
             }
             else
             {
@@ -174,6 +215,11 @@ namespace Pacman_Projection
                     new Ghost(GhostTemplate.Inky),
                     new Ghost(GhostTemplate.Clyde)
                 };
+            }
+            else if (globalVariables.Ghosts.Count == 0)
+            {
+                MessageBox.Show("Cannot begin the game without atleast one ghost!");
+                return;
             }
 
             formManager.SwitchToForm(this, formManager.form_Main);
@@ -195,7 +241,16 @@ namespace Pacman_Projection
 
         private void Form_Menu_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // TODO: EXIT GAME     
+            eventManager.ButtonPress();
+
+            var result = MessageBox.Show("Are you sure you want to exit?", "Exit", MessageBoxButtons.YesNo);
+            if (result.Equals(DialogResult.No))
+            {
+                e.Cancel = true;
+                return;
+            }
+
+            Application.Exit();
         }
 
         private void Form_Menu_VisibleChanged(object sender, EventArgs e)

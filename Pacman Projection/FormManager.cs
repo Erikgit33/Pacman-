@@ -25,8 +25,8 @@ namespace Pacman_Projection
         public Form_Main form_Main { get; private set; }
         public Form_PauseMenu form_PauseMenu { get; private set; }
 
-        public FormManager()
-        {
+        public FormManager() 
+        { 
             // Get all player names to check for duplicates when choosing a name
             if (File.Exists("highscores.json"))
             {
@@ -35,6 +35,10 @@ namespace Pacman_Projection
                 List<string> playerNames = playerEntries.Select(p => p.Name).ToList();
 
                 globalVariables = new GlobalVariables(playerNames);
+            }
+            else
+            {
+                globalVariables = new GlobalVariables();
             }
 
             form_Menu = new Form_Menu(this, eventManager, globalVariables);
@@ -46,11 +50,11 @@ namespace Pacman_Projection
 
         public void SwitchToForm(Form formToClose, Form formToOpen)
         {
-            // Only dispose of (to create new later) FormMain and FormHighscore to reset their states 
+            // Only dispose of form_Main, hide all other forms 
             if (formToClose.Equals(form_Main))
             {
                 formToClose.Dispose();
-                form_Main = null;
+                form_Main = new Form_Main(this, eventManager, globalVariables);
             }
             else // Only close (dispose) FormMain
             {
@@ -62,7 +66,7 @@ namespace Pacman_Projection
 
         public void OpenForm(Form formToOpen)
         {
-            if (formToOpen != null) // Only FormMain is set to null after closing
+            if (formToOpen != null) 
             {
                 // All other forms
                 formToOpen.Show();
@@ -79,8 +83,9 @@ namespace Pacman_Projection
         {
             if (formToClose.Equals(form_Main))
             {
-                formToClose.Dispose();
-                form_Main = null;
+                form_Main.DisposeForm();
+                //formToClose.Dispose();
+                form_Main = new Form_Main(this, eventManager, globalVariables);
             }
             else
             {
@@ -88,9 +93,9 @@ namespace Pacman_Projection
             }
         }
 
-        public void SaveScoreToJson(string playerName, int startLevel, int endLevel, int score, int fruitEaten, int ghostsEaten, int highestGhostCombo)
+        public void SaveScoreToJson(string playerName, int startLevel, int endLevel, int score, int fruitEaten, int ghostsEaten, int highestGhostCombo, int ghostCount)
         {
-            Player player = new Player(playerName, startLevel, endLevel, score, fruitEaten, ghostsEaten, highestGhostCombo);  
+            Player player = new Player(playerName, startLevel, endLevel, score, fruitEaten, ghostsEaten, highestGhostCombo, ghostCount);  
             
             if (File.Exists("highscores.json"))
             {
@@ -108,6 +113,11 @@ namespace Pacman_Projection
                 string jsonToSave = JsonSerializer.Serialize(scoresToSave);
                 File.WriteAllText("highscores.json", jsonToSave);
             }
+        }
+
+        internal void ExitGame()
+        {
+            Application.Exit();
         }
     }
 }

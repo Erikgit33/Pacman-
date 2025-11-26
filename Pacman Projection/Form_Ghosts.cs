@@ -19,7 +19,15 @@ namespace Pacman_Projection
         EventManager eventManager;
         GlobalVariables globalVariables;
 
-        List<Ghost> ghosts = new List<Ghost>();
+        form_GhostCreator form_GhostCreator;
+
+        Label label_Title;
+        Label label_Info;
+
+        internal List<Ghost> ghosts = new List<Ghost>();
+        List<IndexPictureBox> ghostBoxes = new List<IndexPictureBox>();
+        IndexPictureBox ghostInfoBox;
+        PictureBox addBox;
 
         public Form_Ghosts(FormManager formManager, EventManager eventManager, GlobalVariables globalVariables)
         {
@@ -33,13 +41,13 @@ namespace Pacman_Projection
         private void Form_Ghosts_Load(object sender, EventArgs e)
         {
             // Set form size to fit projector
-            ClientSize = new Size(GameConstants.BoxSize * 30, GameConstants.BoxSize * 38);
-            this.Location = new Point(388, 85);
+            ClientSize = new Size(GameConstants.FormWidth, GameConstants.FormHeight);
+            this.Location = new Point(GameConstants.FormXOffset, GameConstants.FormYOffset);
             this.BackColor = Color.Black;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-        
+
             // Add the four default ghosts Blinky, Pinky, Inky and Clyde
             ghosts.Add(new Ghost(GhostTemplate.Blinky));
             ghosts.Add(new Ghost(GhostTemplate.Pinky));
@@ -49,38 +57,67 @@ namespace Pacman_Projection
             // Update the globalVariables ghost list
             globalVariables.Ghosts = new List<Ghost>(ghosts);
 
+            label_Title = new Label()
+            {
+                Size = new Size(GameConstants.BoxSize * 15, GameConstants.BoxSize * 4), 
+                Font = new Font("Arial", 20, FontStyle.Bold),
+                Text = "Ghost Editor",
+                Location = new Point(GameConstants.BoxSize * 8 + GameConstants.BoxSize / 2, GameConstants.BoxSize),
+                ForeColor = Color.Yellow,
+                BackColor = Color.Black
+            };
+            Controls.Add(label_Title);
+            label_Title.BringToFront();
+
+            label_Info = new Label()
+            {
+                Size = new Size(GameConstants.BoxSize * 26, GameConstants.BoxSize * 2),
+                Font = new Font("Arial", 12, FontStyle.Regular),
+                Text = "Hover over a ghost to remove it. Click the + to add a new ghost.",
+                Location = new Point(GameConstants.BoxSize * 2 + GameConstants.BoxSize / 4, GameConstants.BoxSize * 3 + ((GameConstants.BoxSize * 3) / 4)),
+                ForeColor = Color.White,
+                BackColor = Color.Black
+            };
+            Controls.Add(label_Info);
+            label_Info.BringToFront();
+
             UpdateGhostList();
         }
 
-        private void UpdateGhostList()
+        internal void GetGhostsFromGlobalVariables()
         {
-            // Remove all IndexPictureBoxes and PictureBoxes to redraw them in the correct order and location
-            foreach (object obj in Controls)
+            ghosts = new List<Ghost>(globalVariables.Ghosts);
+        }
+
+        internal void UpdateGhostList()
+        {
+            // Remove all IndexPictureBoxes that need to be redrawn
+            if (addBox != null)
             {
-                if (obj is IndexPictureBox)
-                {
-                    Controls.Remove(obj as IndexPictureBox);
-                    var indexPictureBox = (IndexPictureBox)obj;
-                    indexPictureBox.Dispose();
-                }
-                else if (obj is PictureBox)
-                {
-                    Controls.Remove(obj as PictureBox);
-                    var addBox = (PictureBox)obj;
-                    addBox.Dispose();
-                }
+                Controls.Remove(addBox);
+                addBox.Dispose();
             }
+
+            int ghostBoxIndex = ghostBoxes.Count - 1;
+            while (ghostBoxIndex >= 0)
+            {
+                var ghostBox = ghostBoxes[ghostBoxIndex];
+                Controls.Remove(ghostBox);
+                ghostBox.Dispose();
+                ghostBoxes.RemoveAt(ghostBoxIndex);
+                ghostBoxIndex--;
+            }   
 
             int row = 0;
             for (int index = 0; index <= ghosts.Count; index++)
             {
                 if (index == ghosts.Count)
                 {
-                    PictureBox addBox = new PictureBox
+                    PictureBox addBox = new PictureBox()
                     {
                         Size = new Size(GameConstants.BoxSize * 6, GameConstants.BoxSize * 6),
                         Location = new Point(GameConstants.BoxSize * 2 + GameConstants.BoxSize / 4 + index * (GameConstants.BoxSize * 6 + GameConstants.BoxSize / 2) - row * 4 * (GameConstants.BoxSize * 6 + GameConstants.BoxSize / 2),
-                                         GameConstants.BoxSize * 5 + row * (GameConstants.BoxSize * 6 + GameConstants.BoxSize / 2)),
+                                             GameConstants.BoxSize * 7 + row * (GameConstants.BoxSize * 6 + (int)(GameConstants.BoxSize * 2.5))),
                         BorderStyle = BorderStyle.FixedSingle,
                         ForeColor = Color.Green,
                         Image = Resources.AddSign,
@@ -92,6 +129,9 @@ namespace Pacman_Projection
                     addBox.BringToFront();
                     addBox.Click += AddBox_Click;
 
+                    // Save reference to addBox for use during redraw operations
+                    this.addBox = addBox;
+
                     break;
                 }           
                 
@@ -101,7 +141,7 @@ namespace Pacman_Projection
                 {
                     Size = new Size(GameConstants.BoxSize * 6, GameConstants.BoxSize * 6),
                     Location = new Point(GameConstants.BoxSize * 2 + GameConstants.BoxSize / 4 + ghosts.IndexOf(ghost) * (GameConstants.BoxSize * 6 + GameConstants.BoxSize / 2) - row * 4 * (GameConstants.BoxSize * 6 + GameConstants.BoxSize / 2),
-                                         GameConstants.BoxSize * 5 + row * (GameConstants.BoxSize * 6 + GameConstants.BoxSize / 2)),
+                                         GameConstants.BoxSize * 7 + row * (GameConstants.BoxSize * 6 + (int)(GameConstants.BoxSize * 2.5))),
                     BorderStyle = BorderStyle.FixedSingle,
                     ForeColor = Color.Gray,
                     SizeMode = PictureBoxSizeMode.StretchImage,
@@ -109,6 +149,28 @@ namespace Pacman_Projection
                 };
                 Controls.Add(ghostBox);
                 ghostBox.BringToFront();
+
+                // Keep track of all ghost boxes    
+                ghostBoxes.Add(ghostBox);
+
+                // Create label for image type name
+                Label infoLabel = new Label()
+                {
+                    Size = new Size(GameConstants.BoxSize * 4, GameConstants.BoxSize * 2),
+                    Font = new Font("Arial", 8, FontStyle.Bold),
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    BackColor = Color.Black,
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Popup
+                };
+                Controls.Add(infoLabel);
+                infoLabel.BringToFront();
+
+                // Assign the label to the box for easy access later
+                ghostBox.label = infoLabel;
+                ghostBox.UpdateLabelLocation();
+
+                infoLabel.Text = ghosts[ghostBox.Index].GhostImageType.ToString() + "\n" + ghosts[ghostBox.Index].GhostChaseType.ToString();
 
                 // Randomize the picture 
                 int random = new Random().Next(0, 2);
@@ -128,8 +190,6 @@ namespace Pacman_Projection
 
                 ghostBox.MouseEnter += (s, e) =>
                 {
-                    Task.Delay(GameConstants.EventTimes.removeBoxDelay).Wait();
-
                     IndexPictureBox removeBox = new IndexPictureBox(ghostBox.Index)
                     {
                         Size = ghostBox.Size,
@@ -146,7 +206,7 @@ namespace Pacman_Projection
                     removeBox.BringToFront();
                     removeBox.Click += RemoveBox_Click;
 
-                    removeBox.MouseLeave += (S, E) =>
+                    removeBox.MouseLeave += (send, args) =>
                     {
                         Controls.Remove(removeBox);
                         removeBox.Dispose();
@@ -159,18 +219,39 @@ namespace Pacman_Projection
 
         private void AddBox_Click(object sender, EventArgs e)
         {
-            
+            eventManager.ButtonPress();
+
+            MessageBox.Show("Feature not implemented, sorry!");
+            return;
+          
+            // Update the ghost list in globalVariables before opening the ghost creator form
+            globalVariables.Ghosts = new List<Ghost>(ghosts);
+
+            form_GhostCreator = new form_GhostCreator(formManager, eventManager, globalVariables, this);
+            form_GhostCreator.Show();
+            this.Enabled = false;
+            form_GhostCreator.FormClosed += (s, args) =>
+            {
+                form_GhostCreator = null;
+                this.Enabled = true;
+            };
         }
- 
+
         private void RemoveBox_Click(object sender, EventArgs e)
         {
             eventManager.ButtonPress();
 
-            var result = MessageBox.Show("Are you sure you want to delete this ghost?", "Delete Ghost", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            MessageBox.Show("Feature not implemented, sorry!");
+            return;
+
+            var result = MessageBox.Show("Are you sure you want to remove the ghost?", "Remove Ghost", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (result.Equals(DialogResult.Yes))
             {
                 var removeBox = (IndexPictureBox)sender;
                 ghosts.RemoveAt(removeBox.Index);
+
+                Controls.Remove(removeBox);
+                removeBox.Dispose();
 
                 UpdateGhostList();
             }
@@ -178,9 +259,11 @@ namespace Pacman_Projection
 
         private void Form_Ghosts_FormClosing(object sender, FormClosingEventArgs e)
         {
+            eventManager.ButtonPress();
+
             e.Cancel = true;
 
-            // Update the ghost list in globalVariables
+            // Update the ghost list in globalVariables when closing the form
             globalVariables.Ghosts = new List<Ghost>(ghosts);
 
             formManager.CloseForm(this);
